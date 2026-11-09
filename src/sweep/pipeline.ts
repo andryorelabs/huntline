@@ -1,3 +1,5 @@
+import path from "node:path";
+import { withLock } from "../core/fs.ts";
 import { evaluateGates } from "../gates/gates.ts";
 import { dedupKey, findDuplicate, ledgerRecord } from "../ledger/dedup.ts";
 import { appendEvent } from "../ledger/events.ts";
@@ -14,6 +16,8 @@ type PostingOutcome =
   | { readonly kind: "known" }
   | { readonly kind: "dismissed"; readonly event: HuntEvent }
   | { readonly kind: "lead"; readonly event: HuntEvent; readonly key: string };
+
+const LOCK_DIRECTORY = ".pipeline";
 
 export const EMPTY_COUNTS: SourceCounts = { seen: 0, known: 0, new: 0, dismissed: 0 };
 
@@ -91,5 +95,7 @@ export function processBatch(
   profile: Profile,
   postings: readonly Posting[],
 ): Promise<BatchOutcome> {
-  return processFrom(dir, profile, postings, 0, { counts: EMPTY_COUNTS, leadKeys: [], events: [] });
+  return withLock(path.join(dir.path, LOCK_DIRECTORY), () =>
+    processFrom(dir, profile, postings, 0, { counts: EMPTY_COUNTS, leadKeys: [], events: [] }),
+  );
 }

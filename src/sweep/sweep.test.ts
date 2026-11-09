@@ -187,6 +187,16 @@ describe("runSweep", () => {
     expect(result.value.failed.map((entry) => entry.source)).toEqual(["nope", "himalayas"]);
   });
 
+  test("concurrent ingests of the same role create one Lead", async () => {
+    writeProfile([]);
+    const results = await Promise.all(
+      Array.from({ length: 4 }, () => ingestPostings(makeContext(), [posting()], "himalayas")),
+    );
+    expect(results.every((result) => result.ok)).toBe(true);
+    const leads = (await readEvents({ path: root })).filter((event) => event.kind === "lead.created");
+    expect(leads).toHaveLength(1);
+  });
+
   test("fails without a data dir", async () => {
     const result = await runSweep({ dataDir: null, env: {}, cwd: root });
     expect(result).toMatchObject({ ok: false, error: { code: "data-dir-not-found" } });

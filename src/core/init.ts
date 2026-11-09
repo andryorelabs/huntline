@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
-import answersTemplate from "../../templates/answers.yaml" with { type: "text" };
 import bulletsTemplate from "../../templates/bullets.yaml" with { type: "text" };
 import configTemplate from "../../templates/huntline.json.tmpl" with { type: "text" };
 import factsTemplate from "../../templates/facts.yaml" with { type: "text" };
@@ -15,7 +14,6 @@ export const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   "facts.yaml": factsTemplate,
   "bullets.yaml": bulletsTemplate,
   "never-claim.yaml": neverClaimTemplate,
-  "answers.yaml": answersTemplate,
 };
 
 export const MARKER = "TODO(huntline):";

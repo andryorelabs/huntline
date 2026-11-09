@@ -19,7 +19,6 @@ If none resolves, commands that need data exit 2 with `data-dir-not-found`.
 | `facts.yaml` | `init` | The Fact bank: every claim you may make, each with an id. |
 | `bullets.yaml` | `init` | CV Bullets; each cites the fact ids that back it. |
 | `never-claim.yaml` | `init` | Terms that must never appear in a CV. |
-| `answers.yaml` | `init` | Answer bank seed for application questions. |
 | `answers.json` | `apply answer --save` | Answers given by you, with provenance. |
 | `events.jsonl` | any write | The append-only Event log; Application state is derived from it. |
 | `ledger.jsonl` | `sweep`, `ingest` | Every Posting seen, dismissed or deduplicated. |

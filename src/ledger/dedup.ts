@@ -3,7 +3,7 @@ import path from "node:path";
 import { withLock } from "../core/fs.ts";
 import { isObject } from "../core/narrow.ts";
 import type { DataDir, Posting, RejectionReason } from "../core/types.ts";
-import { eventsPath, readJsonLines } from "./events.ts";
+import { discardUncommittedTail, eventsPath, readJsonLines } from "./events.ts";
 
 export const LEDGER_FILE = "ledger.jsonl";
 const FUZZY_WINDOW_DAYS = 60;
@@ -147,6 +147,7 @@ export async function ledgerRecord(
   const entry: LedgerEntry = reason === undefined ? base : { ...base, reason };
   await withLock(dir.path, () => {
     mkdirSync(dir.path, { recursive: true });
+    discardUncommittedTail(ledgerPath(dir));
     appendFileSync(ledgerPath(dir), `${JSON.stringify(entry)}\n`);
     return Promise.resolve();
   });

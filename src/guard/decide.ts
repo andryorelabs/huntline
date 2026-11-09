@@ -6,6 +6,10 @@ export type LabelLookup = (sessionId: string, uid: string) => string | null;
 
 const SUBMIT_LABEL =
   /\b(submit|send|finali[sz]e|apply now|complete application|confirm application|post application)\b/i;
+export function snapshotScope(sessionId: string, server: string): string {
+  return `${sessionId}__${server}`;
+}
+
 const MCP_TOOL = /^mcp__(.+?)__(.+)$/;
 const BROWSER_SERVER = /chrome|browser|devtools|playwright|puppeteer|cdp|dash/i;
 const GMAIL_SERVER = /gmail/i;
@@ -71,7 +75,9 @@ function decideKey(toolInput: Record<string, unknown>): GuardDecision {
   const key = stringField(toolInput, "key");
   if (key === null) return deny("press_key without a readable key");
   const parts = key.split("+");
-  const submits = parts.some((part) => part === " " || KEY_THAT_SUBMITS.test(part));
+  const submits = parts.some(
+    (part) => part === " " || KEY_THAT_SUBMITS.test(part) || LINE_BREAK.test(part),
+  );
   return submits ? deny("Enter or Space can submit a form; the human presses Submit") : ALLOW;
 }
 
@@ -92,6 +98,7 @@ function decideClick(
 
 function decideBrowser(
   action: string,
+  server: string,
   toolInput: Record<string, unknown>,
   sessionId: string | null,
   lookup: LabelLookup,
@@ -101,9 +108,12 @@ function decideBrowser(
     return deny("typing with a submit key can submit a form; the human presses Submit");
   }
   if (action === "press_key") return decideKey(toolInput);
-  if (action === "click") return decideClick(toolInput, sessionId, lookup);
+  if (action === "click") return decideClick(toolInput, sessionId === null ? null : snapshotScope(sessionId, server), lookup);
   if (action === "evaluate_script") {
     return deny("evaluate_script is blocked: scripts can submit or send; use snapshots to read the page");
+  }
+  if (action === "type_text" && typeof toolInput["text"] === "string" && toolInput["text"].trim() === "") {
+    return deny("type_text with only whitespace can press a focused button");
   }
   if (action === "type_text" || action === "fill" || action === "fill_form") {
     return containsLineBreak(toolInput)
@@ -131,7 +141,7 @@ function decideUnchecked(input: unknown, lookup: LabelLookup): GuardDecision {
   const toolInput = input["tool_input"];
   if (!isRecord(toolInput)) return deny("browser tool call has no readable tool_input");
   const sessionId = typeof input["session_id"] === "string" && input["session_id"] !== "" ? input["session_id"] : null;
-  return decideBrowser(action, toolInput, sessionId, lookup);
+  return decideBrowser(action, server, toolInput, sessionId, lookup);
 }
 
 export function decideGuard(input: unknown, lookup: LabelLookup = () => null): GuardDecision {

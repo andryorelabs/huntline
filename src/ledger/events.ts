@@ -34,7 +34,7 @@ export function readJsonLines(file: string): unknown[] {
   return parsed;
 }
 
-function discardUncommittedTail(file: string): void {
+export function discardUncommittedTail(file: string): void {
   if (!existsSync(file)) return;
   const content = readFileSync(file, "utf8");
   if (content === "" || content.endsWith("\n")) return;

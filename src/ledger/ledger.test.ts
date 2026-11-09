@@ -233,6 +233,14 @@ describe("review regressions", () => {
     expect(await readEvents(dir, "k")).toHaveLength(2);
   });
 
+  test("a torn trailing ledger line is discarded on the next record", async () => {
+    await ledgerRecord(dir, posting(), "seen");
+    appendFileSync(path.join(dir.path, "ledger.jsonl"), '{"at":"x","key"');
+    await ledgerRecord(dir, posting({ source: "himalayas", id: "h9", title: "Data Engineer" }), "seen");
+    await ledgerRecord(dir, posting({ source: "remoteok", id: "r9", title: "QA Engineer" }), "seen");
+    expect(await readLedger(dir)).toHaveLength(3);
+  });
+
   test("a corrupt line in the middle of the log is reported, not skipped", async () => {
     await appendEvent(dir, { kind: "note", key: "k", text: "one" });
     appendFileSync(eventsPath(dir), "not json\n");

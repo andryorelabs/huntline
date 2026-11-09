@@ -2,7 +2,7 @@ import { writeSync } from "node:fs";
 
 import type { CommandContext } from "../core/commands.ts";
 import type { Envelope } from "../core/envelope.ts";
-import { decideGuard, type GuardDecision } from "./decide.ts";
+import { decideGuard, snapshotScope, type GuardDecision } from "./decide.ts";
 import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
 
 export const MAX_STDIN_BYTES = 1024 * 1024;
@@ -71,7 +71,10 @@ export function recordFromPayload(text: string): void {
   const record = payload as Record<string, unknown>;
   const sessionId = record["session_id"];
   if (typeof sessionId !== "string" || sessionId === "") return;
-  recordSnapshot(sessionId, parseSnapshotLabels(record["tool_response"]));
+  const toolName = record["tool_name"];
+  const server = typeof toolName === "string" ? /^mcp__(.+?)__/.exec(toolName)?.[1] : undefined;
+  if (server === undefined) return;
+  recordSnapshot(snapshotScope(sessionId, server), parseSnapshotLabels(record["tool_response"]));
 }
 
 async function runRecorder(): Promise<never> {

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { Readable } from "node:stream";
 
 import { formatHookOutput, guardDecisionFor, MAX_STDIN_BYTES } from "./command.ts";
-import { decideGuard, type LabelLookup } from "./decide.ts";
+import { decideGuard, snapshotScope, type LabelLookup } from "./decide.ts";
 import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
 
 const CHROME = "mcp__chrome-devtools__";
@@ -13,7 +13,7 @@ const LABELS: Readonly<Record<string, string>> = {
   "1_2": "Next",
   "1_3": "Send",
 };
-const lookup: LabelLookup = (_session, uid) => LABELS[uid] ?? null;
+const lookup: LabelLookup = (scope, uid) => (scope.endsWith("__chrome-devtools") ? (LABELS[uid] ?? null) : null);
 
 function call(tool: string, toolInput: unknown): unknown {
   return { hook_event_name: "PreToolUse", session_id: "s1", tool_name: tool, tool_input: toolInput };
@@ -38,7 +38,7 @@ describe("decideGuard", () => {
   });
 
   test("denies every keyboard path that can submit", () => {
-    for (const key of ["Enter", "NumpadEnter", "Return", "Space", " ", "Control+Enter", "Shift+ "]) {
+    for (const key of ["Enter", "NumpadEnter", "Return", "Space", " ", "Control+Enter", "Shift+ ", "\n", "\r", "Shift+\n"]) {
       expect(verdict(call(`${CHROME}press_key`, { key }))).toBe("deny");
     }
     expect(verdict(call(`${CHROME}press_key`, { key: "Tab" }))).toBe("allow");
@@ -46,6 +46,7 @@ describe("decideGuard", () => {
     expect(verdict(call(`${CHROME}type_text`, { text: "x\n" }))).toBe("deny");
     expect(verdict(call(`${CHROME}fill`, { uid: "1_2", value: "a\r\nb" }))).toBe("deny");
     expect(verdict(call(`${CHROME}fill_form`, { elements: [{ uid: "1_2", value: "x\n" }] }))).toBe("deny");
+    expect(verdict(call(`${CHROME}type_text`, { text: " " }))).toBe("deny");
     expect(verdict(call(`${CHROME}type_text`, { text: "hello" }))).toBe("allow");
   });
 
@@ -178,18 +179,20 @@ describe("snapshot labels", () => {
 
   test("records a snapshot and resolves a label by session", () => {
     const session = `test-${process.pid}-${Date.now()}`;
-    recordSnapshot(session, parseSnapshotLabels('uid=2_1 button "Submit application"\nuid=2_2 link "Next"'));
-    expect(lookupLabel(session, "2_1")).toContain("Submit application");
-    expect(lookupLabel(session, "9_9")).toBeNull();
+    const scope = snapshotScope(session, "chrome-devtools");
+    recordSnapshot(scope, parseSnapshotLabels('uid=2_1 button "Submit application"\nuid=2_2 link "Next"'));
+    expect(lookupLabel(scope, "2_1")).toContain("Submit application");
+    expect(lookupLabel(scope, "9_9")).toBeNull();
     expect(lookupLabel("other-session", "2_1")).toBeNull();
     const payload = { ...(call(`${CHROME}click`, { uid: "2_1" }) as object), session_id: session };
-    const submit = decideGuard(payload, lookupLabel);
-    expect(submit.decision).toBe("deny");
+    expect(decideGuard(payload, lookupLabel).decision).toBe("deny");
+    const otherServer = { ...(call("mcp__user-chrome__click", { uid: "2_2" }) as object), session_id: session };
+    expect(decideGuard(otherServer, lookupLabel).decision).toBe("deny");
   });
 
   test("the recorder hook then the guard deny a submit click end to end", () => {
     const session = `e2e-${process.pid}-${Date.now()}`;
-    const snapshot = { session_id: session, tool_response: 'uid=3_1 button "Submit application"\nuid=3_2 button "Next"' };
+    const snapshot = { session_id: session, tool_name: `${CHROME}take_snapshot`, tool_response: 'uid=3_1 button "Submit application"\nuid=3_2 button "Next"' };
     const recorded = Bun.spawnSync(["bun", "src/cli.ts", "guard", "--record"], { stdin: Buffer.from(JSON.stringify(snapshot)), stdout: "pipe" });
     expect(recorded.exitCode).toBe(0);
     const ask = (uid: string): string => {

@@ -1,12 +1,30 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { loadBullets, loadFactBank, loadNeverClaim } from "../cv/facts.ts";
+import { runGuardSelfTest, SELF_TEST_HOOKS } from "../guard/self-test.ts";
+import { checkLinearConnection } from "../tracker/check.ts";
+import { DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "../tracker/linear.ts";
 import type { CommandContext } from "./commands.ts";
 import { loadProfile } from "./data-dir.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
 import { MARKER } from "./init.ts";
+import { errorMessage, isObject } from "./narrow.ts";
 import { toolStatus } from "./tools.ts";
-import type { DataDir } from "./types.ts";
+import type { DataDir, Profile } from "./types.ts";
+
+const PLUGIN_RECOVERY_ACTION =
+  "claude plugin marketplace add AndryOre/huntline && claude plugin install huntline";
+
+export type DoctorDeps = { readonly fetch?: FetchLike; readonly guardHooks?: unknown };
+
+type DoctorWarning = {
+  readonly code: string;
+  readonly message: string;
+  readonly recoveryAction: string;
+};
+
+type PluginProbe = { readonly installed: boolean; readonly warning: DoctorWarning | null };
 
 const SCANNED_EXTENSIONS = new Set([".yaml", ".yml", ".json"]);
 
@@ -49,7 +67,61 @@ function cvDataProblems(dir: DataDir): string[] {
   return problems;
 }
 
-export function runDoctor(ctx: CommandContext): Envelope<unknown> {
+function pluginsFilePath(env: CommandContext["env"]): string {
+  const override = env["HUNTLINE_CLAUDE_PLUGINS_FILE"];
+  if (override !== undefined && override !== "") return override;
+  const home = env["HOME"] !== undefined && env["HOME"] !== "" ? env["HOME"] : os.homedir();
+  return path.join(home, ".claude", "plugins", "installed_plugins.json");
+}
+
+function pluginWarning(message: string): DoctorWarning {
+  return { code: "guard-plugin-missing", message, recoveryAction: PLUGIN_RECOVERY_ACTION };
+}
+
+function probePlugin(env: CommandContext["env"]): PluginProbe {
+  const file = pluginsFilePath(env);
+  if (!existsSync(file)) {
+    return { installed: false, warning: pluginWarning(`plugins file not found: ${file}`) };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    return { installed: false, warning: pluginWarning(`could not read plugins file ${file}: ${errorMessage(error)}`) };
+  }
+  const plugins = isObject(parsed) ? parsed["plugins"] : undefined;
+  if (!isObject(plugins)) {
+    return { installed: false, warning: pluginWarning(`plugins file ${file} has no plugins object`) };
+  }
+  if (Object.keys(plugins).some((key) => key.startsWith("huntline@"))) {
+    return { installed: true, warning: null };
+  }
+  return { installed: false, warning: pluginWarning("the huntline plugin is not installed in Claude Code") };
+}
+
+function linearMapping(tracker: Profile["tracker"]): LinearMapping {
+  return {
+    states: { ...DEFAULT_LINEAR_MAPPING.states, ...tracker.states },
+    channelLabelPrefix: tracker.channelLabelPrefix ?? DEFAULT_LINEAR_MAPPING.channelLabelPrefix,
+    channelLabels: tracker.channelLabels ?? {},
+  };
+}
+
+async function linearProblems(
+  tracker: Profile["tracker"],
+  env: CommandContext["env"],
+  deps: DoctorDeps,
+): Promise<string[]> {
+  const result = await checkLinearConnection({
+    apiKey: env["LINEAR_API_KEY"],
+    team: tracker.team,
+    mapping: linearMapping(tracker),
+    ...(deps.fetch === undefined ? {} : { fetch: deps.fetch }),
+  });
+  return result.ok ? [] : result.error.problems;
+}
+
+export async function runDoctor(ctx: CommandContext, deps: DoctorDeps = {}): Promise<Envelope<unknown>> {
   if (ctx.dataDir === null) {
     return failure(
       "data-dir-not-found",
@@ -76,7 +148,25 @@ export function runDoctor(ctx: CommandContext): Envelope<unknown> {
       recoveryAction: "fix facts.yaml, bullets.yaml and never-claim.yaml as named",
     });
   }
+  const selfTest = runGuardSelfTest("guardHooks" in deps ? deps.guardHooks : SELF_TEST_HOOKS);
+  if (!selfTest.pass) {
+    const failed = selfTest.cases.filter((entry) => !entry.pass).map((entry) => entry.name);
+    return failure("guard-self-test-failed", `guard self-test failed: ${failed.join("; ")}`, {
+      recoveryAction: "run huntline guard --self-test and fix the named cases",
+    });
+  }
+  if (profile.value.tracker.kind === "linear") {
+    const linearIssues = await linearProblems(profile.value.tracker, ctx.env, deps);
+    if (linearIssues.length > 0) {
+      return failure("linear-not-ready", linearIssues.join("; "), {
+        recoveryAction: "set LINEAR_API_KEY, tracker.team and tracker.states to match your Linear team",
+      });
+    }
+  }
+  const plugin = probePlugin(ctx.env);
   return success({
+    guard: { selfTest: "pass", pluginInstalled: plugin.installed },
+    warnings: plugin.warning === null ? [] : [plugin.warning],
     dataDir: ctx.dataDir.path,
     tracker: profile.value.tracker.kind,
     sources: profile.value.sources.length,

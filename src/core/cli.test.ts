@@ -157,13 +157,7 @@ describe("stub commands", () => {
     ["sweep"],
     ["ingest"],
     ["score", "k"],
-    ["ledger"],
-    ["events", "append"],
-    ["status", "k"],
     ["company", "add", "https://jobs.example.test/acme"],
-    ["cv", "build"],
-    ["cv", "lint"],
-    ["cv", "coverage", "k"],
     ["apply", "answer", "q"],
     ["apply", "verify"],
     ["apply", "block"],
@@ -185,6 +179,17 @@ describe("stub commands", () => {
       expect(errorOf(result).code).toBe("not-implemented");
     });
   }
+
+  test("commands sharing a module are told apart by their command word", () => {
+    const fixture = path.join(workDir, "fixture");
+    writeValidDataDir(fixture);
+    const events = runCli(["events", "list", "--data", fixture]);
+    const ledger = runCli(["ledger", "list", "--data", fixture]);
+    expect(events.code).toBe(0);
+    expect(ledger.code).toBe(0);
+    expect(events.envelope["data"]).toHaveProperty("events");
+    expect(ledger.envelope["data"]).toHaveProperty("entries");
+  });
 
   test("an unknown command exits 2", () => {
     const result = runCli(["frobnicate"]);

@@ -8,7 +8,7 @@ import { readEvents } from "../ledger/events.ts";
 import type { FetchLike } from "../tracker/linear.ts";
 import { run } from "./command.ts";
 import { importLegacy } from "./legacy.ts";
-import { importLinear } from "./linear.ts";
+import { importLinear, splitTitle } from "./linear.ts";
 import { parseTables } from "./table.ts";
 
 let root = "";
@@ -226,6 +226,25 @@ describe("importLinear", () => {
   test("surfaces HTTP failures", async () => {
     const result = await importLinear(ctx, { team: "HNT", fetch: failingFetch });
     expect(result.ok ? "" : result.error.code).toBe("migrate-linear-http");
+  });
+});
+
+describe("importLinear title shapes", () => {
+  test("accepts Company - Role and Role at Company", async () => {
+    const pages = [[issue("21", "Acme - Backend Engineer", "Todo"), issue("22", "Backend Engineer at Acme", "Todo")]];
+    const result = await importLinear(ctx, { team: "HNT", fetch: linearFetch(pages).fetch });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.warnings).toEqual([]);
+    const leads = (await readEvents(ctx.dataDir ?? { path: "" })).filter((event) => event.kind === "lead.created");
+    expect(leads).toHaveLength(1);
+    const lead = leads[0];
+    expect(lead?.kind === "lead.created" && [lead.posting.company, lead.posting.title]).toEqual(["Acme", "Backend Engineer"]);
+  });
+
+  test("splitTitle handles both shapes", () => {
+    expect(splitTitle("Acme - Backend Engineer")).toEqual({ company: "Acme", role: "Backend Engineer" });
+    expect(splitTitle("Backend Engineer at Acme")).toEqual({ company: "Acme", role: "Backend Engineer" });
+    expect(splitTitle("Untitled")).toEqual({ company: "", role: "Untitled" });
   });
 });
 

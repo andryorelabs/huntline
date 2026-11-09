@@ -1,0 +1,97 @@
+import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
+import { exitCodeFor } from "../core/envelope.ts";
+import { run, selfTestEnvelope } from "./command.ts";
+import { decideGuard, type GuardDecision } from "./decide.ts";
+import { runGuardSelfTest, SELF_TEST_HOOKS } from "./self-test.ts";
+
+const ROOT = path.resolve(import.meta.dir, "../..");
+const REAL_HOOKS: unknown = JSON.parse(readFileSync(path.join(ROOT, "hooks/hooks.json"), "utf8"));
+
+describe("runGuardSelfTest", () => {
+  test("passes on the real hooks.json and lists every required case", () => {
+    const result = runGuardSelfTest(REAL_HOOKS);
+    expect(result.pass).toBe(true);
+    for (const entry of result.cases) {
+      expect(entry.actual).toBe(entry.expected);
+    }
+    const tools = result.cases.map((entry) => entry.tool);
+    expect(tools).toContain("mcp__user-chrome__click");
+    expect(tools).toContain("mcp__chrome-devtools__click");
+    expect(tools).toContain("mcp__chrome-devtools__press_key");
+    expect(tools).toContain("mcp__chrome-devtools__evaluate_script");
+    expect(tools).toContain("mcp__claude_ai_Gmail__send_message");
+    const snapshot = result.cases.find((entry) => entry.tool.endsWith("take_snapshot"));
+    expect(snapshot?.expected).toBe("allow");
+  });
+
+  test("embeds the shipped hooks.json that is on disk", () => {
+    expect(SELF_TEST_HOOKS).toEqual(REAL_HOOKS);
+    const source = readFileSync(path.join(ROOT, "src/guard/self-test.ts"), "utf8");
+    expect(source).toMatch(/from "\.\.\/\.\.\/hooks\/hooks\.json" with \{ type: "json" \}/);
+  });
+
+  test("names the case whose decision is changed to allow", () => {
+    const allowEverything = (): GuardDecision => ({ decision: "allow" });
+    const result = runGuardSelfTest(REAL_HOOKS, allowEverything);
+    expect(result.pass).toBe(false);
+    const failed = result.cases.filter((entry) => !entry.pass);
+    expect(failed.length).toBeGreaterThan(0);
+    expect(failed.every((entry) => entry.expected === "deny" && entry.actual === "allow")).toBe(true);
+  });
+
+  test("a hook matcher that does not cover a denied tool fails that case", () => {
+    const narrowed = {
+      hooks: { PreToolUse: [{ matcher: "mcp__.*Gmail.*", hooks: [] }] },
+    };
+    const result = runGuardSelfTest(narrowed);
+    expect(result.pass).toBe(false);
+    const click = result.cases.find((entry) => entry.tool === "mcp__user-chrome__click");
+    expect(click?.matcherCovers).toBe(false);
+    expect(click?.pass).toBe(false);
+    const gmail = result.cases.find((entry) => entry.tool.includes("Gmail"));
+    expect(gmail?.pass).toBe(true);
+  });
+
+  test("fails closed on malformed hooks input without throwing", () => {
+    for (const bad of [null, undefined, 42, "x", {}, { hooks: {} }, { hooks: { PreToolUse: [{ matcher: "(" }] } }]) {
+      const result = runGuardSelfTest(bad);
+      expect(result.pass).toBe(false);
+    }
+  });
+
+  test("uses the real decideGuard by default", () => {
+    const result = runGuardSelfTest(REAL_HOOKS, decideGuard);
+    expect(result.pass).toBe(true);
+  });
+});
+
+describe("guard --self-test", () => {
+  test("runs through the CLI and exits 0 with an envelope listing the cases", () => {
+    const spawned = Bun.spawnSync(
+      [process.execPath, path.join(ROOT, "src/cli.ts"), "guard", "--self-test"],
+      { env: { PATH: process.env["PATH"] ?? "" } },
+    );
+    expect(spawned.exitCode).toBe(0);
+    const envelope = JSON.parse(spawned.stdout.toString()) as { ok: boolean; data: { cases: unknown[] } };
+    expect(envelope.ok).toBe(true);
+    expect(envelope.data.cases.length).toBeGreaterThanOrEqual(5);
+  });
+
+  test("run returns ok on current code", async () => {
+    const envelope = await run(["--self-test"], { dataDir: null, env: {}, cwd: "/" });
+    expect(envelope.ok).toBe(true);
+  });
+
+  test("a failing result becomes a guard-self-test-failed envelope naming the case", () => {
+    const result = runGuardSelfTest(REAL_HOOKS, () => ({ decision: "allow" }));
+    const envelope = selfTestEnvelope(result);
+    expect(envelope.ok).toBe(false);
+    if (envelope.ok) return;
+    expect(envelope.error.code).toBe("guard-self-test-failed");
+    expect(envelope.error.message).toContain("press_key Enter");
+    expect(exitCodeFor(envelope)).toBe(1);
+  });
+});

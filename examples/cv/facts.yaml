@@ -1,3 +1,18 @@
+profile:
+  name: Jane Example
+  contact:
+    email: jane@example.com
+    location: Remote
+experience:
+  - id: e-acme
+    name: Acme Corp
+    role: Senior Software Engineer
+    dates: Spring to Autumn
+    metadata:
+      location: Remote
+skills:
+  - name: Languages
+    items: [TypeScript]
 facts:
   - id: f-api-latency
     text: Cut p95 latency of the Acme Corp checkout API from 900 ms to 300 ms.

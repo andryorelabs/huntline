@@ -6,7 +6,7 @@ import type { CommandContext } from "../core/commands.ts";
 import type { DataDir } from "../core/types.ts";
 import { buildCv, systemRunner, type TypstRunner } from "./build.ts";
 import { runWith } from "./command.ts";
-import { loadBullets, loadFactBank, loadNeverClaim } from "./facts.ts";
+import { loadBullets, loadFactBank, loadNeverClaim, loadVariants } from "./facts.ts";
 import { lintCv } from "./lint.ts";
 import { requirementCoverage, selectBullets } from "./select.ts";
 
@@ -198,5 +198,104 @@ describe("real typst", () => {
     const result = await buildCv(dir, { name: "real", runner: systemRunner });
     expect(result.ok).toBe(true);
     if (result.ok) expect(readFileSync(result.value.text, "utf8")).toContain("checkout API");
+  });
+});
+
+function writeBullets(body: string): void {
+  writeFileSync(path.join(root, "bullets.yaml"), body);
+}
+
+describe("variants", () => {
+  const tagged = `bullets:
+  - id: b-both
+    text: Did enterprise work.
+    tags: [en, enterprise]
+    facts: [f-api-latency]
+  - id: b-en
+    text: Did startup work.
+    tags: [en]
+    facts: [f-api-latency]
+variants:
+  startup:
+    all: [en]
+    none: [enterprise]
+`;
+
+  test("loadVariants reads rules and defaults to none", () => {
+    writeBullets(tagged);
+    const variants = loadVariants(dir);
+    expect(variants.ok && variants.value).toEqual([{ name: "startup", all: ["en"], none: ["enterprise"] }]);
+    writeBullets("bullets: []\n");
+    const empty = loadVariants(dir);
+    expect(empty.ok && empty.value).toEqual([]);
+  });
+
+  test("selectBullets applies all, any and none", () => {
+    writeBullets(tagged);
+    const bullets = loadBullets(dir);
+    if (!bullets.ok) throw new Error("load failed");
+    const ids = (rule: Parameters<typeof selectBullets>[1]) =>
+      selectBullets(bullets.value, rule).map((bullet) => bullet.id);
+    expect(ids({ all: ["en"], none: ["enterprise"] })).toEqual(["b-en"]);
+    expect(ids({ any: ["enterprise", "x"] })).toEqual(["b-both"]);
+    expect(ids({ all: ["en", "enterprise"] })).toEqual(["b-both"]);
+  });
+
+  test("cv build --variant applies the rule from the data dir", async () => {
+    writeBullets(tagged);
+    const runner = fakeRunner("x");
+    const envelope = await runWith(["build", "--variant", "startup"], context(), runner);
+    expect(envelope.ok).toBe(true);
+    const payload = JSON.parse(runner.compiled[0] ?? "{}") as { bullets: { id: string }[] };
+    expect(payload.bullets.map((bullet) => bullet.id)).toEqual(["b-en"]);
+  });
+
+  test("an undefined variant is rejected when variants exist and no tag is given", async () => {
+    writeBullets(tagged);
+    const result = await buildCv(dir, { name: "nope", runner: fakeRunner("") });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe("unknown-variant");
+  });
+});
+
+describe("CV structure", () => {
+  test("a facts.yaml with only facts builds with an empty structure", async () => {
+    writeFileSync(
+      path.join(root, "facts.yaml"),
+      "facts:\n  - id: f-api-latency\n    text: Cut latency.\n    tags: []\n",
+    );
+    writeBullets(
+      "bullets:\n  - id: b-x\n    text: Did.\n    tags: []\n    facts: [f-api-latency]\n",
+    );
+    const loaded = loadFactBank(dir);
+    expect(loaded.ok && "profile" in loaded.value).toBe(false);
+    const runner = fakeRunner("x");
+    const result = await buildCv(dir, { runner });
+    expect(result.ok).toBe(true);
+    const payload = JSON.parse(runner.compiled[0] ?? "{}") as Record<string, unknown>;
+    expect(payload["experience"]).toEqual([]);
+    expect(payload["skills"]).toEqual([]);
+  });
+
+  test("groups Bullets by Entry sorted by order and keeps flat bullets", async () => {
+    const runner = fakeRunner("x");
+    const result = await buildCv(dir, { name: "backend", runner });
+    expect(result.ok).toBe(true);
+    const payload = JSON.parse(runner.compiled[0] ?? "{}") as {
+      header: { name: string };
+      bullets: { id: string }[];
+      experience: { id: string; dates: string; bullets: { id: string }[] }[];
+    };
+    expect(payload.header.name).toBe("Jane Example");
+    expect(payload.experience[0]?.dates).toBe("Spring to Autumn");
+    expect(payload.experience[0]?.bullets.map((bullet) => bullet.id)).toEqual(["b-ci", "b-latency"]);
+    expect(payload.bullets.map((bullet) => bullet.id)).toEqual(["b-latency", "b-ci"]);
+  });
+
+  test("fails naming a Bullet whose entry is missing", async () => {
+    writeBullets("bullets:\n  - id: b-x\n    text: Did.\n    tags: []\n    facts: [f-api-latency]\n    entry: e-ghost\n");
+    const result = await buildCv(dir, { runner: fakeRunner("") });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.message).toContain("e-ghost");
   });
 });

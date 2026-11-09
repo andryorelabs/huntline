@@ -1,0 +1,21 @@
+# TODO(huntline): list the regions you can work from, for example LATAM or EU.
+regions: []
+# TODO(huntline): keep only the contract types you accept.
+contractTypes:
+  - full-time
+  - contract
+# TODO(huntline): choose remote-only, hybrid or any.
+remote: remote-only
+stack:
+  # TODO(huntline): technologies a Posting should mention.
+  include: []
+  # TODO(huntline): technologies that rule a Posting out.
+  exclude: []
+# TODO(huntline): set a floor such as {amount: 60000, currency: USD}, or keep null.
+salaryFloor: null
+excludedCompanies: []
+outreachDailyCap: 5
+sources: []
+tracker:
+  kind: local
+  directory: tracker

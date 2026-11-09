@@ -26,7 +26,7 @@ Scaffolds `huntline.json`, `profile.yaml`, `facts.yaml`, `bullets.yaml` and `nev
 
 ### `huntline doctor`
 
-Validates the Profile and scans for markers. Valid: exit 0 with `dataDir`, `tracker`, `sources`, `markers`. Markers remain: exit 1 `todo-markers` listing file and line. Malformed or missing Profile: exit 2.
+Validates the Profile, scans for markers and validates `facts.yaml`, `bullets.yaml` and `never-claim.yaml` when present. Valid: exit 0 with `dataDir`, `tracker`, `sources`, `markers`. Markers remain: exit 1 `todo-markers` listing file and line. A CV data file that does not parse, or a Bullet citing a fact id missing from the Fact bank: exit 1 `cv-data-invalid`. A data dir without those files still passes. Malformed or missing Profile: exit 2.
 
 ### `huntline sweep`
 
@@ -59,7 +59,7 @@ Validates the Profile and scans for markers. Valid: exit 0 with `dataDir`, `trac
 ### `huntline cv`
 
 - `cv build [--variant <name>] [--tag <tag>]... [--requirement <text>]... [--template <file>]` builds a CV from Bullets backed by Fact bank facts, renders it with Typst and extracts text.
-- `cv lint [--variant <name> | --file <text>]` fails with `lint-failed` on Never-claim terms, repeated phrases, unknown numbers and placeholders.
+- `cv lint [--variant <name> | --file <text>]` fails with `lint-failed` on Never-claim terms, repeated phrases, unknown numbers and placeholders. Numbers compare independent of locale (`75.000` equals `75,000`, `4,8` equals `4.8`), and only `TODO(...)` and `TODO:` markers count as placeholders, never the Spanish word "todo".
 - `cv coverage <key> --requirement <text>...` lists requirements as `covered` (with fact ids) or `missing`.
 
 ### `huntline apply`

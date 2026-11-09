@@ -113,6 +113,41 @@ describe("doctor", () => {
     expect(errorOf(result).code).toBe("todo-markers");
     expect(errorOf(result).message).toContain("facts.yaml:1");
   });
+
+  test("invalid facts.yaml exits 1 with cv-data-invalid", () => {
+    const fixture = path.join(workDir, "fixture");
+    writeValidDataDir(fixture);
+    writeFileSync(path.join(fixture, "facts.yaml"), "facts: [unterminated\n");
+    const result = runCli(["doctor", "--data", fixture]);
+    expect(result.code).toBe(1);
+    expect(errorOf(result).code).toBe("cv-data-invalid");
+  });
+
+  test("a Bullet citing a missing fact id exits 1 with cv-data-invalid", () => {
+    const fixture = path.join(workDir, "fixture");
+    writeValidDataDir(fixture);
+    writeFileSync(path.join(fixture, "facts.yaml"), "facts:\n  - id: f1\n    text: Built a thing\n");
+    writeFileSync(
+      path.join(fixture, "bullets.yaml"),
+      "bullets:\n  - id: b1\n    text: Built a thing\n    facts: [f9]\n",
+    );
+    const result = runCli(["doctor", "--data", fixture]);
+    expect(result.code).toBe(1);
+    expect(errorOf(result).code).toBe("cv-data-invalid");
+    expect(errorOf(result).message).toContain("f9");
+  });
+
+  test("valid CV data files still pass", () => {
+    const fixture = path.join(workDir, "fixture");
+    writeValidDataDir(fixture);
+    writeFileSync(path.join(fixture, "facts.yaml"), "facts:\n  - id: f1\n    text: Built a thing\n");
+    writeFileSync(
+      path.join(fixture, "bullets.yaml"),
+      "bullets:\n  - id: b1\n    text: Built a thing\n    facts: [f1]\n",
+    );
+    writeFileSync(path.join(fixture, "never-claim.yaml"), "terms:\n  - guru\n");
+    expect(runCli(["doctor", "--data", fixture]).code).toBe(0);
+  });
 });
 
 describe("init", () => {

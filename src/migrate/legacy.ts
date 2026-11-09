@@ -2,9 +2,9 @@ import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from "node
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import type { ApplicationState, Posting } from "../core/types.ts";
-import { withImporter, type Importer } from "./importer.ts";
+import { legacyIdNote, linkLegacyIds, withImporter, type Importer, type KeyedId } from "./importer.ts";
 import { mapOutcome, mapState, mapVerdict } from "./states.ts";
-import { parseTableBlocks, type TableBlock, type TableRow } from "./table.ts";
+import { headersMatch, parseTableBlocks, type TableBlock, type TableRow } from "./table.ts";
 import { leadIdentity, leadPosting, parseSweepLeads } from "./sweep-leads.ts";
 import { splitCompanyRole } from "./title.ts";
 import type { ImportResult } from "./types.ts";
@@ -68,6 +68,21 @@ function withCompany(row: TableRow): TableRow {
 
 function isRoleRow(row: TableRow): boolean {
   return (row["company"] ?? "") !== "" && (row["role"] ?? "") !== "";
+}
+
+const COVERAGE_HEADERS: readonly (readonly string[])[] = [
+  ["portal", "status", "counts", "note"],
+  ["unit", "kind", "status", "counts"],
+  ["card", "source file", "status", "counts"],
+];
+const LEAD_OUTCOME_HEADERS: readonly string[] = ["lead", "linear", "outcome", "detail"];
+
+function isCoverageTable(block: TableBlock): boolean {
+  return COVERAGE_HEADERS.some((expected) => headersMatch(block, expected));
+}
+
+function isLeadOutcomeTable(block: TableBlock): boolean {
+  return headersMatch(block, LEAD_OUTCOME_HEADERS);
 }
 
 function isRecognised(block: TableBlock): boolean {
@@ -167,6 +182,7 @@ function importSweepFile(file: LegacyFile, importer: Importer): void {
   const ctx = fileContext(file, importer);
   const blocks = parseTableBlocks(markdown);
   for (const block of blocks) {
+    if (isCoverageTable(block)) continue;
     if (!isRecognised(block)) {
       warnUnrecognised(block, ctx);
     } else if (block.columns.includes("role")) {
@@ -216,6 +232,7 @@ function importReviewFile(file: LegacyFile, importer: Importer, postingById: Map
   const blocks = parseTableBlocks(markdown);
   if (blocks.length === 0) importer.warn(`no parseable content in ${file.display}`);
   for (const block of blocks) {
+    if (isCoverageTable(block)) continue;
     if (!isRecognised(block)) warnUnrecognised(block, ctx);
     else for (const row of roleRows(block, ctx)) importReviewRow(row, ctx, postingById);
   }
@@ -225,6 +242,7 @@ type ApplicationEntry = {
   readonly row: TableRow;
   readonly ctx: FileContext;
   readonly followUp: boolean;
+  readonly legacyId: string;
 };
 
 type OutcomeMapping = { readonly known: boolean; readonly state: ApplicationState | null; readonly label: string; readonly text: string };
@@ -239,6 +257,12 @@ function applicationOutcome(row: TableRow): OutcomeMapping {
   return { known: state !== null, state: state === "lead" ? null : state, label: "state", text };
 }
 
+function leadOutcomeEntry(row: TableRow, ctx: FileContext, followUp: boolean): ApplicationEntry {
+  const { company, role } = splitCompanyRole(row["lead"] ?? "");
+  const mapped: TableRow = { outcome: row["outcome"] ?? "", notes: row["notes"] ?? "", company, role };
+  return { row: mapped, ctx, followUp, legacyId: row["linear"] ?? "" };
+}
+
 function collectApplicationRows(file: LegacyFile, importer: Importer): ApplicationEntry[] {
   const markdown = readFile(file, importer);
   if (markdown === null) return [];
@@ -247,11 +271,13 @@ function collectApplicationRows(file: LegacyFile, importer: Importer): Applicati
   const blocks = parseTableBlocks(markdown);
   if (blocks.length === 0) importer.warn(`no parseable content in ${file.display}`);
   return blocks.flatMap((block) => {
+    if (isCoverageTable(block)) return [];
+    if (isLeadOutcomeTable(block)) return block.rows.map((row) => leadOutcomeEntry(row, ctx, followUp));
     if (!isRecognised(block)) {
       warnUnrecognised(block, ctx);
       return [];
     }
-    return block.rows.map(withCompany).map((row) => ({ row, ctx, followUp }));
+    return block.rows.map(withCompany).map((row) => ({ row, ctx, followUp, legacyId: "" }));
   });
 }
 
@@ -273,7 +299,8 @@ function effectiveState(group: readonly (ApplicationEntry & { mapping: OutcomeMa
   return stateful(true) ?? stateful(false);
 }
 
-function importApplications(entries: readonly ApplicationEntry[], importer: Importer): void {
+function importApplications(entries: readonly ApplicationEntry[], importer: Importer): KeyedId[] {
+  const legacy: KeyedId[] = [];
   const groups = new Map<string, (ApplicationEntry & { mapping: OutcomeMapping })[]>();
   const keys = new Map<string, string>();
   for (const entry of entries) {
@@ -289,6 +316,10 @@ function importApplications(entries: readonly ApplicationEntry[], importer: Impo
     const groupKey = (row["id"] ?? "") === "" ? key : `id:${row["id"]}`;
     keys.set(groupKey, key);
     groups.set(groupKey, [...(groups.get(groupKey) ?? []), { ...entry, mapping }]);
+    if (entry.legacyId !== "") {
+      importer.note(key, legacyIdNote(entry.legacyId));
+      legacy.push({ id: entry.legacyId, key });
+    }
     importer.note(
       key,
       describe("application", ctx, date, row, [
@@ -305,6 +336,7 @@ function importApplications(entries: readonly ApplicationEntry[], importer: Impo
     if (state === null || key === undefined || winner === undefined) continue;
     importer.status(key, state, `${rowDate(winner.row, winner.ctx.fallbackDate)}:application`);
   }
+  return legacy;
 }
 
 export function importLegacy(ctx: CommandContext, dir: string): Promise<ImportResult> {
@@ -325,6 +357,7 @@ export function importLegacy(ctx: CommandContext, dir: string): Promise<ImportRe
     const entries = walk(path.join(root, "applications"), root, "").flatMap((file) =>
       collectApplicationRows(file, importer),
     );
-    importApplications(fillFromIds(entries, postingById), importer);
+    const legacy = importApplications(fillFromIds(entries, postingById), importer);
+    linkLegacyIds(importer, { legacy, linear: [], reportUnmatched: false });
   });
 }

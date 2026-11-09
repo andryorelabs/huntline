@@ -2,7 +2,7 @@ import type { CommandContext } from "../core/commands.ts";
 import { errorMessage, isObject } from "../core/narrow.ts";
 import type { Posting, Result } from "../core/types.ts";
 import { LINEAR_ENDPOINT, type FetchLike } from "../tracker/linear.ts";
-import { withImporter, type Importer } from "./importer.ts";
+import { linkLegacyIds, withImporter, type Importer, type KeyedId } from "./importer.ts";
 import { mapState } from "./states.ts";
 import { splitCompanyRole } from "./title.ts";
 import type { ImportResult } from "./types.ts";
@@ -159,18 +159,19 @@ function toPosting(issue: LinearIssue): Posting {
   };
 }
 
-function importIssue(issue: LinearIssue, importer: Importer): void {
+function importIssue(issue: LinearIssue, importer: Importer): KeyedId | null {
   const label = issue.identifier === "" ? issue.id : issue.identifier;
   const posting = toPosting(issue);
   if (posting.company === "") {
     importer.warn(`issue ${label} has no "<role> at <company>" or "<company> - <role>" title; skipped`);
-    return;
+    return null;
   }
   const key = importer.lead(posting, KEY_MARKER.exec(issue.description)?.[1]?.trim());
   const state = mapState(issue.stateName);
   if (state === null) importer.unknownState(`Linear state "${issue.stateName}" on ${label}`);
   else if (state !== "lead" && !importer.hadLead(key)) importer.status(key, state, issue.id);
   importer.note(key, `linear ${label}; state ${issue.stateName}; created ${issue.createdAt}; ${issue.url}`);
+  return issue.identifier === "" ? null : { id: issue.identifier, key };
 }
 
 export async function importLinear(
@@ -187,6 +188,7 @@ export async function importLinear(
   if (!issues.ok) return issues;
   const scope = options.project === undefined ? options.team : `${options.team}:${options.project}`;
   return withImporter(ctx.dataDir, `linear:${scope}`, "migrate-linear.json", (importer) => {
-    for (const issue of issues.value) importIssue(issue, importer);
+    const linear = issues.value.flatMap((issue) => importIssue(issue, importer) ?? []);
+    linkLegacyIds(importer, { legacy: [], linear, reportUnmatched: true });
   });
 }

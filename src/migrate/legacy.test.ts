@@ -160,3 +160,68 @@ describe("importLegacy real layout", () => {
     expect(result.value.warnings.some((entry) => entry.includes("empty.md"))).toBe(true);
   });
 });
+
+function isolated(files: Record<string, string>): string {
+  const target = path.join(root, "isolated");
+  for (const [name, content] of Object.entries(files)) {
+    mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
+    writeFileSync(path.join(target, name), content);
+  }
+  return target;
+}
+
+describe("coverage and lead-outcome tables", () => {
+  const COVERAGE = `| Portal | Status | Counts | Note |
+| --- | --- | --- | --- |
+| greenhouse | done | 3 | ok |
+
+| Unit | Kind | Status | Counts |
+| --- | --- | --- | --- |
+| u1 | board | done | 2 |
+
+| Card | Source file | Status | Counts |
+| --- | --- | --- | --- |
+| c1 | cards.md | done | 5 |
+`;
+  const LEADS = `| Lead | Linear | Outcome | Detail |
+| --- | --- | --- | --- |
+| Acme Corp - Backend Engineer | AO-7 | applied | sent by email |
+`;
+
+
+  test("skips the three coverage tables without warnings or events", async () => {
+    const result = await importLegacy(ctx, isolated({ "sweeps/2026-05-01/cover.md": COVERAGE }));
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.warnings.filter((warning) => warning.includes("recognised"))).toEqual([]);
+    expect(await readEvents(dir())).toHaveLength(0);
+  });
+
+  test("a partly matching coverage table still warns", async () => {
+    const partial = "| Portal | Status | Counts | Extra |\n| --- | --- | --- | --- |\n| a | b | c | d |\n";
+    const result = await importLegacy(ctx, isolated({ "sweeps/2026-05-01/cover.md": partial }));
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.warnings.some((warning) => warning.includes("recognised"))).toBe(true);
+  });
+
+  test("imports a Lead, Linear, Outcome, Detail row as an application", async () => {
+    const target = isolated({ "applications/2026-05-02/leads.md": LEADS });
+    const first = await importLegacy(ctx, target);
+    if (!first.ok) throw new Error(first.error.message);
+    expect(first.value.warnings).toEqual([]);
+    expect(await stateOf("acme")).toBe("applied");
+    const events = await readEvents(dir());
+    const texts = events.flatMap((event) => (event.kind === "note" ? [event.text] : []));
+    expect(texts).toContain("legacy id AO-7");
+    expect(texts.some((text) => text.includes("sent by email"))).toBe(true);
+    const second = await importLegacy(ctx, target);
+    if (!second.ok) throw new Error(second.error.message);
+    expect(second.value.created).toBe(0);
+  });
+
+  test("reports an unknown outcome as an unknown state", async () => {
+    const odd = LEADS.replace("applied", "teleported");
+    const result = await importLegacy(ctx, isolated({ "applications/2026-05-02/leads.md": odd }));
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.unknownStates).toHaveLength(1);
+  });
+});

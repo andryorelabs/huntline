@@ -90,6 +90,7 @@ function optionalFields(value: Record<string, unknown>, index: number): Partial<
       parsed[bound] = amount;
     }
     if (typeof salary["currency"] === "string") parsed["currency"] = salary["currency"];
+    if (salary["period"] === "year" || salary["period"] === "month") parsed["period"] = salary["period"];
     result["salary"] = parsed;
   }
   return result as Partial<Posting>;

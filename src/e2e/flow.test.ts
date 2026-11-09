@@ -22,6 +22,33 @@ const PDFTOTEXT_STUB = `#!/bin/sh
 cat "$2"
 `;
 
+const FLAT_FACTS = `facts:
+  - id: f-api-latency
+    text: Cut p95 latency of the Acme Corp checkout API from 900 ms to 300 ms.
+    tags: [typescript, performance, api]
+  - id: f-ci-pipeline
+    text: Built the CI pipeline for 12 services at Acme Corp using GitHub Actions.
+    tags: [ci, github actions, devops]
+  - id: f-mentoring
+    text: Mentored 3 junior engineers at Acme Corp.
+    tags: [mentoring, leadership]
+`;
+
+const FLAT_BULLETS = `bullets:
+  - id: b-latency
+    text: Reduced checkout API p95 latency from 900 ms to 300 ms.
+    tags: [backend, performance]
+    facts: [f-api-latency]
+  - id: b-ci
+    text: Built the CI pipeline for 12 services with GitHub Actions.
+    tags: [devops]
+    facts: [f-ci-pipeline]
+  - id: b-mentoring
+    text: Mentored 3 junior engineers.
+    tags: [leadership]
+    facts: [f-mentoring]
+`;
+
 const LEAD_KEY = "acme|backend engineer|latam";
 const DUPLICATE_KEY = "acme|backend engineer|";
 const DISMISSED_KEY = "globex|designer|us only";
@@ -94,9 +121,9 @@ function writeDataDir(): void {
       tracker: { kind: "local", directory: "tracker" },
     }),
   );
-  for (const name of ["facts", "bullets", "never-claim"]) {
-    copyFileSync(path.join(EXAMPLE_CV, `${name}.yaml`), path.join(dataDir, `${name}.yaml`));
-  }
+  copyFileSync(path.join(EXAMPLE_CV, "never-claim.yaml"), path.join(dataDir, "never-claim.yaml"));
+  writeFileSync(path.join(dataDir, "facts.yaml"), FLAT_FACTS);
+  writeFileSync(path.join(dataDir, "bullets.yaml"), FLAT_BULLETS);
   mkdirSync(path.join(dataDir, "cv"));
   copyFileSync(path.join(EXAMPLE_CV, "template.typ"), path.join(dataDir, "cv", "template.typ"));
 }

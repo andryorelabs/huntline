@@ -49,8 +49,8 @@ const rows: Row[] = [
   { name: "stack excluded", dimension: "stack", posting: { stack: ["php", "typescript"] }, expected: "ineligible", reason: "stack" },
   { name: "stack no overlap", dimension: "stack", posting: { stack: ["cobol"] }, expected: "ineligible", reason: "stack" },
   { name: "stack silent", dimension: "stack", posting: {}, expected: "unknown" },
-  { name: "salary above", dimension: "salary", posting: { salary: { min: 70000, max: 90000, currency: "USD" } }, expected: "eligible" },
-  { name: "salary below", dimension: "salary", posting: { salary: { max: 40000, currency: "USD" } }, expected: "ineligible", reason: "salary" },
+  { name: "salary above", dimension: "salary", posting: { salary: { min: 70000, max: 90000, currency: "USD", period: "year" } }, expected: "eligible" },
+  { name: "salary below", dimension: "salary", posting: { salary: { max: 40000, currency: "USD", period: "year" } }, expected: "ineligible", reason: "salary" },
   { name: "salary silent", dimension: "salary", posting: {}, expected: "unknown" },
   { name: "salary other currency", dimension: "salary", posting: { salary: { max: 100, currency: "EUR" } }, expected: "unknown" },
   { name: "salary no currency", dimension: "salary", posting: { salary: { max: 100 } }, expected: "unknown" },
@@ -58,6 +58,16 @@ const rows: Row[] = [
   { name: "company excluded", dimension: "company", posting: { company: " badco " }, expected: "ineligible", reason: "company" },
   { name: "company blank", dimension: "company", posting: { company: "" }, expected: "unknown" },
 ];
+
+function salaryVerdict(salary: Posting["salary"], floorPeriod?: "year" | "month"): Eligibility {
+  return evaluateGates(
+    {
+      ...profile,
+      salaryFloor: { amount: 60000, currency: "USD", ...(floorPeriod === undefined ? {} : { period: floorPeriod }) },
+    },
+    { ...base, ...(salary === undefined ? {} : { salary }) },
+  ).eligibility.salary;
+}
 
 describe("evaluateGates per dimension", () => {
   for (const row of rows) {
@@ -81,6 +91,14 @@ describe("evaluateGates overall", () => {
   test("hybrid profiles accept on-site postings", () => {
     const result = evaluateGates({ ...profile, remote: "hybrid" }, { ...base, remote: false });
     expect(result.eligibility.remote).toBe("eligible");
+  });
+
+  test("salary gate normalizes the period to yearly", () => {
+    expect(salaryVerdict({ max: 4000, currency: "USD", period: "month" })).toBe("ineligible");
+    expect(salaryVerdict({ max: 6000, currency: "USD", period: "month" })).toBe("eligible");
+    expect(salaryVerdict({ max: 100000, currency: "USD" })).toBe("unknown");
+    expect(salaryVerdict({ max: 6000, currency: "USD", period: "month" }, "year")).toBe("eligible");
+    expect(salaryVerdict({ max: 70000, currency: "USD", period: "year" }, "month")).toBe("ineligible");
   });
 
   test("no salary floor never dismisses on salary", () => {

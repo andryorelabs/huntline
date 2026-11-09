@@ -1,16 +1,21 @@
-import type { Posting, Salary, SourceAdapter, SourceQuery, SourceResult } from "../core/types.ts";
+import type { Posting, Salary, SalaryPeriod, SourceAdapter, SourceQuery, SourceResult } from "../core/types.ts";
 import { getJson, field, identifier, isoDate, number, records, stripHtml, text, type FetchFunction } from "./http.ts";
 import { defineAdapter, mapRows, matchesKeywords, withOptional, type AdapterSpec } from "./adapter.ts";
 
-function salaryOf(min: unknown, max: unknown, currency: unknown): Salary | undefined {
+function salaryOf(min: unknown, max: unknown, currency: unknown, period?: SalaryPeriod): Salary | undefined {
   const low = number(min);
   const high = number(max);
   if ((low === undefined || low === 0) && (high === undefined || high === 0)) return undefined;
-  return withSalary(low, high, text(currency));
+  return withSalary(low, high, text(currency), period);
 }
 
-function withSalary(low: number | undefined, high: number | undefined, currency: string | undefined): Salary {
-  const entries = Object.entries({ min: low, max: high, currency }).filter(([, value]) => value !== undefined);
+function withSalary(
+  low: number | undefined,
+  high: number | undefined,
+  currency: string | undefined,
+  period: SalaryPeriod | undefined,
+): Salary {
+  const entries = Object.entries({ min: low, max: high, currency, period }).filter(([, value]) => value !== undefined);
   return Object.fromEntries(entries);
 }
 
@@ -49,7 +54,7 @@ const getonboard: AdapterSpec = {
         {
           location: location === "" ? undefined : location,
           remote: typeof remote === "boolean" ? remote : undefined,
-          salary: salaryOf(field(attributes, "min_salary"), field(attributes, "max_salary"), "USD"),
+          salary: salaryOf(field(attributes, "min_salary"), field(attributes, "max_salary"), "USD", "month"),
           description: description === undefined ? undefined : stripHtml(description),
           postedAt: isoDate(field(attributes, "published_at")),
         },
@@ -80,7 +85,7 @@ const himalayas: AdapterSpec = {
             location: location === "" ? undefined : location,
             remote: true,
             contract: text(row["employmentType"]),
-            salary: salaryOf(row["minSalary"], row["maxSalary"], row["currency"]),
+            salary: salaryOf(row["minSalary"], row["maxSalary"], row["currency"], "year"),
             description: description === undefined ? undefined : stripHtml(description),
             postedAt: isoDate(row["pubDate"]),
           },
@@ -112,7 +117,7 @@ const remoteok: AdapterSpec = {
             location: text(row["location"]),
             remote: true,
             stack: tags,
-            salary: salaryOf(row["salary_min"], row["salary_max"], "USD"),
+            salary: salaryOf(row["salary_min"], row["salary_max"], "USD", "year"),
             description: description === undefined ? undefined : stripHtml(description),
             postedAt: isoDate(row["date"]),
           },

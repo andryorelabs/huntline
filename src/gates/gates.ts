@@ -6,6 +6,7 @@ import {
   type Posting,
   type Profile,
   type RejectionReason,
+  type SalaryPeriod,
 } from "../core/types.ts";
 
 export type GateEvaluation = {
@@ -102,6 +103,10 @@ function stackGate(profile: Profile, posting: Posting): Eligibility {
   return stack.some((entry) => included.has(entry)) ? "eligible" : "ineligible";
 }
 
+function yearly(amount: number, period: SalaryPeriod): number {
+  return period === "month" ? amount * 12 : amount;
+}
+
 function salaryGate(profile: Profile, posting: Posting): Eligibility {
   const salary = posting.salary;
   const offered = salary?.max ?? salary?.min;
@@ -115,7 +120,10 @@ function salaryGate(profile: Profile, posting: Posting): Eligibility {
   if (isBlank(salary.currency) || normalize(salary.currency ?? "") !== normalize(floor.currency)) {
     return "unknown";
   }
-  return offered < floor.amount ? "ineligible" : "eligible";
+  if (salary.period === undefined) {
+    return "unknown";
+  }
+  return yearly(offered, salary.period) < yearly(floor.amount, floor.period ?? "year") ? "ineligible" : "eligible";
 }
 
 export function evaluateGates(profile: Profile, posting: Posting): GateEvaluation {

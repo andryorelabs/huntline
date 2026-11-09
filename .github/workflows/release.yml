@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify tagged commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Check the tagged commit is on main
+        run: |
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+            echo "Tagged commit ${GITHUB_SHA} is not on main"
+            exit 1
+          fi
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+          no-cache: true
+
+      - run: bun install --frozen-lockfile
+
+      - name: Check
+        run: bun run check
+
+      - name: Test
+        run: bun test
+
+  release:
+    name: Create GitHub release
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check the tag matches plugin.json
+        run: |
+          plugin_version="$(jq -r '.version' .claude-plugin/plugin.json)"
+          if [ "${GITHUB_REF_NAME}" != "v${plugin_version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match plugin.json version v${plugin_version}"
+            exit 1
+          fi
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+          no-cache: true
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build the standalone binaries
+        run: bun tools/build-binaries.ts --outdir dist
+
+      - name: Smoke-run the linux binary
+        run: ./dist/huntline-linux-x64 --version
+
+      - name: Write SHA256SUMS
+        working-directory: dist
+        run: |
+          sha256sum huntline-linux-x64 huntline-linux-arm64 huntline-darwin-x64 huntline-darwin-arm64 > SHA256SUMS
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} already exists, nothing to publish"
+            exit 0
+          fi
+          release_flags=()
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            release_flags+=(--prerelease --latest=false)
+          fi
+          gh release create "${GITHUB_REF_NAME}" \
+            --verify-tag \
+            "${release_flags[@]}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            dist/huntline-linux-x64 \
+            dist/huntline-linux-arm64 \
+            dist/huntline-darwin-x64 \
+            dist/huntline-darwin-arm64 \
+            dist/SHA256SUMS

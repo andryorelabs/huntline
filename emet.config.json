@@ -96,6 +96,7 @@
   },
   "commands": {
     "selfCheck": [
+      "bun run check",
       "bun test"
     ]
   },

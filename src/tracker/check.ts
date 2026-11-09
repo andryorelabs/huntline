@@ -86,9 +86,9 @@ export async function checkLinearConnection(options: LinearCheckOptions): Promis
     return failure([`team ${team} not found`]);
   }
 
-  const available = new Set(stateNames(found));
+  const available = new Set(stateNames(found).map((name) => name.toLowerCase()));
   for (const name of new Set(Object.values(mapping.states))) {
-    if (!available.has(name)) problems.push(`state "${name}" not found in team ${team}`);
+    if (!available.has(name.toLowerCase())) problems.push(`state "${name}" not found in team ${team}`);
   }
   if (problems.length > 0) return failure(problems);
   return { ok: true, value: { teamId: found["id"] } };

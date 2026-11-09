@@ -39,6 +39,17 @@ describe("checkLinearConnection", () => {
     expect(result).toEqual({ ok: true, value: { teamId: "team-acme" } });
   });
 
+  test("matches state names case-insensitively like the tracker does", async () => {
+    const fetchStub = stub(() => teamResponse(ALL_STATES.map((name) => name.toLowerCase())));
+    const result = await checkLinearConnection({
+      apiKey: API_KEY,
+      team: "JOB",
+      mapping: DEFAULT_LINEAR_MAPPING,
+      fetch: fetchStub,
+    });
+    expect(result).toEqual({ ok: true, value: { teamId: "team-acme" } });
+  });
+
   test("lists a missing state with the exact message", async () => {
     const fetchStub = stub(() => teamResponse(ALL_STATES.filter((name) => name !== "In Progress")));
     const result = await checkLinearConnection({

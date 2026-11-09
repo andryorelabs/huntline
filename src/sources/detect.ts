@@ -8,11 +8,23 @@ const ATS_PATTERNS: readonly { readonly ats: string; readonly pattern: RegExp }[
   { ats: "smartrecruiters", pattern: /^https?:\/\/(?:jobs|careers)\.smartrecruiters\.com\/([\w-]+)/i },
 ];
 
+const SAFE_SLUG = /^[\w.-]+$/;
+
+function safeDecode(value: string): string | null {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return null;
+  }
+}
+
 export function detectAts(url: string): AtsRef | null {
   const trimmed = url.trim();
   for (const { ats, pattern } of ATS_PATTERNS) {
     const slug = pattern.exec(trimmed)?.[1];
-    if (slug !== undefined && slug !== "embed") return { ats, slug: decodeURIComponent(slug) };
+    if (slug === undefined || slug === "embed") continue;
+    const decoded = safeDecode(slug);
+    if (decoded !== null && SAFE_SLUG.test(decoded) && decoded !== "." && decoded !== "..") return { ats, slug: decoded };
   }
   return null;
 }

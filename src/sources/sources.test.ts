@@ -109,6 +109,12 @@ describe("board adapters", () => {
     });
   });
 
+  test("second-precision timestamps become real dates", async () => {
+    const sources = createSources(routedFetch({ "getonbrd.com": fixture("getonboard") }));
+    const result = await sources["getonboard"]?.fetch({ keywords: ["developer"] });
+    expect(result?.postings[0]?.postedAt?.startsWith("20")).toBe(true);
+  });
+
   test("himalayas normalizes and filters by keyword", async () => {
     const sources = createSources(routedFetch({ "himalayas.app": fixture("himalayas") }));
     const result = await sources["himalayas"]?.fetch({ keywords: ["rust"] });
@@ -195,6 +201,8 @@ describe("detectAts", () => {
   test("returns null for unknown hosts", () => {
     expect(detectAts("https://acme.example/careers")).toBeNull();
     expect(detectAts("not a url")).toBeNull();
+    expect(detectAts("https://jobs.ashbyhq.com/%2E%2E%2F%3Fx")).toBeNull();
+    expect(detectAts("https://jobs.ashbyhq.com/%zz")).toBeNull();
   });
 });
 

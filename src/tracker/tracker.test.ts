@@ -146,6 +146,16 @@ describe("linear tracker", () => {
     expect(calls.filter((call) => call.operation === "Comment")).toHaveLength(2);
   });
 
+  test("the lookup marker is delimited so one key never matches a longer key", async () => {
+    const { fetch: fetchImpl, calls } = recordedFetch();
+    const tracker = createTracker({ kind: "linear", team: "HNT" }, dir, { apiKey: API_KEY, fetch: fetchImpl });
+    await tracker.find("greenhouse:1001");
+    const lookup = calls.find((call) => call.operation === "FindIssue");
+    const marker = String(lookup?.variables["marker"]);
+    expect(marker).toBe("[huntline-key: greenhouse:1001]");
+    expect("[huntline-key: greenhouse:10012]".includes(marker)).toBe(false);
+  });
+
   test("a fresh adapter reuses the idempotency map", async () => {
     const { fetch: fetchImpl, calls } = recordedFetch();
     const config = { kind: "linear", team: "HNT" } as const;

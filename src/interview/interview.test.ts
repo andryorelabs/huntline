@@ -36,7 +36,17 @@ describe("prep pack", () => {
     scaffoldPrepPack({ path: root }, "acme-dev", facts);
     const again = scaffoldPrepPack({ path: root }, "acme-dev", facts);
     expect(again.ok === false && again.error.code).toBe("already-exists");
-    expect(scaffoldPrepPack({ path: root }, "../x", facts).ok).toBe(false);
+    expect(scaffoldPrepPack({ path: root }, "   ", facts).ok).toBe(false);
+  });
+
+  test("lead keys with separators scaffold inside the prep directory", () => {
+    for (const key of ["greenhouse:1001", "acme|senior backend engineer|latam", "../x"]) {
+      const created = scaffoldPrepPack({ path: root }, key, facts);
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+      expect(path.dirname(created.value)).toBe(path.join(root, "prep"));
+      expect(validatePrepPack(readFileSync(created.value, "utf8"), facts)).toEqual([]);
+    }
   });
 
   test("unknown fact id is a finding", () => {

@@ -9,7 +9,10 @@ export type JsonOutcome =
 export async function getJson(fetchFunction: FetchFunction, url: string): Promise<JsonOutcome> {
   let response: Response;
   try {
-    response = await fetchFunction(url, { headers: { accept: "application/json" } });
+    response = await fetchFunction(url, {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(20_000),
+    });
   } catch (error) {
     return { ok: false, error: `network error for ${url}: ${errorMessage(error)}` };
   }
@@ -43,8 +46,11 @@ export function field(value: unknown, key: string): unknown {
   return isObject(value) ? value[key] : undefined;
 }
 
+const SECONDS_THRESHOLD = 100_000_000_000;
+
 export function isoDate(value: unknown): string | undefined {
-  const raw = typeof value === "number" ? value : text(value);
+  const numeric = typeof value === "number" ? (Math.abs(value) < SECONDS_THRESHOLD ? value * 1000 : value) : undefined;
+  const raw = numeric ?? text(value);
   if (raw === undefined) return undefined;
   const parsed = new Date(raw);
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();

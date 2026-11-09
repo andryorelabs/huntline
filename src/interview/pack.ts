@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { writeAtomic } from "../core/fs.ts";
@@ -15,14 +16,21 @@ export type Finding = {
 const SECTIONS = ["Rounds", "Question bank", "Signals", "Pitfalls", "Stories"] as const;
 const STORY_FIELDS = ["Situation", "Task", "Action", "Result", "Reflection"] as const;
 const MAX_SCAFFOLD_STORIES = 5;
-const SAFE_KEY = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const MAX_KEY_LENGTH = 300;
 
 export function isSafeKey(key: string): boolean {
-  return SAFE_KEY.test(key) && !key.includes("..");
+  return key.trim() !== "" && key.length <= MAX_KEY_LENGTH && !key.includes("\0");
+}
+
+function packFileName(key: string): string {
+  const cleaned = key.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^[-.]+|-+$/g, "");
+  if (cleaned === key && cleaned !== "" && !cleaned.includes("..")) return cleaned;
+  const digest = createHash("sha256").update(key).digest("hex").slice(0, 8);
+  return `${cleaned.replace(/\.{2,}/g, ".").slice(0, 60) || "pack"}-${digest}`;
 }
 
 export function packPath(dir: DataDir, key: string): string {
-  return path.join(dir.path, "prep", `${key}.md`);
+  return path.join(dir.path, "prep", `${packFileName(key)}.md`);
 }
 
 function storyBlock(fact: Fact, index: number): string {

@@ -100,7 +100,7 @@ function sameName(left: string, right: string): boolean {
 }
 
 function marker(key: string): string {
-  return `huntline-key: ${key}`;
+  return `[huntline-key: ${key}]`;
 }
 
 export function createLinearTracker(options: LinearOptions): TrackerAdapter {
@@ -118,6 +118,7 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
         method: "POST",
         headers: { "content-type": "application/json", authorization: options.apiKey },
         body: JSON.stringify({ query, variables }),
+        signal: AbortSignal.timeout(30_000),
       });
     } catch (error) {
       return fail("tracker-linear-network", errorMessage(error).split(options.apiKey).join("[redacted]"));

@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__.*([Cc]hrome|[Bb]rowser|[Dd]evtools|[Pp]laywright|[Pp]uppeteer|cdp|[Dd]ash).*|mcp__.*__(click|press_key|type_text|fill|fill_form|evaluate_script|drag|upload_file|handle_dialog|hover)|mcp__.*Gmail.*__(send_message|reply|forward)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/huntline\" guard"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*__take_snapshot",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/huntline\" guard --record"
+          }
+        ]
+      }
+    ]
+  }
+}

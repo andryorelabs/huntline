@@ -278,3 +278,92 @@ describe("migrate command", () => {
     expect((await run(["bogus"], ctx)).ok).toBe(false);
   });
 });
+
+function writeLeads(content: string): string {
+  const target = path.join(root, "legacy-ids");
+  mkdirSync(path.join(target, "applications", "2026-05-02"), { recursive: true });
+  writeFileSync(path.join(target, "applications", "2026-05-02", "leads.md"), content);
+  return target;
+}
+
+async function allEvents(): Promise<Awaited<ReturnType<typeof readEvents>>> {
+  return readEvents(ctx.dataDir ?? { path: "" });
+}
+
+function jobFetch(...issues: unknown[]): FetchLike {
+  return linearFetch([issues]).fetch;
+}
+
+async function notes(): Promise<string[]> {
+  return (await allEvents()).flatMap((event) => (event.kind === "note" ? [event.text] : []));
+}
+
+async function leadCount(): Promise<number> {
+  return (await allEvents()).filter((event) => event.kind === "lead.created").length;
+}
+
+describe("legacy id linking", () => {
+  const LEADS = `| Lead | Linear | Outcome | Detail |
+| --- | --- | --- | --- |
+| Acme Corp - Backend Engineer | AO-7 | applied | sent by email |
+`;
+
+
+
+
+
+
+  const acme = issue("12", "Backend Engineer at Acme Corp", "Todo", { identifier: "JOB-12" });
+
+  test("links legacy then linear with exactly one note and one Lead", async () => {
+    const legacy = await importLegacy(ctx, writeLeads(LEADS));
+    expect(legacy.ok).toBe(true);
+    const result = await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.warnings).toEqual([]);
+    expect(await leadCount()).toBe(1);
+    expect((await notes()).filter((text) => text === "legacy AO-7 = linear JOB-12")).toHaveLength(1);
+    const before = (await allEvents()).length;
+    await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
+    await importLegacy(ctx, writeLeads(LEADS));
+    expect((await allEvents()).length).toBe(before);
+  });
+
+  test("links when linear runs before legacy", async () => {
+    const linear = await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
+    if (!linear.ok) throw new Error(linear.error.message);
+    expect(linear.value.warnings).toEqual([]);
+    await importLegacy(ctx, writeLeads(LEADS));
+    expect(await leadCount()).toBe(1);
+    expect((await notes()).filter((text) => text === "legacy AO-7 = linear JOB-12")).toHaveLength(1);
+    const before = (await allEvents()).length;
+    await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
+    expect((await allEvents()).length).toBe(before);
+  });
+
+  test("warns instead of noting when two legacy ids share one Linear issue", async () => {
+    const two = `${LEADS}| Acme Corp - Backend Engineer | AO-8 | applied | again |\n`;
+    await importLegacy(ctx, writeLeads(two));
+    const result = await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.warnings.some((warning) => warning.includes("AO-7, AO-8"))).toBe(true);
+    expect((await notes()).some((text) => text.includes(" = linear "))).toBe(false);
+  });
+
+  test("warns when one legacy id matches several Linear issues", async () => {
+    await importLegacy(ctx, writeLeads(LEADS));
+    const other = issue("13", "Acme Corp - Backend Engineer", "Todo", { identifier: "JOB-13" });
+    const result = await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme, other) });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.warnings.some((warning) => warning.includes("several Linear issues"))).toBe(true);
+    expect((await notes()).some((text) => text.includes(" = linear "))).toBe(false);
+  });
+
+  test("lists legacy ids without a Linear match in one warning", async () => {
+    const extra = `${LEADS}| Globex - Platform Engineer | AO-9 | applied | |\n`;
+    await importLegacy(ctx, writeLeads(extra));
+    const result = await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.warnings).toEqual(["legacy ids with no Linear match: AO-9"]);
+  });
+});

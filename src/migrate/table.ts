@@ -12,7 +12,7 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = {
   outcome: ["outcome"],
   id: ["id"],
   reason: ["reason"],
-  notes: ["notes", "note", "comment", "comments"],
+  notes: ["notes", "note", "comment", "comments", "detail", "details"],
 };
 
 function splitCells(line: string): string[] {
@@ -83,6 +83,11 @@ export function parseTableBlocks(markdown: string): TableBlock[] {
     tables.push({ headers, columns: names, rows });
   }
   return tables;
+}
+
+export function headersMatch(block: TableBlock, expected: readonly string[]): boolean {
+  const actual = block.headers.map((header) => header.toLowerCase().trim());
+  return actual.length === expected.length && expected.every((name, position) => actual[position] === name);
 }
 
 export function hasColumns(rows: readonly TableRow[], columns: readonly string[]): boolean {

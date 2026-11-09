@@ -1,7 +1,8 @@
 node_modules/
 dist/
 .scratch/
-.emet/
+.emet/*
+!.emet/tickets/
 .env
 .env.*
 *.log

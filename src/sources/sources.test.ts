@@ -105,7 +105,7 @@ describe("board adapters", () => {
       company: "Acme",
       location: "Chile, Peru",
       remote: true,
-      salary: { min: 3000, max: 5000, currency: "USD" },
+      salary: { min: 3000, max: 5000, currency: "USD", period: "month" },
     });
   });
 
@@ -121,7 +121,7 @@ describe("board adapters", () => {
     expect(result?.postings).toHaveLength(1);
     expect(result?.postings[0]).toMatchObject({
       company: "Acme",
-      salary: { min: 90000, max: 120000, currency: "USD" },
+      salary: { min: 90000, max: 120000, currency: "USD", period: "year" },
       location: "Brazil, Chile",
     });
   });

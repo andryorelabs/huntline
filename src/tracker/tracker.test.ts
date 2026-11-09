@@ -57,6 +57,22 @@ function recordedFetch(): { fetch: FetchLike; calls: Call[] } {
 
 const erroring: FetchLike = () => Promise.resolve(Response.json({ errors: [{ message: "boom" }] }));
 
+async function titleFor(titleFormat: "role-at-company" | "company-role" | undefined): Promise<string> {
+  const { fetch: fetchImpl, calls } = recordedFetch();
+  const tracker = createTracker(
+    { kind: "linear", team: "HNT", ...(titleFormat === undefined ? {} : { titleFormat }) },
+    { path: mkdtempSync(path.join(dir.path, "t-")) },
+    { apiKey: API_KEY, fetch: fetchImpl },
+  );
+  await tracker.upsertLead({
+    key: "k",
+    posting: { ...posting, company: "Acme", title: "Backend Engineer" },
+    eligibility: "eligible",
+  });
+  const input = calls.find((call) => call.operation === "CreateIssue")?.variables["input"] as Record<string, unknown>;
+  return String(input["title"]);
+}
+
 describe("local tracker", () => {
   test("writes frontmatter and an Events section atomically", async () => {
     await appendEvent(dir, {
@@ -182,6 +198,52 @@ describe("linear tracker", () => {
     );
     const update = calls.find((call) => call.operation === "UpdateIssue");
     expect(update?.variables).toEqual({ id: "issue-1", input: { stateId: "st-progress" } });
+  });
+
+  test("a configured states map creates the Lead in the named state", async () => {
+    const { fetch: fetchImpl, calls } = recordedFetch();
+    const tracker = createTracker(
+      { kind: "linear", team: "HNT", states: { lead: "Lead", applied: "Applied" } },
+      dir,
+      { apiKey: API_KEY, fetch: fetchImpl },
+    );
+    await tracker.upsertLead({ key: "k", posting, eligibility: "eligible" });
+    const input = calls.find((call) => call.operation === "CreateIssue")?.variables["input"] as Record<string, unknown>;
+    expect(input["stateId"]).toBe("st-lead");
+    const unmapped = await tracker.setStatus("k", "hired");
+    expect(unmapped.ok).toBe(true);
+    const update = calls.findLast((call) => call.operation === "UpdateIssue");
+    expect(update?.variables["input"]).toEqual({ stateId: "st-done" });
+  });
+
+  test("a channelLabels entry is used verbatim without a duplicate label", async () => {
+    const { fetch: fetchImpl, calls } = recordedFetch();
+    const tracker = createTracker(
+      { kind: "linear", team: "HNT", channelLabels: { linkedin: "channel:linkedin" } },
+      dir,
+      { apiKey: API_KEY, fetch: fetchImpl },
+    );
+    await tracker.upsertLead({ key: "k", posting: { ...posting, source: "linkedin" }, eligibility: "eligible" });
+    const input = calls.find((call) => call.operation === "CreateIssue")?.variables["input"] as Record<string, unknown>;
+    expect(input["labelIds"]).toEqual(["lb-existing"]);
+    expect(calls.some((call) => call.operation === "CreateLabel")).toBe(false);
+  });
+
+  test("channelLabelPrefix applies to sources without an entry", async () => {
+    const { fetch: fetchImpl, calls } = recordedFetch();
+    const tracker = createTracker({ kind: "linear", team: "HNT", channelLabelPrefix: "via:" }, dir, {
+      apiKey: API_KEY,
+      fetch: fetchImpl,
+    });
+    await tracker.upsertLead({ key: "k", posting, eligibility: "eligible" });
+    expect(calls.find((call) => call.operation === "CreateLabel")?.variables["name"]).toBe("via:greenhouse");
+  });
+
+  test("titleFormat selects the issue title shape", async () => {
+    const titles = await Promise.all([undefined, "role-at-company", "company-role"].map((format) =>
+      titleFor(format as "role-at-company" | "company-role" | undefined),
+    ));
+    expect(titles).toEqual(["Backend Engineer at Acme", "Backend Engineer at Acme", "Acme - Backend Engineer"]);
   });
 
   test("reuses an existing channel label", async () => {

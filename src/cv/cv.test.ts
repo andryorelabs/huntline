@@ -203,6 +203,18 @@ describe("requirementCoverage significant words", () => {
     ]);
   });
 
+  test("a stop-word or two-letter tag never covers a phrase", () => {
+    const tagged = {
+      facts: [
+        { id: "f-go", text: "Wrote tooling at Globex", tags: ["go"] },
+        { id: "f-experience", text: "Shipped features at Initech", tags: ["experience", "years"] },
+      ],
+    } as unknown as Parameters<typeof requirementCoverage>[1];
+    expect(requirementCoverage(["3+ years experience with Go"], tagged).missing).toEqual([
+      "3+ years experience with Go",
+    ]);
+  });
+
   test("stop-words and short tokens stay missing", () => {
     expect(requirementCoverage(["3+ years experience with Go"], bank).missing).toEqual([
       "3+ years experience with Go",

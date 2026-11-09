@@ -25,6 +25,8 @@ const VERDICT_ALIASES: Readonly<Record<string, ApplicationState | null>> = {
   skip: "discarded",
   pass: "discarded",
   discard: "discarded",
+  keep: "to-apply",
+  cancel: "discarded",
   maybe: null,
   hold: null,
 };
@@ -38,6 +40,17 @@ export function mapState(text: string): ApplicationState | null {
   const direct = APPLICATION_STATES.find((state) => normalize(state) === normalized);
   if (direct !== undefined) return direct;
   return STATE_ALIASES[normalized] ?? null;
+}
+
+export type OutcomeMapping = { readonly known: boolean; readonly state: ApplicationState | null };
+
+export function mapOutcome(text: string): OutcomeMapping {
+  const normalized = normalize(text);
+  if (normalized === "" || normalized === "needs human" || normalized === "skipped") {
+    return { known: true, state: null };
+  }
+  const state = mapState(text);
+  return { known: state !== null, state };
 }
 
 export type VerdictOutcome = { readonly known: boolean; readonly state: ApplicationState | null };

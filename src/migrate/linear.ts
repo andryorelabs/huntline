@@ -4,6 +4,7 @@ import type { Posting, Result } from "../core/types.ts";
 import { LINEAR_ENDPOINT, type FetchLike } from "../tracker/linear.ts";
 import { withImporter, type Importer } from "./importer.ts";
 import { mapState } from "./states.ts";
+import { splitCompanyRole } from "./title.ts";
 import type { ImportResult } from "./types.ts";
 
 const PAGE_SIZE = 100;
@@ -136,10 +137,13 @@ function fetchAll(
   return fetchFrom(send, apiKey, filter, null, []);
 }
 
-function splitTitle(title: string): { role: string; company: string } {
-  const index = title.lastIndexOf(" at ");
-  if (index === -1) return { role: title.trim(), company: "" };
-  return { role: title.slice(0, index).trim(), company: title.slice(index + 4).trim() };
+export function splitTitle(title: string): { role: string; company: string } {
+  const atIndex = title.lastIndexOf(" at ");
+  const dashIndex = title.indexOf(" - ");
+  const companyFirst = dashIndex !== -1 && (atIndex === -1 || dashIndex < atIndex);
+  if (companyFirst) return splitCompanyRole(title);
+  if (atIndex === -1) return { role: title.trim(), company: "" };
+  return { role: title.slice(0, atIndex).trim(), company: title.slice(atIndex + 4).trim() };
 }
 
 function toPosting(issue: LinearIssue): Posting {
@@ -161,7 +165,7 @@ function importIssue(issue: LinearIssue, importer: Importer): void {
   const label = issue.identifier === "" ? issue.id : issue.identifier;
   const posting = toPosting(issue);
   if (posting.company === "") {
-    importer.warn(`issue ${label} has no "<role> at <company>" title; skipped`);
+    importer.warn(`issue ${label} has no "<role> at <company>" or "<company> - <role>" title; skipped`);
     return;
   }
   const key = importer.lead(posting, KEY_MARKER.exec(issue.description)?.[1]?.trim());

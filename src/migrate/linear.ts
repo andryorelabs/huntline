@@ -139,9 +139,7 @@ function fetchAll(
 
 export function splitTitle(title: string): { role: string; company: string } {
   const atIndex = title.lastIndexOf(" at ");
-  const dashIndex = title.indexOf(" - ");
-  const companyFirst = dashIndex !== -1 && (atIndex === -1 || dashIndex < atIndex);
-  if (companyFirst) return splitCompanyRole(title);
+  if (atIndex === -1 && title.includes(" - ")) return splitCompanyRole(title);
   if (atIndex === -1) return { role: title.trim(), company: "" };
   return { role: title.slice(0, atIndex).trim(), company: title.slice(atIndex + 4).trim() };
 }

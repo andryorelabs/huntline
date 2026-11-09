@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
@@ -125,6 +125,20 @@ describe("importLegacy", () => {
     expect((await readEvents(ctx.dataDir ?? { path: "" })).length).toBe(before);
   });
 
+  test("keeps coverage cards and units in the note", async () => {
+    write("sweeps/2026-02-02/cover.md", "| Company | Portal | Cards | Units |\n| --- | --- | --- | --- |\n| Zeta Corp | board | 3 | 7 |\n");
+    await importLegacy(ctx, legacyDir);
+    const events = await readEvents(ctx.dataDir ?? { path: "" });
+    const note = events.find((event) => event.kind === "note" && event.text.includes("Zeta Corp"));
+    expect(note?.kind === "note" && note.text.includes("cards 3") && note.text.includes("units 7")).toBe(true);
+  });
+
+  test("does not follow symbolic links", async () => {
+    symlinkSync(legacyDir, path.join(legacyDir, "sweeps", "2026-02-01", "loop"));
+    const result = await importLegacy(ctx, legacyDir);
+    expect(result.ok).toBe(true);
+  });
+
   test("fails for a missing directory", async () => {
     const result = await importLegacy(ctx, path.join(root, "absent"));
     expect(result.ok).toBe(false);
@@ -245,6 +259,10 @@ describe("importLinear title shapes", () => {
     expect(splitTitle("Acme - Backend Engineer")).toEqual({ company: "Acme", role: "Backend Engineer" });
     expect(splitTitle("Backend Engineer at Acme")).toEqual({ company: "Acme", role: "Backend Engineer" });
     expect(splitTitle("Untitled")).toEqual({ company: "", role: "Untitled" });
+    expect(splitTitle("Backend Engineer - Payments at Acme")).toEqual({
+      company: "Acme",
+      role: "Backend Engineer - Payments",
+    });
   });
 });
 

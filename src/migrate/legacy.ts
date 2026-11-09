@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import type { ApplicationState, Posting } from "../core/types.ts";
@@ -34,6 +34,7 @@ function walk(directory: string, root: string, inheritedDate: string): LegacyFil
     .toSorted()
     .flatMap((name) => {
       const absolute = path.join(directory, name);
+      if (lstatSync(absolute).isSymbolicLink()) return [];
       if (isDirectory(absolute)) {
         return walk(absolute, root, DATE_PATTERN.exec(name)?.[0] ?? inheritedDate);
       }
@@ -128,7 +129,7 @@ function importCoverage(rows: readonly TableRow[], ctx: FileContext): void {
       describe("coverage", ctx, date, row, [
         `company ${company}`,
         result === "" ? "" : `result ${result}`,
-        ...extras(row, ["portal", "card", "unit"]),
+        ...extras(row, ["portal", "card", "cards", "unit", "units"]),
       ]),
     );
   }

@@ -2,40 +2,70 @@ import { describe, expect, test } from "bun:test";
 import { Readable } from "node:stream";
 
 import { formatHookOutput, guardDecisionFor, MAX_STDIN_BYTES } from "./command.ts";
-import { decideGuard } from "./decide.ts";
+import { decideGuard, type LabelLookup } from "./decide.ts";
+import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
 
 const CHROME = "mcp__chrome-devtools__";
 const GMAIL = "mcp__claude_ai_Gmail__";
 
+const LABELS: Readonly<Record<string, string>> = {
+  "1_1": "Submit application",
+  "1_2": "Next",
+  "1_3": "Send",
+};
+const lookup: LabelLookup = (_session, uid) => LABELS[uid] ?? null;
+
 function call(tool: string, toolInput: unknown): unknown {
-  return { hook_event_name: "PreToolUse", tool_name: tool, tool_input: toolInput };
+  return { hook_event_name: "PreToolUse", session_id: "s1", tool_name: tool, tool_input: toolInput };
 }
 
 function verdict(input: unknown): string {
-  return decideGuard(input).decision;
+  return decideGuard(input, lookup).decision;
 }
 
 describe("decideGuard", () => {
-  test("denies a click on Submit application", () => {
-    expect(verdict(call(`${CHROME}click`, { uid: "1_2", name: "Submit application" }))).toBe("deny");
+  test("denies a click on the Submit application uid and allows Next", () => {
+    expect(verdict(call(`${CHROME}click`, { uid: "1_1" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}click`, { uid: "1_3" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}click`, { uid: "1_2" }))).toBe("allow");
   });
 
-  test("allows a click on Next", () => {
-    expect(verdict(call(`${CHROME}click`, { uid: "1_2", name: "Next" }))).toBe("allow");
+  test("denies a click on an unknown uid or without a session", () => {
+    expect(verdict(call(`${CHROME}click`, { uid: "9_9" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}click`, {}))).toBe("deny");
+    const noSession = { tool_name: `${CHROME}click`, tool_input: { uid: "1_2" } };
+    expect(verdict(noSession)).toBe("deny");
   });
 
-  test("denies Enter key presses and submitKey typing", () => {
-    expect(verdict(call(`${CHROME}press_key`, { key: "Enter" }))).toBe("deny");
+  test("denies every keyboard path that can submit", () => {
+    for (const key of ["Enter", "NumpadEnter", "Return", "Space", " ", "Control+Enter", "Shift+ "]) {
+      expect(verdict(call(`${CHROME}press_key`, { key }))).toBe("deny");
+    }
     expect(verdict(call(`${CHROME}press_key`, { key: "Tab" }))).toBe("allow");
     expect(verdict(call(`${CHROME}type_text`, { text: "hi", submitKey: "Enter" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}type_text`, { text: "x\n" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}fill`, { uid: "1_2", value: "a\r\nb" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}fill_form`, { elements: [{ uid: "1_2", value: "x\n" }] }))).toBe("deny");
+    expect(verdict(call(`${CHROME}type_text`, { text: "hello" }))).toBe("allow");
   });
 
-  test("denies scripts that could submit, allows reads", () => {
-    const submitting = { function: "() => document.forms[0].submit()" };
-    expect(verdict(call(`${CHROME}evaluate_script`, submitting))).toBe("deny");
-    expect(verdict(call(`${CHROME}evaluate_script`, { function: "() => document.title" }))).toBe(
-      "allow",
-    );
+  test("denies every script, including obfuscated submits", () => {
+    const scripts = [
+      "() => document.forms[0].submit()",
+      "() => document.title",
+      "() => el['cli'+'ck']()",
+      "() => HTMLFormElement.prototype['sub'+'mit'].call(f)",
+    ];
+    for (const script of scripts) {
+      expect(verdict(call(`${CHROME}evaluate_script`, { function: script }))).toBe("deny");
+    }
+  });
+
+  test("guards browser tools from any server name by their action", () => {
+    expect(verdict(call("mcp__cws-dash__click", { uid: "1_1" }))).toBe("deny");
+    expect(verdict(call("mcp__Claude_Browser__press_key", { key: "Enter" }))).toBe("deny");
+    expect(verdict(call("mcp__someserver__press_key", { key: "Enter" }))).toBe("deny");
+    expect(verdict(call("mcp__someserver__list_things", {}))).toBe("allow");
   });
 
   test("denies Gmail send, reply and forward, allows drafts", () => {
@@ -103,7 +133,7 @@ describe("guardDecisionFor", () => {
   });
 
   test("allows a benign payload", async () => {
-    const payload = JSON.stringify(call(`${CHROME}click`, { name: "Next" }));
+    const payload = JSON.stringify(call(`${CHROME}navigate_page`, { url: "https://example.test" }));
     expect((await guardDecisionFor(Readable.from([payload]))).decision).toBe("allow");
   });
 
@@ -132,8 +162,42 @@ describe("huntline guard process", () => {
     expect(parsed.hookSpecificOutput.permissionDecision).toBe("deny");
   });
 
-  test("allows a Next click end to end", () => {
-    const { parsed } = runGuard(JSON.stringify(call(`${CHROME}click`, { name: "Next" })));
-    expect(parsed.hookSpecificOutput.permissionDecision).toBe("allow");
+  test("allows a navigation end to end and denies an unrecorded click", () => {
+    const nav = runGuard(JSON.stringify(call(`${CHROME}navigate_page`, { url: "https://example.test" })));
+    expect(nav.parsed.hookSpecificOutput.permissionDecision).toBe("allow");
+    const click = runGuard(JSON.stringify(call(`${CHROME}click`, { uid: "1_2" })));
+    expect(click.parsed.hookSpecificOutput.permissionDecision).toBe("deny");
+  });
+});
+
+describe("snapshot labels", () => {
+  test("parses uid lines from text and nested content", () => {
+    const response = { content: [{ type: "text", text: 'uid=1_1 button "Submit application"\n  uid=1_2 button "Next"' }] };
+    expect(parseSnapshotLabels(response)).toEqual({ "1_1": 'button "Submit application"', "1_2": 'button "Next"' });
+  });
+
+  test("records a snapshot and resolves a label by session", () => {
+    const session = `test-${process.pid}-${Date.now()}`;
+    recordSnapshot(session, parseSnapshotLabels('uid=2_1 button "Submit application"\nuid=2_2 link "Next"'));
+    expect(lookupLabel(session, "2_1")).toContain("Submit application");
+    expect(lookupLabel(session, "9_9")).toBeNull();
+    expect(lookupLabel("other-session", "2_1")).toBeNull();
+    const payload = { ...(call(`${CHROME}click`, { uid: "2_1" }) as object), session_id: session };
+    const submit = decideGuard(payload, lookupLabel);
+    expect(submit.decision).toBe("deny");
+  });
+
+  test("the recorder hook then the guard deny a submit click end to end", () => {
+    const session = `e2e-${process.pid}-${Date.now()}`;
+    const snapshot = { session_id: session, tool_response: 'uid=3_1 button "Submit application"\nuid=3_2 button "Next"' };
+    const recorded = Bun.spawnSync(["bun", "src/cli.ts", "guard", "--record"], { stdin: Buffer.from(JSON.stringify(snapshot)), stdout: "pipe" });
+    expect(recorded.exitCode).toBe(0);
+    const ask = (uid: string): string => {
+      const payload = { ...(call(`${CHROME}click`, { uid }) as object), session_id: session };
+      const result = Bun.spawnSync(["bun", "src/cli.ts", "guard"], { stdin: Buffer.from(JSON.stringify(payload)), stdout: "pipe" });
+      return (JSON.parse(result.stdout.toString()) as { hookSpecificOutput: { permissionDecision: string } }).hookSpecificOutput.permissionDecision;
+    };
+    expect(ask("3_1")).toBe("deny");
+    expect(ask("3_2")).toBe("allow");
   });
 });

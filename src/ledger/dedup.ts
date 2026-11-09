@@ -25,7 +25,7 @@ const DISTINGUISHING_TOKENS: ReadonlySet<string> = new Set([
   "security", "qa", "platform", "infrastructure", "design", "product", "sales", "marketing",
 ]);
 
-export type LedgerOutcome = "seen" | "dismissed";
+export type LedgerOutcome = "seen" | "dismissed" | "duplicate";
 
 export type LedgerEntry = {
   readonly at: string;
@@ -47,7 +47,6 @@ function tokenize(text: string, ignored: ReadonlySet<string>): string[] {
     .normalize("NFKD")
     .replace(/\p{M}/gu, "")
     .toLowerCase()
-    .replace(/\([^)]*\)/g, " ")
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .split(" ")
     .filter((token) => token !== "" && !ignored.has(token));
@@ -124,7 +123,7 @@ function isLedgerEntry(value: unknown): value is LedgerEntry {
     isObject(value) &&
     typeof value["key"] === "string" &&
     typeof value["at"] === "string" &&
-    (value["outcome"] === "seen" || value["outcome"] === "dismissed") &&
+    (value["outcome"] === "seen" || value["outcome"] === "dismissed" || value["outcome"] === "duplicate") &&
     isPosting(value["posting"])
   );
 }

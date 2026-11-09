@@ -37,6 +37,8 @@ const rows: Row[] = [
   { name: "region match", dimension: "region", posting: { location: "LatAm" }, expected: "eligible" },
   { name: "region worldwide", dimension: "region", posting: { location: "Worldwide" }, expected: "eligible" },
   { name: "region US only", dimension: "region", posting: { location: "US only" }, expected: "ineligible", reason: "region" },
+  { name: "region remote only is silent", dimension: "region", posting: { location: "Remote only" }, expected: "unknown" },
+  { name: "region remote-only is silent", dimension: "region", posting: { location: "Remote-only" }, expected: "unknown" },
   { name: "region silent", dimension: "region", posting: {}, expected: "unknown" },
   { name: "region ambiguous city", dimension: "region", posting: { location: "Lisbon" }, expected: "unknown" },
   { name: "contract match", dimension: "contract", posting: { contract: "Full_Time" }, expected: "eligible" },

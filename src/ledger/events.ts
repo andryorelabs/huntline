@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, truncateSync } from "node:fs";
 import path from "node:path";
 import { withLock } from "../core/fs.ts";
-import { isObject } from "../core/narrow.ts";
+import { errorMessage, isObject } from "../core/narrow.ts";
 import type { DataDir, HuntEvent } from "../core/types.ts";
 
 export const EVENTS_FILE = "events.jsonl";
@@ -19,10 +19,26 @@ export function eventsPath(dir: DataDir): string {
 
 export function readJsonLines(file: string): unknown[] {
   if (!existsSync(file)) return [];
-  return readFileSync(file, "utf8")
+  const lines = readFileSync(file, "utf8")
     .split("\n")
-    .filter((line) => line.trim() !== "")
-    .map((line): unknown => JSON.parse(line));
+    .filter((line) => line.trim() !== "");
+  const parsed: unknown[] = [];
+  for (const [index, line] of lines.entries()) {
+    try {
+      parsed.push(JSON.parse(line));
+    } catch (error) {
+      if (index === lines.length - 1) continue;
+      throw new Error(`${path.basename(file)} line ${index + 1} is not valid JSON: ${errorMessage(error)}`, { cause: error });
+    }
+  }
+  return parsed;
+}
+
+function discardUncommittedTail(file: string): void {
+  if (!existsSync(file)) return;
+  const content = readFileSync(file, "utf8");
+  if (content === "" || content.endsWith("\n")) return;
+  truncateSync(file, Buffer.byteLength(content.slice(0, content.lastIndexOf("\n") + 1)));
 }
 
 function isHuntEvent(value: unknown): value is HuntEvent {
@@ -33,6 +49,7 @@ export async function appendEvent(dir: DataDir, event: NewEvent): Promise<HuntEv
   const stored = { ...event, id: randomUUID(), at: new Date().toISOString() } as HuntEvent;
   await withLock(dir.path, () => {
     mkdirSync(dir.path, { recursive: true });
+    discardUncommittedTail(eventsPath(dir));
     appendFileSync(eventsPath(dir), `${JSON.stringify(stored)}\n`);
     return Promise.resolve();
   });

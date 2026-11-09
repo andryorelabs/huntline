@@ -2,27 +2,29 @@ export type GuardDecision =
   | { readonly decision: "allow" }
   | { readonly decision: "deny"; readonly reason: string };
 
+export type LabelLookup = (sessionId: string, uid: string) => string | null;
+
 const SUBMIT_LABEL =
   /\b(submit|send|finali[sz]e|apply now|complete application|confirm application|post application)\b/i;
-const SCRIPT_SUBMIT =
-  /\.submit\s*\(|requestSubmit|\.click\s*\(|dispatchEvent|\bfetch\s*\(|XMLHttpRequest|sendBeacon/i;
-const GMAIL_TOOL = /^mcp__.*gmail.*__(.+)$/i;
-const CHROME_TOOL = /^mcp__.*chrome.*__(.+)$/i;
+const MCP_TOOL = /^mcp__(.+?)__(.+)$/;
+const BROWSER_SERVER = /chrome|browser|devtools|playwright|puppeteer|cdp|dash/i;
+const GMAIL_SERVER = /gmail/i;
 const GMAIL_SEND_ACTION = /send|reply|forward/i;
-const ENTER_KEY = /\b(enter|return)\b/i;
-const LABEL_KEYS: readonly string[] = [
-  "label",
-  "name",
-  "text",
-  "description",
-  "title",
-  "selector",
-  "element",
-  "ref",
-  "role",
-  "value",
-];
-const BENIGN_CHROME_ACTIONS: ReadonlySet<string> = new Set([
+const KEY_THAT_SUBMITS = /enter|return|space/i;
+const LINE_BREAK = /[\r\n]/;
+const INTERACTIVE_ACTIONS: ReadonlySet<string> = new Set([
+  "click",
+  "press_key",
+  "type_text",
+  "fill",
+  "fill_form",
+  "evaluate_script",
+  "drag",
+  "upload_file",
+  "handle_dialog",
+  "hover",
+]);
+const BENIGN_BROWSER_ACTIONS: ReadonlySet<string> = new Set([
   "navigate_page",
   "new_page",
   "select_page",
@@ -32,9 +34,6 @@ const BENIGN_CHROME_ACTIONS: ReadonlySet<string> = new Set([
   "take_screenshot",
   "wait_for",
   "hover",
-  "fill",
-  "fill_form",
-  "type_text",
   "upload_file",
   "resize_page",
   "emulate",
@@ -60,59 +59,84 @@ function stringField(record: Record<string, unknown>, key: string): string | nul
   return typeof value === "string" ? value : null;
 }
 
-function submitLikeLabel(toolInput: Record<string, unknown>): string | null {
-  for (const key of LABEL_KEYS) {
-    const value = stringField(toolInput, key);
-    if (value !== null && SUBMIT_LABEL.test(value)) return value;
-  }
-  return null;
+function containsLineBreak(value: unknown, depth = 0): boolean {
+  if (depth > 6) return true;
+  if (typeof value === "string") return LINE_BREAK.test(value);
+  if (Array.isArray(value)) return value.some((entry) => containsLineBreak(entry, depth + 1));
+  if (isRecord(value)) return Object.values(value).some((entry) => containsLineBreak(entry, depth + 1));
+  return false;
 }
 
-function decideChrome(action: string, toolInput: Record<string, unknown>): GuardDecision {
+function decideKey(toolInput: Record<string, unknown>): GuardDecision {
+  const key = stringField(toolInput, "key");
+  if (key === null) return deny("press_key without a readable key");
+  const parts = key.split("+");
+  const submits = parts.some((part) => part === " " || KEY_THAT_SUBMITS.test(part));
+  return submits ? deny("Enter or Space can submit a form; the human presses Submit") : ALLOW;
+}
+
+function decideClick(
+  toolInput: Record<string, unknown>,
+  sessionId: string | null,
+  lookup: LabelLookup,
+): GuardDecision {
+  const uid = stringField(toolInput, "uid");
+  if (uid === null || uid === "") return deny("click without a readable uid");
+  if (sessionId === null) return deny("click cannot be checked without a session id");
+  const label = lookup(sessionId, uid);
+  if (label === null) {
+    return deny(`click on uid ${uid} has no known label; take a fresh snapshot first`);
+  }
+  return SUBMIT_LABEL.test(label) ? deny(`click on a submit-like control "${label}"`) : ALLOW;
+}
+
+function decideBrowser(
+  action: string,
+  toolInput: Record<string, unknown>,
+  sessionId: string | null,
+  lookup: LabelLookup,
+): GuardDecision {
   const submitKey = toolInput["submitKey"];
   if (submitKey !== undefined && submitKey !== null && submitKey !== "") {
     return deny("typing with a submit key can submit a form; the human presses Submit");
   }
-  if (action === "press_key") {
-    const key = stringField(toolInput, "key");
-    if (key === null) return deny("press_key without a readable key");
-    return ENTER_KEY.test(key) ? deny("Enter can submit a form; the human presses Submit") : ALLOW;
-  }
-  if (action === "click") {
-    const label = submitLikeLabel(toolInput);
-    return label === null ? ALLOW : deny(`click on a submit-like control "${label}"`);
-  }
+  if (action === "press_key") return decideKey(toolInput);
+  if (action === "click") return decideClick(toolInput, sessionId, lookup);
   if (action === "evaluate_script") {
-    const script = stringField(toolInput, "function") ?? stringField(toolInput, "script");
-    if (script === null) return deny("evaluate_script without a readable script");
-    return SCRIPT_SUBMIT.test(script) || SUBMIT_LABEL.test(script)
-      ? deny("script could submit a form or send a request")
+    return deny("evaluate_script is blocked: scripts can submit or send; use snapshots to read the page");
+  }
+  if (action === "type_text" || action === "fill" || action === "fill_form") {
+    return containsLineBreak(toolInput)
+      ? deny("a line break in typed or filled text can submit a form")
       : ALLOW;
   }
-  if (BENIGN_CHROME_ACTIONS.has(action)) return ALLOW;
-  return deny(`unknown browser action "${action}"`);
+  if (action === "drag") return deny("drag is blocked");
+  return BENIGN_BROWSER_ACTIONS.has(action) ? ALLOW : deny(`unknown browser action "${action}"`);
 }
 
-function decideUnchecked(input: unknown): GuardDecision {
+function decideUnchecked(input: unknown, lookup: LabelLookup): GuardDecision {
   if (!isRecord(input)) return deny("hook payload is not a JSON object");
   const toolName = input["tool_name"];
   if (typeof toolName !== "string" || toolName === "") return deny("hook payload has no tool_name");
-  const toolInput = input["tool_input"];
-  const gmailAction = GMAIL_TOOL.exec(toolName)?.[1];
-  if (gmailAction !== undefined) {
-    return GMAIL_SEND_ACTION.test(gmailAction)
-      ? deny(`Gmail ${gmailAction} is blocked; the human presses Send`)
+  const match = MCP_TOOL.exec(toolName);
+  if (match === null) return ALLOW;
+  const server = match[1] ?? "";
+  const action = match[2] ?? "";
+  if (GMAIL_SERVER.test(server)) {
+    return GMAIL_SEND_ACTION.test(action)
+      ? deny(`Gmail ${action} is blocked; the human presses Send`)
       : ALLOW;
   }
-  const chromeAction = CHROME_TOOL.exec(toolName)?.[1];
-  if (chromeAction === undefined) return ALLOW;
+  if (!BROWSER_SERVER.test(server) && !INTERACTIVE_ACTIONS.has(action)) return ALLOW;
+  const toolInput = input["tool_input"];
   if (!isRecord(toolInput)) return deny("browser tool call has no readable tool_input");
-  return decideChrome(chromeAction, toolInput);
+  const sessionId = typeof input["session_id"] === "string" && input["session_id"] !== "" ? input["session_id"] : null;
+  return decideBrowser(action, toolInput, sessionId, lookup);
 }
 
-export function decideGuard(input: unknown): GuardDecision {
+export function decideGuard(input: unknown, lookup: LabelLookup = () => null): GuardDecision {
   try {
-    return decideUnchecked(input);
+    return decideUnchecked(input, lookup);
   } catch (error) {
     return deny(`guard error: ${error instanceof Error ? error.message : "unknown"}`);
   }

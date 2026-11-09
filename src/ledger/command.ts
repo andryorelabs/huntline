@@ -1,7 +1,13 @@
 import type { CommandContext } from "../core/commands.ts";
 import { failure, success, type Envelope } from "../core/envelope.ts";
 import { errorMessage, isObject, isOneOf } from "../core/narrow.ts";
-import type { DataDir, Posting } from "../core/types.ts";
+import {
+  APPLICATION_STATES,
+  ELIGIBILITIES,
+  REJECTION_REASONS,
+  type DataDir,
+  type Posting,
+} from "../core/types.ts";
 import { findDuplicate, readLedger } from "./dedup.ts";
 import { appendEvent, readEvents, type NewEvent } from "./events.ts";
 import { foldState } from "./state.ts";
@@ -43,10 +49,51 @@ function isFailure(value: { value: unknown } | Envelope<never>): value is Envelo
   return "ok" in value;
 }
 
+function hasStrings(value: Record<string, unknown>, fields: readonly string[]): boolean {
+  return fields.every((field) => typeof value[field] === "string");
+}
+
+function hasPayload(value: Record<string, unknown>): boolean {
+  switch (value["kind"]) {
+    case "posting.seen":
+    case "lead.created":
+      return isPostingInput(value["posting"]) && isOneOf(ELIGIBILITIES, value["eligibility"]);
+    case "posting.dismissed":
+      return isPostingInput(value["posting"]) && isOneOf(REJECTION_REASONS, value["reason"]);
+    case "score.recorded":
+      return (
+        typeof value["score"] === "number" &&
+        Array.isArray(value["reasons"]) &&
+        value["reasons"].every((reason) => typeof reason === "string") &&
+        typeof value["liveness"] === "string"
+      );
+    case "status.changed":
+      return (
+        isOneOf(APPLICATION_STATES, value["to"]) &&
+        (value["from"] === undefined || isOneOf(APPLICATION_STATES, value["from"]))
+      );
+    case "blocker.opened":
+      return hasStrings(value, ["blockerId", "scope", "detail"]);
+    case "blocker.resolved":
+      return hasStrings(value, ["blockerId"]);
+    case "cv.built":
+      return hasStrings(value, ["variant", "path", "hash"]);
+    case "email.classified":
+      return hasStrings(value, ["messageId", "classification"]);
+    case "outreach.logged":
+      return hasStrings(value, ["channel", "recipient"]);
+    case "note":
+      return hasStrings(value, ["text"]);
+    default:
+      return false;
+  }
+}
+
 function isNewEvent(value: unknown): value is NewEvent {
   if (!isObject(value) || !isOneOf(EVENT_KINDS, value["kind"])) return false;
   if ("id" in value || "at" in value) return false;
-  return value["key"] === undefined || typeof value["key"] === "string";
+  if (value["key"] !== undefined && typeof value["key"] !== "string") return false;
+  return hasPayload(value);
 }
 
 function isPostingInput(value: unknown): value is Posting {
@@ -65,7 +112,7 @@ async function eventsCommand(argv: string[], dir: DataDir): Promise<Envelope<unk
     const parsed = parseJsonFlag(rest);
     if (isFailure(parsed)) return parsed;
     if (!isNewEvent(parsed.value)) {
-      return usage(`event needs a "kind" of ${EVENT_KINDS.join(", ")} and no id or at`);
+      return usage(`event needs a "kind" of ${EVENT_KINDS.join(", ")}, its required fields, and no id or at`);
     }
     return success(await appendEvent(dir, parsed.value));
   }

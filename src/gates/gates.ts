@@ -25,7 +25,7 @@ const DISMISSAL_ORDER: readonly Dimension[] = [
 
 const WORLDWIDE_PATTERN = /\b(worldwide|anywhere|global|world[- ]wide)\b/;
 const RESTRICTED_REGION_PATTERN =
-  /\bonly\b|\b(us|usa|u\.s\.|united states|europe|eu|emea|uk|united kingdom|canada|apac|asia|australia|india)\b/;
+  /\b(us|usa|u\.s\.|united states|europe|eu|emea|uk|united kingdom|canada|apac|asia|australia|india)\b/;
 
 function normalize(text: string): string {
   return text.trim().toLowerCase().replace(/\s+/g, " ");

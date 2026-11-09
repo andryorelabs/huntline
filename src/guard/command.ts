@@ -3,6 +3,7 @@ import { writeSync } from "node:fs";
 import type { CommandContext } from "../core/commands.ts";
 import type { Envelope } from "../core/envelope.ts";
 import { decideGuard, type GuardDecision } from "./decide.ts";
+import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
 
 export const MAX_STDIN_BYTES = 1024 * 1024;
 
@@ -55,7 +56,7 @@ export async function guardDecisionFor(stream: AsyncIterable<unknown>): Promise<
     if (text === null) {
       return { decision: "deny", reason: "hook payload is oversized or unreadable" };
     }
-    return decideGuard(parseJson(text));
+    return decideGuard(parseJson(text), lookupLabel);
   } catch (error) {
     return {
       decision: "deny",
@@ -64,7 +65,24 @@ export async function guardDecisionFor(stream: AsyncIterable<unknown>): Promise<
   }
 }
 
-export async function run(_argv: string[], _ctx: CommandContext): Promise<Envelope<unknown>> {
+export function recordFromPayload(text: string): void {
+  const payload = parseJson(text);
+  if (typeof payload !== "object" || payload === null) return;
+  const record = payload as Record<string, unknown>;
+  const sessionId = record["session_id"];
+  if (typeof sessionId !== "string" || sessionId === "") return;
+  recordSnapshot(sessionId, parseSnapshotLabels(record["tool_response"]));
+}
+
+async function runRecorder(): Promise<never> {
+  const text = await readBoundedStdin(process.stdin, MAX_STDIN_BYTES);
+  if (text !== null) recordFromPayload(text);
+  writeSync(1, "{}\n");
+  process.exit(0);
+}
+
+export async function run(argv: string[], _ctx: CommandContext): Promise<Envelope<unknown>> {
+  if (argv.includes("--record")) return runRecorder();
   const decision = await guardDecisionFor(process.stdin);
   writeSync(1, `${JSON.stringify(formatHookOutput(decision))}\n`);
   process.exit(0);

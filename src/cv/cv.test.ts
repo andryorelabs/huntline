@@ -106,6 +106,14 @@ describe("buildCv", () => {
     if (result.ok) expect(existsSync(result.value.text)).toBe(true);
   });
 
+  test("rejects a variant name that escapes the output directory", async () => {
+    const runner = fakeRunner("x");
+    const result = await buildCv(dir, { name: "../../escape", runner });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe("invalid-variant");
+    expect(runner.compiled).toHaveLength(0);
+  });
+
   test("fails naming the Bullet whose fact id is missing", async () => {
     writeFileSync(
       path.join(root, "bullets.yaml"),

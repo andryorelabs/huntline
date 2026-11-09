@@ -73,6 +73,12 @@ export const systemRunner: TypstRunner = {
   },
 };
 
+const VARIANT_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+export function isSafeVariantName(name: string): boolean {
+  return VARIANT_NAME_PATTERN.test(name) && !name.includes("..");
+}
+
 export function outputPaths(dir: DataDir, name: string): { pdf: string; text: string; data: string } {
   const base = path.join(dir.path, CV_DIRECTORY, CV_OUTPUT_DIRECTORY, name);
   return { pdf: `${base}.pdf`, text: `${base}.txt`, data: `${base}.json` };
@@ -121,6 +127,12 @@ export async function buildCv(
   }
 
   const name = options.name ?? "cv";
+  if (!isSafeVariantName(name)) {
+    return {
+      ok: false,
+      error: { code: "invalid-variant", message: `variant name "${name}" must match ${VARIANT_NAME_PATTERN}` },
+    };
+  }
   const paths = outputPaths(dir, name);
   const payload = {
     variant: name,

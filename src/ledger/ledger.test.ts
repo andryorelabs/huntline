@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { HuntEvent, Posting } from "../core/types.ts";
@@ -190,5 +190,66 @@ describe("command", () => {
   test("fails without a data dir", async () => {
     const result = await run(["status", "k"], { dataDir: null, env: {}, cwd: dir.path });
     expect(!result.ok && result.error.code).toBe("data-dir-not-found");
+  });
+});
+
+describe("review regressions", () => {
+  const cliPath = path.join(import.meta.dir, "../cli.ts");
+
+  test("parenthesised title qualifiers keep different roles apart", async () => {
+    const backend = posting({ source: "himalayas", id: "a", title: "Software Engineer (Backend)" });
+    const frontend = posting({ source: "remoteok", id: "b", title: "Software Engineer (Frontend)" });
+    expect(dedupKey(backend)).not.toBe(dedupKey(frontend));
+    await ledgerRecord(dir, backend, "seen");
+    expect(await findDuplicate(dir, frontend)).toBeNull();
+  });
+
+  test("a duplicate outcome is recorded and readable", async () => {
+    await ledgerRecord(dir, posting(), "seen");
+    await ledgerRecord(dir, posting({ source: "himalayas", id: "h1" }), "duplicate");
+    const entries = await readLedger(dir);
+    expect(entries.map((entry) => entry.outcome)).toEqual(["seen", "duplicate"]);
+  });
+
+  test("events append rejects events missing required fields", async () => {
+    const result = await run(
+      ["events", "append", "--json", JSON.stringify({ kind: "status.changed", key: "k" })],
+      { dataDir: dir, env: {}, cwd: dir.path },
+    );
+    expect(result.ok).toBe(false);
+    const bogus = await run(
+      ["events", "append", "--json", JSON.stringify({ kind: "status.changed", key: "k", to: "bogus" })],
+      { dataDir: dir, env: {}, cwd: dir.path },
+    );
+    expect(bogus.ok).toBe(false);
+    expect(await readEvents(dir)).toHaveLength(0);
+  });
+
+  test("a torn trailing line is ignored on read and discarded on the next append", async () => {
+    await appendEvent(dir, { kind: "note", key: "k", text: "one" });
+    appendFileSync(eventsPath(dir), '{"kind":"note","key":"k","te');
+    expect(await readEvents(dir, "k")).toHaveLength(1);
+    await appendEvent(dir, { kind: "note", key: "k", text: "two" });
+    expect(await readEvents(dir, "k")).toHaveLength(2);
+  });
+
+  test("a corrupt line in the middle of the log is reported, not skipped", async () => {
+    await appendEvent(dir, { kind: "note", key: "k", text: "one" });
+    appendFileSync(eventsPath(dir), "not json\n");
+    await appendEvent(dir, { kind: "note", key: "k", text: "two" });
+    await expect(readEvents(dir, "k")).rejects.toThrow(/line 2/);
+  });
+
+  test("two separate processes appending concurrently both land", async () => {
+    writeFileSync(path.join(dir.path, "huntline.json"), '{"version":1}\n');
+    const spawn = (text: string) =>
+      Bun.spawn(
+        [process.execPath, cliPath, "events", "append", "--data", dir.path, "--json", JSON.stringify({ kind: "note", key: "k", text })],
+        { env: { PATH: process.env["PATH"] ?? "", HOME: dir.path }, stdout: "pipe" },
+      );
+    const children = Array.from({ length: 6 }, (_, index) => spawn(`n${index}`));
+    const codes = await Promise.all(children.map((child) => child.exited));
+    expect(codes.every((code) => code === 0)).toBe(true);
+    expect(await readEvents(dir, "k")).toHaveLength(6);
   });
 });

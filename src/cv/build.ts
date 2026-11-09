@@ -3,8 +3,9 @@ import path from "node:path";
 import { writeAtomic } from "../core/fs.ts";
 import { errorMessage } from "../core/narrow.ts";
 import type { DataDir, Result } from "../core/types.ts";
-import { loadBullets, loadFactBank } from "./facts.ts";
+import { loadBullets, loadFactBank, loadVariants } from "./facts.ts";
 import { selectBullets } from "./select.ts";
+import type { Bullet, Entry } from "./types.ts";
 
 export type CompileRequest = {
   readonly root: string;
@@ -84,6 +85,22 @@ export function outputPaths(dir: DataDir, name: string): { pdf: string; text: st
   return { pdf: `${base}.pdf`, text: `${base}.txt`, data: `${base}.json` };
 }
 
+function payloadBullet(bullet: Bullet): { id: string; text: string; tags: readonly string[] } {
+  return { id: bullet.id, text: bullet.text, tags: bullet.tags };
+}
+
+function compareOrder(left: Bullet, right: Bullet): number {
+  return (left.order ?? Number.POSITIVE_INFINITY) - (right.order ?? Number.POSITIVE_INFINITY) || 0;
+}
+
+function groupEntries(entries: readonly Entry[], selected: readonly Bullet[]) {
+  return entries.flatMap((entry) => {
+    const members = selected.filter((bullet) => bullet.entry === entry.id).toSorted(compareOrder);
+    if (members.length === 0) return [];
+    return [{ ...entry, bullets: members.map(payloadBullet) }];
+  });
+}
+
 export async function buildCv(
   dir: DataDir,
   options: BuildOptions,
@@ -93,7 +110,27 @@ export async function buildCv(
   const bullets = loadBullets(dir);
   if (!bullets.ok) return bullets;
 
+  const variants = loadVariants(dir);
+  if (!variants.ok) return variants;
+  const rule = options.name === undefined ? undefined : variants.value.find((item) => item.name === options.name);
+  const noSelector = (options.tags ?? []).length === 0 && (options.requirements ?? []).length === 0;
+  if (
+    options.name !== undefined &&
+    rule === undefined &&
+    noSelector &&
+    isSafeVariantName(options.name) &&
+    variants.value.length > 0
+  ) {
+    return {
+      ok: false,
+      error: { code: "unknown-variant", message: `variant "${options.name}" is not defined in bullets.yaml` },
+    };
+  }
+
   const selected = selectBullets(bullets.value, {
+    ...(rule?.all === undefined ? {} : { all: rule.all }),
+    ...(rule?.any === undefined ? {} : { any: rule.any }),
+    ...(rule?.none === undefined ? {} : { none: rule.none }),
     ...(options.tags === undefined ? {} : { tags: options.tags }),
     ...(options.requirements === undefined ? {} : { requirements: options.requirements }),
   });
@@ -121,6 +158,21 @@ export async function buildCv(
     }
   }
 
+  const entryIds = new Set(
+    [...(facts.value.experience ?? []), ...(facts.value.projects ?? [])].map((entry) => entry.id),
+  );
+  for (const bullet of selected) {
+    if (bullet.entry !== undefined && !entryIds.has(bullet.entry)) {
+      return {
+        ok: false,
+        error: {
+          code: "bullet-entry-missing",
+          message: `Bullet ${bullet.id} references entry ${bullet.entry} missing from the Fact bank`,
+        },
+      };
+    }
+  }
+
   const template = options.template ?? path.join(dir.path, CV_DIRECTORY, DEFAULT_TEMPLATE);
   if (!existsSync(template)) {
     return { ok: false, error: { code: "cv-template-missing", message: `no Typst template at ${template}` } };
@@ -136,7 +188,11 @@ export async function buildCv(
   const paths = outputPaths(dir, name);
   const payload = {
     variant: name,
-    bullets: selected.map((bullet) => ({ id: bullet.id, text: bullet.text, tags: bullet.tags })),
+    bullets: selected.map(payloadBullet),
+    header: facts.value.profile ?? { name: "", contact: {} },
+    experience: groupEntries(facts.value.experience ?? [], selected),
+    projects: groupEntries(facts.value.projects ?? [], selected),
+    skills: facts.value.skills ?? [],
   };
   const runner = options.runner ?? systemRunner;
   try {

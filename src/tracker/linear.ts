@@ -1,6 +1,6 @@
 import type { IdempotencyMap } from "../core/approval.ts";
 import { errorMessage, isObject } from "../core/narrow.ts";
-import type { ApplicationState, Lead, Result, TrackerAdapter } from "../core/types.ts";
+import type { ApplicationState, Lead, Result, TitleFormat, TrackerAdapter } from "../core/types.ts";
 
 export const LINEAR_ENDPOINT = "https://api.linear.app/graphql";
 
@@ -9,6 +9,7 @@ export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 export type LinearMapping = {
   readonly states: Readonly<Record<ApplicationState, string>>;
   readonly channelLabelPrefix: string;
+  readonly channelLabels?: Readonly<Record<string, string>>;
 };
 
 export const DEFAULT_LINEAR_MAPPING: LinearMapping = {
@@ -33,6 +34,7 @@ export type LinearOptions = {
   readonly idempotency: IdempotencyMap;
   readonly fetch?: FetchLike;
   readonly mapping?: LinearMapping;
+  readonly titleFormat?: TitleFormat;
 };
 
 type Named = { readonly id: string; readonly name: string };
@@ -177,6 +179,16 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
     return { ok: true, value: id };
   }
 
+  function channelLabelName(source: string): string {
+    return mapping.channelLabels?.[source] ?? `${mapping.channelLabelPrefix}${source}`;
+  }
+
+  function issueTitle(lead: Lead): string {
+    return options.titleFormat === "company-role"
+      ? `${lead.posting.company} - ${lead.posting.title}`
+      : `${lead.posting.title} at ${lead.posting.company}`;
+  }
+
   function mapKey(key: string): string {
     return `linear:${options.team ?? ""}:${key}`;
   }
@@ -200,7 +212,7 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
     if (!team.ok) return team;
     const state = await stateId(team.value, "lead");
     if (!state.ok) return state;
-    const label = await labelId(team.value, `${mapping.channelLabelPrefix}${lead.posting.source}`);
+    const label = await labelId(team.value, channelLabelName(lead.posting.source));
     if (!label.ok) return label;
     const description = [
       lead.posting.url,
@@ -212,7 +224,7 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
     const created = await graphql(CREATE_ISSUE_MUTATION, {
       input: {
         teamId: team.value.id,
-        title: `${lead.posting.title} at ${lead.posting.company}`,
+        title: issueTitle(lead),
         description,
         stateId: state.value,
         labelIds: [label.value],

@@ -11,7 +11,7 @@ stack:
   include: []
   # TODO(huntline): technologies that rule a Posting out.
   exclude: []
-# TODO(huntline): set a floor such as {amount: 60000, currency: USD}, or keep null.
+# TODO(huntline): set a floor such as {amount: 60000, currency: USD, period: year}, or keep null.
 salaryFloor: null
 excludedCompanies: []
 outreachDailyCap: 5
@@ -19,3 +19,8 @@ sources: []
 tracker:
   kind: local
   directory: tracker
+  # Linear only, all optional:
+  # states: {lead: Backlog, applied: In Progress}
+  # channelLabels: {linkedin: "channel:linkedin"}
+  # channelLabelPrefix: "channel:"
+  # titleFormat: role-at-company

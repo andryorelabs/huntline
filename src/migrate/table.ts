@@ -8,7 +8,10 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = {
   state: ["state", "status", "stage"],
   date: ["date", "applied", "reviewed", "day"],
   score: ["score", "fit", "rating"],
-  verdict: ["verdict", "outcome", "decision", "result"],
+  verdict: ["verdict", "decision", "result"],
+  outcome: ["outcome"],
+  id: ["id"],
+  reason: ["reason"],
   notes: ["notes", "note", "comment", "comments"],
 };
 
@@ -42,9 +45,19 @@ export function extractUrl(cell: string): string {
   return bare?.[0] ?? "";
 }
 
+export type TableBlock = {
+  readonly headers: readonly string[];
+  readonly columns: readonly string[];
+  readonly rows: TableRow[];
+};
+
 export function parseTables(markdown: string): TableRow[][] {
+  return parseTableBlocks(markdown).map((block) => block.rows);
+}
+
+export function parseTableBlocks(markdown: string): TableBlock[] {
   const lines = markdown.split(/\r?\n/);
-  const tables: TableRow[][] = [];
+  const tables: TableBlock[] = [];
   let index = 0;
   while (index < lines.length) {
     const header = lines[index] ?? "";
@@ -53,7 +66,8 @@ export function parseTables(markdown: string): TableRow[][] {
       index += 1;
       continue;
     }
-    const names = splitCells(header).map(canonicalHeader);
+    const headers = splitCells(header);
+    const names = headers.map(canonicalHeader);
     const rows: TableRow[] = [];
     index += 2;
     while (index < lines.length && (lines[index] ?? "").trim().startsWith("|")) {
@@ -66,7 +80,7 @@ export function parseTables(markdown: string): TableRow[][] {
       rows.push(row);
       index += 1;
     }
-    tables.push(rows);
+    tables.push({ headers, columns: names, rows });
   }
   return tables;
 }

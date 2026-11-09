@@ -15,15 +15,35 @@ export function mentions(haystack: string, needle: string): boolean {
   return pattern.test(normalize(haystack));
 }
 
+function matchesRule(
+  bullet: Bullet,
+  rule: { all?: readonly string[]; any?: readonly string[]; none?: readonly string[] },
+): boolean {
+  const bulletTags = new Set(bullet.tags.map(normalize));
+  const all = (rule.all ?? []).map(normalize);
+  const any = (rule.any ?? []).map(normalize);
+  const none = (rule.none ?? []).map(normalize);
+  if (!all.every((tag) => bulletTags.has(tag))) return false;
+  if (any.length > 0 && !any.some((tag) => bulletTags.has(tag))) return false;
+  return !none.some((tag) => bulletTags.has(tag));
+}
+
 export function selectBullets(
   bullets: Bullet[],
-  selector: { tags?: string[]; requirements?: string[] },
+  selector: {
+    all?: readonly string[];
+    any?: readonly string[];
+    none?: readonly string[];
+    tags?: string[];
+    requirements?: string[];
+  },
 ): Bullet[] {
+  const ruled = bullets.filter((bullet) => matchesRule(bullet, selector));
   const tags = (selector.tags ?? []).map(normalize);
   const tagSet = new Set(tags);
   const requirements = selector.requirements ?? [];
-  if (tags.length === 0 && requirements.length === 0) return [...bullets];
-  return bullets.filter((bullet) => {
+  if (tags.length === 0 && requirements.length === 0) return ruled;
+  return ruled.filter((bullet) => {
     const bulletTags = bullet.tags.map(normalize);
     if (bulletTags.some((tag) => tagSet.has(tag))) return true;
     return requirements.some(

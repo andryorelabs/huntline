@@ -53,15 +53,28 @@ export function selectBullets(
   });
 }
 
+const STOP_WORDS: ReadonlySet<string> = new Set([
+  "the", "and", "with", "for", "years", "year", "experience", "experienced", "strong",
+  "knowledge", "working", "work", "using", "ability", "skills", "skill", "good", "great", "plus",
+]);
+
+function significantWords(phrase: string): string[] {
+  return normalize(phrase)
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((word) => word.length >= 3 && !STOP_WORDS.has(word));
+}
+
 export function requirementCoverage(requirements: string[], facts: FactBank): Coverage {
   const covered: Coverage["covered"] = [];
   const missing: string[] = [];
   for (const requirement of requirements) {
+    const words = significantWords(requirement);
     const factIds = facts.facts
       .filter(
         (fact) =>
-          fact.tags.some((tag) => normalize(tag) === normalize(requirement)) ||
-          mentions(fact.text, requirement),
+          fact.tags.some(
+            (tag) => normalize(tag) === normalize(requirement) || words.includes(normalize(tag)),
+          ) || mentions(fact.text, requirement),
       )
       .map((fact) => fact.id);
     if (factIds.length === 0) missing.push(requirement);

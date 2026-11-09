@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { writeAtomic } from "../core/fs.ts";
 import { errorMessage, isObject } from "../core/narrow.ts";
+import { closeFieldBlockers, UNANSWERED_PREFIX } from "./blockers.ts";
 import type { DataDir, Result } from "../core/types.ts";
 import type { AnswerResult, AnswerScope } from "./types.ts";
 
@@ -51,13 +52,17 @@ export function lookupAnswer(dir: DataDir, question: string, scope: AnswerScope)
   return { status: "answer", text: found.text, provenance: found.provenance };
 }
 
-export function saveAnswer(
+export function listAnswers(dir: DataDir): StoredAnswer[] {
+  return readAnswers(dir);
+}
+
+export async function saveAnswer(
   dir: DataDir,
   question: string,
   scope: AnswerScope,
   text: string,
   provenance: string,
-): Result<void> {
+): Promise<Result<void>> {
   const normalized = normalizeQuestion(question);
   if (normalized === "") return { ok: false, error: { code: "usage", message: "question is empty" } };
   if (provenance.trim() === "") {
@@ -69,6 +74,12 @@ export function saveAnswer(
     );
     const next = [...kept, { question: normalized, scope, text, provenance }];
     writeAtomic(path.join(dir.path, ANSWERS_FILE), `${JSON.stringify(next, null, 2)}\n`);
+    await closeFieldBlockers(
+      dir,
+      (detail) =>
+        detail.startsWith(UNANSWERED_PREFIX) &&
+        normalizeQuestion(detail.slice(UNANSWERED_PREFIX.length)) === normalized,
+    );
     return { ok: true, value: undefined };
   } catch (error) {
     return { ok: false, error: { code: "internal", message: errorMessage(error) } };

@@ -1,0 +1,243 @@
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import type { CommandContext } from "../core/commands.ts";
+import { foldState } from "../ledger/state.ts";
+import { readEvents } from "../ledger/events.ts";
+import type { FetchLike } from "../tracker/linear.ts";
+import { run } from "./command.ts";
+import { importLegacy } from "./legacy.ts";
+import { importLinear } from "./linear.ts";
+import { parseTables } from "./table.ts";
+
+let root = "";
+let legacyDir = "";
+let ctx: CommandContext;
+
+const SWEEP = `# Sweep
+
+## Coverage
+
+| Company | Source | Result |
+| --- | --- | --- |
+| Acme Corp | greenhouse | covered |
+
+## Leads
+
+| Company | Role | URL | Channel |
+| --- | --- | --- | --- |
+| Acme Corp | Backend Engineer | https://example.test/jobs/1 | greenhouse |
+| Globex | Platform Engineer | [link](https://example.test/jobs/2) | lever |
+`;
+
+const REVIEW = `| # | Date | Company | Role | URL | Channel | Score | Verdict | Notes |
+| - | ---- | ------- | ---- | --- | ------- | ----- | ------- | ----- |
+| 1 | 2026-02-03 | Acme Corp | Backend Engineer | https://example.test/jobs/1 | greenhouse | 82 | apply | strong stack match |
+| 2 | 2026-02-03 | Initech | Data Engineer | https://example.test/jobs/3 | lever | 40 | skip | onsite only |
+| 3 | 2026-02-03 | Umbrella | SRE | https://example.test/jobs/4 | lever | 55 | wibble | |
+`;
+
+const APPLICATIONS = `| Company | Role | URL | Channel | Status | Date | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| Acme Corp | Backend Engineer | https://example.test/jobs/1 | greenhouse | Interviewing | 2026-02-10 | recruiter call done |
+| Hooli | Staff Engineer | https://example.test/jobs/5 | ashby | Applied | 2026-02-11 | |
+| Pied Piper | Developer | https://example.test/jobs/6 | ashby | Ghosted | 2026-02-12 | |
+`;
+
+function write(relative: string, content: string): void {
+  const target = path.join(legacyDir, relative);
+  mkdirSync(path.dirname(target), { recursive: true });
+  writeFileSync(target, content);
+}
+
+beforeEach(() => {
+  root = mkdtempSync(path.join(os.tmpdir(), "huntline-migrate-"));
+  legacyDir = path.join(root, "legacy");
+  const dataPath = path.join(root, "data");
+  mkdirSync(dataPath);
+  ctx = { dataDir: { path: dataPath }, env: { LINEAR_API_KEY: "lin_synthetic_key" }, cwd: root };
+  write("sweeps/2026-02-01/run.md", SWEEP);
+  write("reviews/batch-2026-02-03.md", REVIEW);
+  write("applications/batch-2026-02-10.md", APPLICATIONS);
+});
+
+afterEach(() => {
+  rmSync(root, { recursive: true, force: true });
+});
+
+describe("table parser", () => {
+  test("normalizes headers and extracts link targets", () => {
+    const [rows] = parseTables(SWEEP.split("## Leads")[1] ?? "");
+    expect(rows?.[1]).toMatchObject({ company: "Globex", role: "Platform Engineer", url: "https://example.test/jobs/2" });
+  });
+});
+
+describe("importLegacy", () => {
+  test("imports leads, scores, states, dates and outcomes", async () => {
+    const result = await importLegacy(ctx, legacyDir);
+    expect(result.ok).toBe(true);
+    const events = await readEvents(ctx.dataDir ?? { path: "" });
+    const leads = events.filter((event) => event.kind === "lead.created");
+    expect(leads.map((event) => event.kind === "lead.created" && event.posting.company).toSorted()).toEqual([
+      "Acme Corp",
+      "Globex",
+      "Hooli",
+      "Initech",
+      "Pied Piper",
+      "Umbrella",
+    ]);
+    const acme = events.filter((event) => event.key?.startsWith("acme|"));
+    expect(foldState(acme)).toBe("interviewing");
+    const acmeLead = acme.find((event) => event.kind === "lead.created");
+    expect(acmeLead?.kind === "lead.created" && acmeLead.posting.url).toBe("https://example.test/jobs/1");
+    expect(acmeLead?.kind === "lead.created" && acmeLead.posting.source).toBe("greenhouse");
+    const score = events.find((event) => event.kind === "score.recorded" && event.score === 82);
+    expect(score).toBeDefined();
+    const initech = events.filter((event) => event.key?.startsWith("initech|"));
+    expect(foldState(initech)).toBe("discarded");
+    const dated = events.some((event) => event.kind === "note" && event.text.includes("date 2026-02-10"));
+    expect(dated).toBe(true);
+    const coverage = events.some((event) => event.kind === "note" && event.text.includes("legacy coverage"));
+    expect(coverage).toBe(true);
+  });
+
+  test("reports unknown states instead of guessing", async () => {
+    const result = await importLegacy(ctx, legacyDir);
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.unknownStates).toEqual([
+      'review verdict "wibble" in batch-2026-02-03.md',
+      'application state "Ghosted" in batch-2026-02-10.md',
+    ]);
+    const events = await readEvents(ctx.dataDir ?? { path: "" });
+    const pied = events.filter((event) => event.key?.startsWith("pied piper|"));
+    expect(foldState(pied)).toBe("lead");
+  });
+
+  test("running twice leaves the event count unchanged", async () => {
+    const first = await importLegacy(ctx, legacyDir);
+    if (!first.ok) throw new Error(first.error.message);
+    const before = (await readEvents(ctx.dataDir ?? { path: "" })).length;
+    expect(before).toBeGreaterThan(0);
+    const second = await importLegacy(ctx, legacyDir);
+    if (!second.ok) throw new Error(second.error.message);
+    expect(second.value.created).toBe(0);
+    expect((await readEvents(ctx.dataDir ?? { path: "" })).length).toBe(before);
+  });
+
+  test("fails for a missing directory", async () => {
+    const result = await importLegacy(ctx, path.join(root, "absent"));
+    expect(result.ok).toBe(false);
+  });
+});
+
+function issue(id: string, title: string, state: string, extra: Record<string, unknown> = {}): unknown {
+  return {
+    id,
+    identifier: `HNT-${id}`,
+    title,
+    description: "https://example.test/jobs/9\n\nsource: lever",
+    url: `https://linear.example.test/${id}`,
+    createdAt: "2026-03-01T10:00:00.000Z",
+    state: { name: state },
+    labels: { nodes: [{ name: "channel:lever" }] },
+    ...extra,
+  };
+}
+
+function linearFetch(pages: unknown[][]): { fetch: FetchLike; calls: () => number } {
+  let call = 0;
+  const fetchImpl: FetchLike = () => {
+    const nodes = pages[call] ?? [];
+    call += 1;
+    const hasNextPage = call < pages.length;
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          data: { issues: { nodes, pageInfo: { hasNextPage, endCursor: hasNextPage ? `c${call}` : null } } },
+        }),
+      ),
+    );
+  };
+  return { fetch: fetchImpl, calls: () => call };
+}
+
+const failingFetch: FetchLike = () => Promise.resolve(new Response("nope", { status: 500 }));
+
+describe("importLinear", () => {
+  const pages = [
+    [issue("1", "Backend Engineer at Acme Corp", "Backlog"), issue("2", "SRE at Globex", "In Progress")],
+    [
+      issue("3", "Data Engineer at Initech", "Canceled"),
+      issue("4", "Developer at Hooli", "Waiting On Vendor"),
+      issue("5", "Untitled thing", "Todo"),
+    ],
+  ];
+
+  test("maps states, reports unknown ones and paginates", async () => {
+    const source = linearFetch(pages);
+    const result = await importLinear(ctx, { team: "HNT", fetch: source.fetch });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(source.calls()).toBe(2);
+    expect(result.value.unknownStates).toEqual(['Linear state "Waiting On Vendor" on HNT-4']);
+    expect(result.value.warnings).toHaveLength(1);
+    const events = await readEvents(ctx.dataDir ?? { path: "" });
+    expect(foldState(events.filter((event) => event.key?.startsWith("lever:") || event.key?.includes("sre")))).not.toBeNull();
+    const states = events.flatMap((event) => (event.kind === "status.changed" ? [event.to] : []));
+    expect(states.toSorted()).toEqual(["applied", "discarded"]);
+  });
+
+  test("is idempotent across runs", async () => {
+    const first = await importLinear(ctx, { team: "HNT", fetch: linearFetch(pages).fetch });
+    expect(first.ok).toBe(true);
+    const before = (await readEvents(ctx.dataDir ?? { path: "" })).length;
+    await importLinear(ctx, { team: "HNT", fetch: linearFetch(pages).fetch });
+    expect((await readEvents(ctx.dataDir ?? { path: "" })).length).toBe(before);
+  });
+
+  test("does not regress the state of a Lead that already existed locally", async () => {
+    const seeded = await importLegacy(ctx, legacyDir);
+    if (!seeded.ok) throw new Error(seeded.error.message);
+    const dir = ctx.dataDir ?? { path: "" };
+    const before = await readEvents(dir);
+    const acmeKey = before.find((event) => event.key?.startsWith("acme|"))?.key ?? "";
+    expect(foldState(before.filter((event) => event.key === acmeKey))).toBe("interviewing");
+    const marked = issue("9", "Backend Engineer at Acme Corp", "In Progress", {
+      description: `https://example.test/jobs/1\n\n[huntline-key: ${acmeKey}]`,
+    });
+    const result = await importLinear(ctx, { team: "HNT", fetch: linearFetch([[marked]]).fetch });
+    if (!result.ok) throw new Error(result.error.message);
+    const after = await readEvents(dir);
+    expect(foldState(after.filter((event) => event.key === acmeKey))).toBe("interviewing");
+  });
+
+  test("requires the API key and sends it as authorization", async () => {
+    const missing = await importLinear({ ...ctx, env: {} }, { team: "HNT" });
+    expect(missing.ok).toBe(false);
+    let seen = "";
+    const spy: FetchLike = (_input, init) => {
+      seen = new Headers(init.headers).get("authorization") ?? "";
+      return linearFetch([[]]).fetch(_input, init);
+    };
+    await importLinear(ctx, { team: "HNT", project: "Search", fetch: spy });
+    expect(seen).toBe("lin_synthetic_key");
+  });
+
+  test("surfaces HTTP failures", async () => {
+    const result = await importLinear(ctx, { team: "HNT", fetch: failingFetch });
+    expect(result.ok ? "" : result.error.code).toBe("migrate-linear-http");
+  });
+});
+
+describe("migrate command", () => {
+  test("legacy prints a report envelope", async () => {
+    const envelope = await run(["legacy", legacyDir], ctx);
+    expect(envelope.ok).toBe(true);
+  });
+
+  test("rejects bad usage", async () => {
+    expect((await run(["legacy"], ctx)).ok).toBe(false);
+    expect((await run(["linear"], ctx)).ok).toBe(false);
+    expect((await run(["bogus"], ctx)).ok).toBe(false);
+  });
+});

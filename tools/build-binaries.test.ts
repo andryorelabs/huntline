@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { binaryName, buildBinary, parseArguments, readPluginVersion, TARGETS } from "./build-binaries.ts";
@@ -80,10 +80,24 @@ describe.skipIf(process.platform !== "linux" || process.arch !== "x64")(
       expect(doctor.stdout.toString()).toContain("todo-markers");
     });
 
-    test("stub commands load through the compiled binary", () => {
-      const result = run("inbox", "eval");
-      expect(result.exitCode).toBe(1);
-      expect(result.stdout.toString()).toContain("not-implemented");
+    test("inbox eval finds its embedded fixtures in the compiled binary", () => {
+      const fixtureDir = path.resolve(import.meta.dir, "..", "fixtures", "inbox");
+      const predictions = ["emails-en.json", "emails-es.json"]
+        .flatMap((name) => JSON.parse(readFileSync(path.join(fixtureDir, name), "utf8")) as { messageId: string; label: string }[])
+        .map((email) => ({ messageId: email.messageId, classification: email.label }));
+      const file = path.join(workdir, "classifications.json");
+      writeFileSync(file, JSON.stringify(predictions));
+      const result = run("inbox", "eval", file);
+      expect(result.exitCode).toBe(0);
+      expect(JSON.parse(result.stdout.toString())).toMatchObject({ ok: true, data: { accuracy: 1 } });
+    });
+
+    test("lazily loaded commands run through the compiled binary", () => {
+      const result = run("sweep");
+      expect(result.exitCode).not.toBe(0);
+      const envelope: { ok: boolean; error?: { code: string } } = JSON.parse(result.stdout.toString());
+      expect(envelope.ok).toBe(false);
+      expect(envelope.error?.code).not.toBe("not-implemented");
     });
   },
 );

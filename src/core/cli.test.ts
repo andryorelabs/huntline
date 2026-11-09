@@ -152,21 +152,7 @@ describe("init", () => {
   });
 });
 
-describe("stub commands", () => {
-  const invocations: string[][] = [
-    ["inbox", "eval"],
-    ["migrate", "legacy", "dir"],
-    ["migrate", "linear"],
-  ];
-
-  for (const args of invocations) {
-    test(`${args.join(" ")} prints not-implemented and exits 1`, () => {
-      const result = runCli(args);
-      expect(result.code).toBe(1);
-      expect(errorOf(result).code).toBe("not-implemented");
-    });
-  }
-
+describe("shared command modules", () => {
   test("commands sharing a module are told apart by their command word", () => {
     const fixture = path.join(workDir, "fixture");
     writeValidDataDir(fixture);

@@ -80,10 +80,12 @@ describe.skipIf(process.platform !== "linux" || process.arch !== "x64")(
       expect(doctor.stdout.toString()).toContain("todo-markers");
     });
 
-    test("stub commands load through the compiled binary", () => {
-      const result = run("inbox", "eval");
-      expect(result.exitCode).toBe(1);
-      expect(result.stdout.toString()).toContain("not-implemented");
+    test("lazily loaded commands run through the compiled binary", () => {
+      const result = run("sweep");
+      expect(result.exitCode).not.toBe(0);
+      const envelope: { ok: boolean; error?: { code: string } } = JSON.parse(result.stdout.toString());
+      expect(envelope.ok).toBe(false);
+      expect(envelope.error?.code).not.toBe("not-implemented");
     });
   },
 );

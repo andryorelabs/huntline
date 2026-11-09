@@ -1,0 +1,33 @@
+{
+  "Team": {
+    "data": {
+      "teams": {
+        "nodes": [
+          {
+            "id": "team-1",
+            "key": "HNT",
+            "states": {
+              "nodes": [
+                { "id": "st-backlog", "name": "Backlog" },
+                { "id": "st-todo", "name": "Todo" },
+                { "id": "st-progress", "name": "In Progress" },
+                { "id": "st-done", "name": "Done" },
+                { "id": "st-canceled", "name": "Canceled" }
+              ]
+            },
+            "labels": { "nodes": [{ "id": "lb-existing", "name": "channel:linkedin" }] }
+          }
+        ]
+      }
+    }
+  },
+  "FindIssue": { "data": { "issues": { "nodes": [] } } },
+  "CreateLabel": {
+    "data": { "issueLabelCreate": { "success": true, "issueLabel": { "id": "lb-new", "name": "channel:greenhouse" } } }
+  },
+  "CreateIssue": {
+    "data": { "issueCreate": { "success": true, "issue": { "id": "issue-1", "identifier": "HNT-1" } } }
+  },
+  "UpdateIssue": { "data": { "issueUpdate": { "success": true } } },
+  "Comment": { "data": { "commentCreate": { "success": true } } }
+}

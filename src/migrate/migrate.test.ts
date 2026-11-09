@@ -195,6 +195,22 @@ describe("importLinear", () => {
     expect((await readEvents(ctx.dataDir ?? { path: "" })).length).toBe(before);
   });
 
+  test("does not regress the state of a Lead that already existed locally", async () => {
+    const seeded = await importLegacy(ctx, legacyDir);
+    if (!seeded.ok) throw new Error(seeded.error.message);
+    const dir = ctx.dataDir ?? { path: "" };
+    const before = await readEvents(dir);
+    const acmeKey = before.find((event) => event.key?.startsWith("acme|"))?.key ?? "";
+    expect(foldState(before.filter((event) => event.key === acmeKey))).toBe("interviewing");
+    const marked = issue("9", "Backend Engineer at Acme Corp", "In Progress", {
+      description: `https://example.test/jobs/1\n\n[huntline-key: ${acmeKey}]`,
+    });
+    const result = await importLinear(ctx, { team: "HNT", fetch: linearFetch([[marked]]).fetch });
+    if (!result.ok) throw new Error(result.error.message);
+    const after = await readEvents(dir);
+    expect(foldState(after.filter((event) => event.key === acmeKey))).toBe("interviewing");
+  });
+
   test("requires the API key and sends it as authorization", async () => {
     const missing = await importLinear({ ...ctx, env: {} }, { team: "HNT" });
     expect(missing.ok).toBe(false);

@@ -11,6 +11,7 @@ const LOCK_DIRECTORY = ".migrate";
 
 export type Importer = {
   lead(posting: Posting, preferredKey?: string): string;
+  hadLead(key: string): boolean;
   status(key: string, state: ApplicationState, discriminator: string): void;
   note(key: string, text: string): void;
   score(key: string, score: number, reasons: readonly string[], discriminator: string): void;
@@ -81,6 +82,9 @@ export async function withImporter(
           const key = preferredKey ?? dedupKey(posting);
           operations.push(() => createLead(key, posting));
           return key;
+        },
+        hadLead(key) {
+          return leadKeys.has(key);
         },
         status(key, state, discriminator) {
           operations.push(() =>

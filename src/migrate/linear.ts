@@ -167,7 +167,7 @@ function importIssue(issue: LinearIssue, importer: Importer): void {
   const key = importer.lead(posting, KEY_MARKER.exec(issue.description)?.[1]?.trim());
   const state = mapState(issue.stateName);
   if (state === null) importer.unknownState(`Linear state "${issue.stateName}" on ${label}`);
-  else if (state !== "lead") importer.status(key, state, issue.id);
+  else if (state !== "lead" && !importer.hadLead(key)) importer.status(key, state, issue.id);
   importer.note(key, `linear ${label}; state ${issue.stateName}; created ${issue.createdAt}; ${issue.url}`);
 }
 

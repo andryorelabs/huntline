@@ -1,19 +1,12 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import type { CommandContext } from "../core/commands.ts";
 import { failure, success, type Envelope } from "../core/envelope.ts";
 import { errorMessage, isObject, isOneOf } from "../core/narrow.ts";
 import { EMAIL_CLASSES } from "../inbox/types.ts";
+import emailsEn from "../../fixtures/inbox/emails-en.json" with { type: "json" };
+import emailsEs from "../../fixtures/inbox/emails-es.json" with { type: "json" };
 import { scoreClassifications, type LabelledEmail, type Prediction } from "./score.ts";
-
-const DEFAULT_FIXTURES_DIR = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "..",
-  "fixtures",
-  "inbox",
-);
 
 function usage(message: string): Envelope<never> {
   return failure("usage", message, { recoverable: false });
@@ -67,6 +60,27 @@ function parseRows<Row>(text: string, convert: (value: unknown) => Row | null): 
   return rows;
 }
 
+function convertRows(parsed: unknown): LabelledEmail[] | null {
+  if (!Array.isArray(parsed)) return null;
+  const rows: LabelledEmail[] = [];
+  for (const entry of parsed) {
+    const row = toLabelled(entry);
+    if (row === null) return null;
+    rows.push(row);
+  }
+  return rows;
+}
+
+function loadEmbeddedLabels(): LabelledEmail[] | null {
+  const labels: LabelledEmail[] = [];
+  for (const source of [emailsEn, emailsEs]) {
+    const rows = convertRows(source);
+    if (rows === null) return null;
+    labels.push(...rows);
+  }
+  return labels;
+}
+
 function loadLabels(directory: string): LabelledEmail[] | null {
   const files = readdirSync(directory)
     .filter((name) => name.endsWith(".json"))
@@ -84,9 +98,9 @@ export function run(argv: string[], ctx: CommandContext): Promise<Envelope<unkno
   const file = positional(argv);
   if (file === undefined) return Promise.resolve(usage("inbox eval needs a classifications file path"));
   const labelsOverride = flagValue(argv, "--labels");
-  const directory = labelsOverride === undefined ? DEFAULT_FIXTURES_DIR : path.resolve(ctx.cwd, labelsOverride);
+  const directory = labelsOverride === undefined ? "embedded fixtures" : path.resolve(ctx.cwd, labelsOverride);
   try {
-    const labels = loadLabels(directory);
+    const labels = labelsOverride === undefined ? loadEmbeddedLabels() : loadLabels(directory);
     if (labels === null || labels.length === 0) {
       return Promise.resolve(usage(`labelled fixtures in ${directory} are malformed or empty`));
     }

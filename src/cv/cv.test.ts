@@ -192,6 +192,24 @@ describe("cv coverage command", () => {
   });
 });
 
+describe("requirementCoverage significant words", () => {
+  const bank = {
+    facts: [{ id: "f-react", text: "Built dashboards at Acme", tags: ["react"] }],
+  } as unknown as Parameters<typeof requirementCoverage>[1];
+
+  test("matches a phrase on a significant word equal to a tag", () => {
+    expect(requirementCoverage(["3+ years React"], bank).covered).toEqual([
+      { requirement: "3+ years React", factIds: ["f-react"] },
+    ]);
+  });
+
+  test("stop-words and short tokens stay missing", () => {
+    expect(requirementCoverage(["3+ years experience with Go"], bank).missing).toEqual([
+      "3+ years experience with Go",
+    ]);
+  });
+});
+
 const hasTypst = resolveTypst(process.env) !== null && Bun.which("pdftotext") !== null;
 
 describe("real typst", () => {

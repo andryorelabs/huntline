@@ -7,6 +7,8 @@ type BlockerScope = "field" | "section" | "application";
 
 const SCOPE_ORDER: readonly BlockerScope[] = ["application", "section", "field"];
 
+export const UNANSWERED_PREFIX = "no answer for: ";
+
 export function recordBlocker(
   dir: DataDir,
   key: string,
@@ -20,6 +22,31 @@ export function recordBlocker(
     scope,
     detail,
   });
+}
+
+export async function closeFieldBlockers(
+  dir: DataDir,
+  matchesDetail: (detail: string) => boolean,
+): Promise<number> {
+  const events = await readEvents(dir);
+  const resolved = new Set<string>();
+  for (const event of events) {
+    if (event.kind === "blocker.resolved") resolved.add(event.blockerId);
+  }
+  const toClose = events.flatMap((event) =>
+    event.kind === "blocker.opened" &&
+    event.scope === "field" &&
+    !resolved.has(event.blockerId) &&
+    matchesDetail(event.detail)
+      ? [event.blockerId]
+      : [],
+  );
+  await toClose.reduce(
+    (previous, blockerId) =>
+      previous.then(() => appendEvent(dir, { kind: "blocker.resolved", blockerId })).then(() => undefined),
+    Promise.resolve(),
+  );
+  return toClose.length;
 }
 
 export async function listNeeds(dir: DataDir): Promise<NeedsGroup[]> {

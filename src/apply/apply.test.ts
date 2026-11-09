@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { lookupAnswer, saveAnswer } from "./answers.ts";
@@ -29,10 +29,10 @@ function cli(args: string[]): { code: number; envelope: Record<string, unknown> 
 }
 
 describe("answer bank", () => {
-  test("abstains with no answer and returns saved answer with provenance", () => {
+  test("abstains with no answer and returns saved answer with provenance", async () => {
     const dir = { path: workDir };
     expect(lookupAnswer(dir, "Expected salary?", "acme").status).toBe("abstain");
-    expect(saveAnswer(dir, "Expected salary?", "acme", "90k", "human 2026-11-09").ok).toBe(true);
+    expect((await saveAnswer(dir, "Expected salary?", "acme", "90k", "human 2026-11-09")).ok).toBe(true);
     expect(lookupAnswer(dir, "expected  salary", "acme")).toEqual({
       status: "answer",
       text: "90k",
@@ -41,14 +41,52 @@ describe("answer bank", () => {
     expect(lookupAnswer(dir, "Expected salary?", "other").status).toBe("abstain");
   });
 
-  test("global answers apply to any scope", () => {
+  test("global answers apply to any scope", async () => {
     const dir = { path: workDir };
-    saveAnswer(dir, "Work authorization", "global", "yes", "profile");
+    await saveAnswer(dir, "Work authorization", "global", "yes", "profile");
     expect(lookupAnswer(dir, "work authorization?", "acme").status).toBe("answer");
   });
 
-  test("rejects empty provenance", () => {
-    expect(saveAnswer({ path: workDir }, "q", "global", "a", " ").ok).toBe(false);
+  test("rejects empty provenance", async () => {
+    expect((await saveAnswer({ path: workDir }, "q", "global", "a", " ")).ok).toBe(false);
+  });
+});
+
+describe("answer list and blocker closing", () => {
+  test("list returns saved answers with scope and provenance", () => {
+    cli(["apply", "answer", "Notice period?", "--save", "2 weeks", "--provenance", "human"]);
+    cli(["apply", "answer", "Visa?", "--scope", "acme", "--save", "no", "--provenance", "profile"]);
+    const listed = cli(["apply", "answer", "--list"]);
+    const data = listed.envelope["data"] as { answers: Record<string, string>[] };
+    expect(data.answers).toHaveLength(2);
+    expect(data.answers).toContainEqual(expect.objectContaining({ scope: "acme", provenance: "profile" }));
+    expect(data.answers).toContainEqual(expect.objectContaining({ scope: "global", provenance: "human" }));
+  });
+
+  test("saving closes matching open field blockers only", async () => {
+    const dir = { path: workDir };
+    await recordBlocker(dir, "acme-1", "field", "no answer for: How soon can you start?");
+    await recordBlocker(dir, "acme-1", "field", "no answer for: Visa?");
+    await recordBlocker(dir, "acme-1", "section", "no answer for: How soon can you start?");
+    const saved = await saveAnswer(dir, "how soon can you start", "global", "now", "human");
+    expect(saved.ok).toBe(true);
+    const groups = await listNeeds(dir);
+    expect(groups.flatMap((group) => group.items.map((item) => `${group.scope}:${item.detail}`)).toSorted()).toEqual([
+      "field:no answer for: Visa?",
+      "section:no answer for: How soon can you start?",
+    ]);
+  });
+});
+
+describe("lever reference", () => {
+  test("orders text fields, CV upload last, then snapshot read-back", () => {
+    const text = readFileSync(path.join(import.meta.dir, "../../skills/apply/references/lever.md"), "utf8");
+    const textFields = text.indexOf("fill the text fields first");
+    const upload = text.indexOf("upload the CV last");
+    const snapshot = text.indexOf("snapshot rather than a script");
+    expect(textFields).toBeGreaterThan(-1);
+    expect(upload).toBeGreaterThan(textFields);
+    expect(snapshot).toBeGreaterThan(upload);
   });
 });
 

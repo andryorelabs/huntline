@@ -4,8 +4,8 @@ import type { CommandContext } from "../core/commands.ts";
 import { failure, success, type Envelope } from "../core/envelope.ts";
 import { errorMessage, isObject, isOneOf } from "../core/narrow.ts";
 import type { DataDir } from "../core/types.ts";
-import { GLOBAL_SCOPE, lookupAnswer, saveAnswer } from "./answers.ts";
-import { listNeeds, recordBlocker } from "./blockers.ts";
+import { GLOBAL_SCOPE, listAnswers, lookupAnswer, saveAnswer } from "./answers.ts";
+import { listNeeds, recordBlocker, UNANSWERED_PREFIX } from "./blockers.ts";
 import type { FieldDump, IntendedField } from "./types.ts";
 import { verifyFields } from "./verify.ts";
 
@@ -66,6 +66,7 @@ function collect<Item>(rows: readonly unknown[], convert: (row: unknown) => Item
 }
 
 async function runAnswer(argv: readonly string[], dir: DataDir): Promise<Envelope<unknown>> {
+  if (argv.includes("--list")) return success({ answers: listAnswers(dir) });
   const question = positionals(argv).join(" ").trim();
   if (question === "") return usage("apply answer needs a question");
   const scope = flagValue(argv, "--scope") ?? GLOBAL_SCOPE;
@@ -73,7 +74,7 @@ async function runAnswer(argv: readonly string[], dir: DataDir): Promise<Envelop
   if (text !== undefined) {
     const provenance = flagValue(argv, "--provenance");
     if (provenance === undefined) return usage("--save needs --provenance <source>");
-    const saved = saveAnswer(dir, question, scope, text, provenance);
+    const saved = await saveAnswer(dir, question, scope, text, provenance);
     if (!saved.ok) return failure(saved.error.code, saved.error.message);
     return success({ status: "saved", scope, provenance });
   }
@@ -81,7 +82,7 @@ async function runAnswer(argv: readonly string[], dir: DataDir): Promise<Envelop
   if (key === undefined) return usage("apply answer needs --key <lead key>");
   const result = lookupAnswer(dir, question, scope);
   if (result.status === "answer") return success(result);
-  const event = await recordBlocker(dir, key, "field", `no answer for: ${question}`);
+  const event = await recordBlocker(dir, key, "field", `${UNANSWERED_PREFIX}${question}`);
   return success({ status: "abstain", blockerId: event.kind === "blocker.opened" ? event.blockerId : null });
 }
 

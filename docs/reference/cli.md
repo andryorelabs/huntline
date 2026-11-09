@@ -69,7 +69,8 @@ Prepares the tools `cv build` needs. Downloads the pinned Typst release (checksu
 ### `huntline apply`
 
 - `apply answer <question> --key <key> [--scope <scope>]` returns an Answer bank answer with provenance or `abstain` and records a field Blocker.
-- `apply answer <question> --scope <scope> --save <text> --provenance <source>` saves an answer.
+- `apply answer <question> --scope <scope> --save <text> --provenance <source>` saves an answer and closes every open field Blocker whose question normalizes equal.
+- `apply answer --list` prints every saved answer with scope and provenance.
 - `apply verify --intended <file> --dump <file>` compares intended field values with a field dump; mismatches exit 1 with `verify-mismatch`.
 - `apply block <key> --detail <text> [--scope field|section|application]` records a Blocker.
 

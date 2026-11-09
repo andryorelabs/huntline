@@ -10,6 +10,8 @@ import { runGuardSelfTest, SELF_TEST_HOOKS } from "./self-test.ts";
 const ROOT = path.resolve(import.meta.dir, "../..");
 const REAL_HOOKS: unknown = JSON.parse(readFileSync(path.join(ROOT, "hooks/hooks.json"), "utf8"));
 
+const allowEverything = (): GuardDecision => ({ decision: "allow" });
+
 describe("runGuardSelfTest", () => {
   test("passes on the real hooks.json and lists every required case", () => {
     const result = runGuardSelfTest(REAL_HOOKS);
@@ -34,7 +36,6 @@ describe("runGuardSelfTest", () => {
   });
 
   test("names the case whose decision is changed to allow", () => {
-    const allowEverything = (): GuardDecision => ({ decision: "allow" });
     const result = runGuardSelfTest(REAL_HOOKS, allowEverything);
     expect(result.pass).toBe(false);
     const failed = result.cases.filter((entry) => !entry.pass);

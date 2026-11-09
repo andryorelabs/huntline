@@ -3,6 +3,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "bun test"
-  }
+    "check": "bun run typecheck && bun run lint",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "oxlint --deny-warnings",
+    "test": "bun test",
+    "build": "bun tools/build-binaries.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "oxlint": "^1.92.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "bun": "1.4.4"
+  },
+  "packageManager": "bun@1.4.4"
 }

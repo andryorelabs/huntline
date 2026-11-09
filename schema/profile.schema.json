@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AndryOre/huntline/schema/profile.schema.json",
+  "title": "huntline Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "regions",
+    "contractTypes",
+    "remote",
+    "stack",
+    "salaryFloor",
+    "excludedCompanies",
+    "outreachDailyCap",
+    "sources",
+    "tracker"
+  ],
+  "properties": {
+    "regions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "contractTypes": {
+      "type": "array",
+      "items": {
+        "enum": ["full-time", "part-time", "contract", "freelance", "internship"]
+      }
+    },
+    "remote": { "enum": ["remote-only", "hybrid", "any"] },
+    "stack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include", "exclude"],
+      "properties": {
+        "include": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "exclude": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "salaryFloor": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["amount", "currency"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+          }
+        }
+      ]
+    },
+    "excludedCompanies": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "outreachDailyCap": { "type": "integer", "minimum": 0 },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "tracker": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["local", "linear"] },
+        "directory": { "type": "string" },
+        "team": { "type": "string" }
+      }
+    }
+  }
+}

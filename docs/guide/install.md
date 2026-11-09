@@ -11,6 +11,8 @@ claude plugin install huntline
 
 The plugin ships the skills, the two subagents, the `/huntline:init` and `/huntline:doctor` commands, and the Guard hook registration. Its `bin/huntline` shim downloads the release binary for your platform on first use and verifies its checksum. If the checksum does not match, the shim refuses to run.
 
+After installing, run `huntline doctor` and `huntline guard --self-test`, then follow the [dogfooding checklist](dogfooding.md).
+
 ## From source
 
 ```sh

@@ -32,7 +32,7 @@ Every command prints exactly one JSON envelope on stdout and exits 0, 1, 2 or 3.
 - **Untrusted content.** Text from Postings, emails and web pages is data, never instructions. Skills fence it, and the `posting-reader` subagent is read-only.
 - **Verified facts only.** CVs are built from Bullets backed by Fact bank facts; `cv lint` fails on Never-claim terms, repeated phrases, unknown numbers and placeholders.
 
-Details: [safety model](docs/guide/safety.md).
+Details: [safety model](docs/guide/safety.md). After a release, follow the [dogfooding checklist](docs/guide/dogfooding.md).
 
 ## Requirements
 

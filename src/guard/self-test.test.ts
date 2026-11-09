@@ -69,6 +69,26 @@ describe("runGuardSelfTest", () => {
   });
 });
 
+describe("dogfooding checklist", () => {
+  const dogfooding = readFileSync(path.join(ROOT, "docs/guide/dogfooding.md"), "utf8");
+  const cli = readFileSync(path.join(ROOT, "docs/reference/cli.md"), "utf8");
+
+  test("every command it names exists in the CLI reference", () => {
+    const named = new Set<string>();
+    for (const match of dogfooding.matchAll(/`huntline ([a-z]+)/g)) {
+      if (match[1] !== undefined) named.add(match[1]);
+    }
+    expect(named.size).toBeGreaterThan(3);
+    for (const command of named) expect(cli).toContain(`### \`huntline ${command}`);
+  });
+
+  test("is linked from the README and the install guide", () => {
+    for (const file of ["README.md", "docs/guide/install.md"]) {
+      expect(readFileSync(path.join(ROOT, file), "utf8")).toContain("dogfooding.md");
+    }
+  });
+});
+
 describe("guard --self-test", () => {
   test("runs through the CLI and exits 0 with an envelope listing the cases", () => {
     const spawned = Bun.spawnSync(

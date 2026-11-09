@@ -1,5 +1,6 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { loadBullets, loadFactBank, loadNeverClaim } from "../cv/facts.ts";
 import type { CommandContext } from "./commands.ts";
 import { loadProfile } from "./data-dir.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
@@ -25,6 +26,28 @@ export function findMarkers(dir: DataDir): MarkerHit[] {
   return hits;
 }
 
+function cvDataProblems(dir: DataDir): string[] {
+  const present = (file: string): boolean => existsSync(path.join(dir.path, file));
+  const problems: string[] = [];
+  const facts = present("facts.yaml") ? loadFactBank(dir) : null;
+  if (facts !== null && !facts.ok) problems.push(facts.error.message);
+  const bullets = present("bullets.yaml") ? loadBullets(dir) : null;
+  if (bullets !== null && !bullets.ok) problems.push(bullets.error.message);
+  if (present("never-claim.yaml")) {
+    const terms = loadNeverClaim(dir);
+    if (!terms.ok) problems.push(terms.error.message);
+  }
+  if (facts?.ok === true && bullets?.ok === true) {
+    const known = new Set(facts.value.facts.map((fact) => fact.id));
+    for (const bullet of bullets.value) {
+      for (const factId of bullet.factIds) {
+        if (!known.has(factId)) problems.push(`bullets.yaml: bullet ${bullet.id} cites missing fact ${factId}`);
+      }
+    }
+  }
+  return problems;
+}
+
 export function runDoctor(ctx: CommandContext): Envelope<unknown> {
   if (ctx.dataDir === null) {
     return failure(
@@ -44,6 +67,12 @@ export function runDoctor(ctx: CommandContext): Envelope<unknown> {
     const listed = markers.map((hit) => `${hit.file}:${hit.line}`).join(", ");
     return failure("todo-markers", `${markers.length} ${MARKER} markers remain: ${listed}`, {
       recoveryAction: `replace each ${MARKER} marker with your own data`,
+    });
+  }
+  const problems = cvDataProblems(ctx.dataDir);
+  if (problems.length > 0) {
+    return failure("cv-data-invalid", problems.join("; "), {
+      recoveryAction: "fix facts.yaml, bullets.yaml and never-claim.yaml as named",
     });
   }
   return success({

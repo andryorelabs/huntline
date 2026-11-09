@@ -1,16 +1,25 @@
 import type { FactBank, LintFinding } from "./types.ts";
 
 const PHRASE_WORDS = 4;
+const TODO_SOURCE = "TODO(?:\\([^)]*\\)|:)";
 const PLACEHOLDER_SOURCE =
-  "TODO(?:\\([^)]*\\))?|TBD|FIXME|XXX+|lorem ipsum|\\{\\{[^}]*\\}\\}|\\[(?:placeholder|insert[^\\]]*|your [^\\]]*)\\]";
+  "TBD|FIXME|XXX+|lorem ipsum|\\{\\{[^}]*\\}\\}|\\[(?:placeholder|insert[^\\]]*|your [^\\]]*)\\]";
 const NUMBER_SOURCE = "\\d[\\d,.]*\\d|\\d";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function normalizeNumber(raw: string): string {
-  return raw.replace(/,/g, "").replace(/\.$/, "");
+export function normalizeNumber(raw: string): string {
+  const separators = [...raw.matchAll(/[,.]/g)].map((match) => match[0]);
+  if (separators.length === 0) return raw;
+  const lastIndex = Math.max(raw.lastIndexOf(","), raw.lastIndexOf("."));
+  const tail = raw.slice(lastIndex + 1);
+  const distinct = new Set(separators);
+  if (distinct.size === 1 && (tail.length === 3 || separators.length > 1)) {
+    return raw.replace(/[,.]/g, "");
+  }
+  return `${raw.slice(0, lastIndex).replace(/[,.]/g, "")}.${tail}`;
 }
 
 function numbersIn(text: string): string[] {
@@ -48,7 +57,11 @@ function neverClaimFindings(text: string, terms: string[]): LintFinding[] {
 }
 
 function placeholderFindings(text: string): LintFinding[] {
-  return locate(text, new RegExp(PLACEHOLDER_SOURCE, "giu")).map((hit) => ({
+  const hits = [
+    ...locate(text, new RegExp(TODO_SOURCE, "gu")),
+    ...locate(text, new RegExp(PLACEHOLDER_SOURCE, "giu")),
+  ];
+  return hits.map((hit) => ({
     rule: "placeholder" as const,
     term: hit.term,
     line: hit.line,

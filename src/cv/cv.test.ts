@@ -3,6 +3,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, write
 import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
+import { resolveTypst } from "../core/tools.ts";
 import type { DataDir } from "../core/types.ts";
 import { buildCv, systemRunner, type TypstRunner } from "./build.ts";
 import { runWith } from "./command.ts";
@@ -191,12 +192,12 @@ describe("cv coverage command", () => {
   });
 });
 
-const hasTypst = Bun.which("typst") !== null && Bun.which("pdftotext") !== null;
+const hasTypst = resolveTypst(process.env) !== null && Bun.which("pdftotext") !== null;
 
 describe("real typst", () => {
   test.skipIf(!hasTypst)("compiles and extracts text", async () => {
-    const result = await buildCv(dir, { name: "real", runner: systemRunner });
-    expect(result.ok).toBe(true);
+    const result = await buildCv(dir, { name: "backend", runner: systemRunner });
+    expect(result.ok ? "ok" : result.error.message).toBe("ok");
     if (result.ok) expect(readFileSync(result.value.text, "utf8")).toContain("checkout API");
   });
 });

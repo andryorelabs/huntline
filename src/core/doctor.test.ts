@@ -63,6 +63,14 @@ afterEach(() => {
 });
 
 describe("doctor guard readiness", () => {
+  test("a hook matcher that no longer covers the guarded tools fails doctor", async () => {
+    const brokenHooks = { hooks: { PreToolUse: [{ matcher: "Read", hooks: [] }] } };
+    const envelope = await runDoctor(writeDataDir({ kind: "local" }), { guardHooks: brokenHooks });
+    expect(envelope.ok).toBe(false);
+    expect(exitCodeFor(envelope)).toBe(1);
+    expect(JSON.stringify(envelope)).toContain("guard-self-test-failed");
+  });
+
   test("a missing plugins file warns with the recovery action and still succeeds", async () => {
     const ctx = withEnv(writeDataDir({ kind: "local" }), {
       HUNTLINE_CLAUDE_PLUGINS_FILE: path.join(workDir, "absent.json"),

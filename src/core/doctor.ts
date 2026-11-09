@@ -16,7 +16,7 @@ import type { DataDir, Profile } from "./types.ts";
 const PLUGIN_RECOVERY_ACTION =
   "claude plugin marketplace add AndryOre/huntline && claude plugin install huntline";
 
-export type DoctorDeps = { readonly fetch?: FetchLike };
+export type DoctorDeps = { readonly fetch?: FetchLike; readonly guardHooks?: unknown };
 
 type DoctorWarning = {
   readonly code: string;
@@ -148,7 +148,7 @@ export async function runDoctor(ctx: CommandContext, deps: DoctorDeps = {}): Pro
       recoveryAction: "fix facts.yaml, bullets.yaml and never-claim.yaml as named",
     });
   }
-  const selfTest = runGuardSelfTest(SELF_TEST_HOOKS);
+  const selfTest = runGuardSelfTest("guardHooks" in deps ? deps.guardHooks : SELF_TEST_HOOKS);
   if (!selfTest.pass) {
     const failed = selfTest.cases.filter((entry) => !entry.pass).map((entry) => entry.name);
     return failure("guard-self-test-failed", `guard self-test failed: ${failed.join("; ")}`, {

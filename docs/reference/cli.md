@@ -22,7 +22,7 @@ Every command prints exactly one JSON envelope on stdout.
 
 ### `huntline init`
 
-Scaffolds `huntline.json`, `profile.yaml`, `facts.yaml`, `bullets.yaml`, `never-claim.yaml` and `answers.yaml` in the working directory with `TODO(huntline):` markers. Refuses to overwrite (`already-exists`, exit 1).
+Scaffolds `huntline.json`, `profile.yaml`, `facts.yaml`, `bullets.yaml` and `never-claim.yaml` in the working directory with `TODO(huntline):` markers. Refuses to overwrite (`already-exists`, exit 1).
 
 ### `huntline doctor`
 

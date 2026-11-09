@@ -75,7 +75,6 @@ describe("repo tooling", () => {
       "facts.yaml",
       "bullets.yaml",
       "never-claim.yaml",
-      "answers.yaml",
     ]) {
       expect(existsSync(path.join(root, "templates", name))).toBe(true);
     }

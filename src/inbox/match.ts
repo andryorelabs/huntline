@@ -78,6 +78,16 @@ const STATE_BY_CLASS: Readonly<Record<EmailClass, ApplicationState | null>> = {
   other: null,
 };
 
+const PROGRESSION: readonly ApplicationState[] = ["applied", "screening", "interviewing", "offer"];
+
+function proposedTransition(current: ApplicationState | null, target: ApplicationState | null): ApplicationState | null {
+  if (target === null || current === null) return null;
+  const currentRank = PROGRESSION.indexOf(current);
+  if (currentRank === -1) return null;
+  if (target === "rejected") return target;
+  return PROGRESSION.indexOf(target) > currentRank ? target : null;
+}
+
 type Candidate = { readonly key: string; readonly band: MatchBand; readonly reason: MatchReason };
 
 function foldAccents(value: string): string {
@@ -204,7 +214,7 @@ function finalize(
     band: resolution.band,
     reason: resolution.reason,
     confirmed,
-    targetState: confirmed && target !== application.state ? target : null,
+    targetState: confirmed && application !== undefined ? proposedTransition(application.state, target) : null,
   };
 }
 

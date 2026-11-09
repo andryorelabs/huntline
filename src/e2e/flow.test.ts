@@ -37,8 +37,14 @@ let workDir = "";
 let dataDir = "";
 let binDir = "";
 
-function runCli(args: string[], extraEnv: Record<string, string> = {}): CliResult {
-  const result = Bun.spawnSync([process.execPath, CLI_ENTRY, ...args, "--data", dataDir], {
+const FETCH_STUB = path.join(REPO_ROOT, "src/e2e/stub-fetch.preload.ts");
+
+function runCli(
+  args: string[],
+  extraEnv: Record<string, string> = {},
+  runtimeArgs: string[] = [],
+): CliResult {
+  const result = Bun.spawnSync([process.execPath, ...runtimeArgs, CLI_ENTRY, ...args, "--data", dataDir], {
     cwd: workDir,
     env: { PATH: `${binDir}:${process.env["PATH"] ?? ""}`, HOME: workDir, ...extraEnv },
     stdout: "pipe",
@@ -91,7 +97,6 @@ function writeDataDir(): void {
   for (const name of ["facts", "bullets", "never-claim"]) {
     copyFileSync(path.join(EXAMPLE_CV, `${name}.yaml`), path.join(dataDir, `${name}.yaml`));
   }
-  writeFileSync(path.join(dataDir, "answers.yaml"), "answers: []\n");
   mkdirSync(path.join(dataDir, "cv"));
   copyFileSync(path.join(EXAMPLE_CV, "template.typ"), path.join(dataDir, "cv", "template.typ"));
 }
@@ -159,6 +164,22 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(workDir, { recursive: true, force: true });
+});
+
+describe("end-to-end sweep over a fixture Source", () => {
+  test("a configured Source produces a Lead and a second sweep finds nothing new", () => {
+    const profilePath = path.join(dataDir, "profile.yaml");
+    const profile: Record<string, unknown> = JSON.parse(readFileSync(profilePath, "utf8"));
+    writeFileSync(profilePath, JSON.stringify({ ...profile, sources: ["remoteok"], remote: "any" }));
+    const first = runCli(["sweep"], {}, ["--preload", FETCH_STUB]);
+    expect(first.code).toBe(0);
+    const firstData = dataOf(first);
+    expect(firstData["failed"]).toEqual([]);
+    expect(firstData["leads"]).toHaveLength(1);
+    const second = dataOf(runCli(["sweep"], {}, ["--preload", FETCH_STUB]));
+    expect(second["leads"]).toEqual([]);
+    expect(second["failed"]).toEqual([]);
+  });
 });
 
 describe("end-to-end flow with the local tracker", () => {

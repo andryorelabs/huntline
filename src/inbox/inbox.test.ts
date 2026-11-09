@@ -99,6 +99,28 @@ describe("matching", () => {
     expect(change.targetState).toBe("rejected");
   });
 
+  test("never proposes a regression or a transition for a never-applied Lead", () => {
+    const interview = email({ classification: "interview" });
+    const regress = matchEmail(
+      interview,
+      [{ key: "acme|dev", company: "Acme Inc.", state: "offer" as const }],
+      new Map(),
+    );
+    expect(regress.targetState).toBeNull();
+    const lead = matchEmail(
+      email({ classification: "rejection" }),
+      [{ key: "acme|dev", company: "Acme Inc.", state: "lead" as const }],
+      new Map(),
+    );
+    expect(lead.targetState).toBeNull();
+    const forward = matchEmail(
+      interview,
+      [{ key: "acme|dev", company: "Acme Inc.", state: "applied" as const }],
+      new Map(),
+    );
+    expect(forward.targetState).toBe("interviewing");
+  });
+
   test("thread match wins over everything", () => {
     const apps = [{ key: "other|dev", company: "Other", state: "applied" as const }];
     const change = matchEmail(email(), apps, new Map([["t1", "other|dev"]]));

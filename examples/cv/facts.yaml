@@ -1,0 +1,10 @@
+facts:
+  - id: f-api-latency
+    text: Cut p95 latency of the Acme Corp checkout API from 900 ms to 300 ms.
+    tags: [typescript, performance, api]
+  - id: f-ci-pipeline
+    text: Built the CI pipeline for 12 services at Acme Corp using GitHub Actions.
+    tags: [ci, github actions, devops]
+  - id: f-mentoring
+    text: Mentored 3 junior engineers at Acme Corp.
+    tags: [mentoring, leadership]

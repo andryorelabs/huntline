@@ -22,12 +22,12 @@ describe("docs/reference/cli.md", () => {
   const documented = documentedCommands(cli);
 
   test("documents every command in COMMANDS plus init and doctor", () => {
-    const expected = new Set(["init", "doctor", ...Object.keys(COMMANDS)]);
+    const expected = new Set(["init", "doctor", "setup", ...Object.keys(COMMANDS)]);
     for (const command of expected) expect(documented.has(command)).toBe(true);
   });
 
   test("documents no command that does not exist", () => {
-    const known = new Set(["init", "doctor", ...Object.keys(COMMANDS)]);
+    const known = new Set(["init", "doctor", "setup", ...Object.keys(COMMANDS)]);
     for (const command of documented) expect(known.has(command)).toBe(true);
   });
 

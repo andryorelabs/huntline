@@ -37,7 +37,7 @@ Details: [safety model](docs/guide/safety.md).
 ## Requirements
 
 - [Bun](https://bun.sh) 1.4.4 when running from source; release builds are checksum-verified binaries for linux and macos on x64 and arm64.
-- Typst and `pdftotext` (poppler) for `cv build`.
+- Typst and `pdftotext` (poppler) for `cv build`. `huntline setup` downloads a checksum-verified Typst for you; poppler comes from your package manager (`sudo apt install poppler-utils` or `brew install poppler`).
 - **Browser MCP.** The `apply` and `browser-source` skills drive your own Chrome through a browser MCP server that speaks CDP, such as chrome-devtools. Without it those skills cannot fill forms or read browser-only Sources.
 - **Gmail MCP.** The `inbox` and `outreach` skills read mail and create drafts through the Gmail MCP server. Without it, `inbox propose` still works on classified emails you supply as a file. Sending is always done by you.
 

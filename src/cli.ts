@@ -4,6 +4,7 @@ import { runDoctor } from "./core/doctor.ts";
 import { exitCodeFor, failure, printEnvelope, success, type Envelope } from "./core/envelope.ts";
 import { runInit } from "./core/init.ts";
 import { errorMessage } from "./core/narrow.ts";
+import { runSetup } from "./core/setup.ts";
 
 declare const HUNTLINE_BUILD_VERSION: string | undefined;
 
@@ -43,6 +44,7 @@ export async function dispatch(
   const dataDir = resolveDataDir(argv, env, cwd);
   const ctx: CommandContext = { dataDir: dataDir.ok ? dataDir.value : null, env, cwd };
   if (first === "init") return runInit(argv.slice(1), cwd, env);
+  if (first === "setup") return runSetup(env);
   if (first === "doctor") {
     const homeOverride = env["HUNTLINE_HOME"];
     const hasExplicitSource =

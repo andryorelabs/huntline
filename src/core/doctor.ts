@@ -5,6 +5,7 @@ import type { CommandContext } from "./commands.ts";
 import { loadProfile } from "./data-dir.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
 import { MARKER } from "./init.ts";
+import { toolStatus } from "./tools.ts";
 import type { DataDir } from "./types.ts";
 
 const SCANNED_EXTENSIONS = new Set([".yaml", ".yml", ".json"]);
@@ -80,5 +81,6 @@ export function runDoctor(ctx: CommandContext): Envelope<unknown> {
     tracker: profile.value.tracker.kind,
     sources: profile.value.sources.length,
     markers: 0,
+    tools: toolStatus(ctx.env),
   });
 }

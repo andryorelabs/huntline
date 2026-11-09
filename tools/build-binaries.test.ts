@@ -81,7 +81,7 @@ describe.skipIf(process.platform !== "linux" || process.arch !== "x64")(
     });
 
     test("stub commands load through the compiled binary", () => {
-      const result = run("sweep");
+      const result = run("inbox", "eval");
       expect(result.exitCode).toBe(1);
       expect(result.stdout.toString()).toContain("not-implemented");
     });

@@ -154,14 +154,7 @@ describe("init", () => {
 
 describe("stub commands", () => {
   const invocations: string[][] = [
-    ["sweep"],
-    ["ingest"],
-    ["score", "k"],
-    ["inbox", "propose"],
-    ["inbox", "apply", "batch"],
     ["inbox", "eval"],
-    ["outreach", "lint"],
-    ["outreach", "log"],
     ["migrate", "legacy", "dir"],
     ["migrate", "linear"],
   ];

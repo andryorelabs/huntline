@@ -42,9 +42,12 @@ export async function dispatch(
   if (first === undefined || first === "--version") return success({ version: buildVersion() });
   const dataDir = resolveDataDir(argv, env, cwd);
   const ctx: CommandContext = { dataDir: dataDir.ok ? dataDir.value : null, env, cwd };
-  if (first === "init") return runInit(argv.slice(1), cwd);
+  if (first === "init") return runInit(argv.slice(1), cwd, env);
   if (first === "doctor") {
-    if (!dataDir.ok && argv.includes("--data")) {
+    const homeOverride = env["HUNTLINE_HOME"];
+    const hasExplicitSource =
+      argv.includes("--data") || (homeOverride !== undefined && homeOverride !== "");
+    if (!dataDir.ok && hasExplicitSource) {
       return failure(dataDir.error.code, dataDir.error.message);
     }
     return runDoctor(ctx);

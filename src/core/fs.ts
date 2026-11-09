@@ -92,10 +92,26 @@ function release(lockPath: string): void {
   rmSync(trash, { recursive: true, force: true });
 }
 
+function reclaimStale(lockPath: string): void {
+  const guard = `${lockPath}.reclaim`;
+  try {
+    mkdirSync(guard);
+  } catch (error) {
+    if (errnoCode(error) !== "EEXIST") throw error;
+    if (lockAgeMs(guard) > HOLDERLESS_GRACE_MS) rmSync(guard, { recursive: true, force: true });
+    return;
+  }
+  try {
+    if (existsSync(lockPath) && isStale(lockPath)) release(lockPath);
+  } finally {
+    rmSync(guard, { recursive: true, force: true });
+  }
+}
+
 async function acquire(lockPath: string, deadline: number): Promise<void> {
   if (tryAcquire(lockPath)) return;
   if (existsSync(lockPath) && isStale(lockPath)) {
-    release(lockPath);
+    reclaimStale(lockPath);
     return acquire(lockPath, deadline);
   }
   if (Date.now() >= deadline) {

@@ -179,6 +179,28 @@ describe("fs", () => {
     );
     expect(await withLock(workDir, () => Promise.resolve("reclaimed"))).toBe("reclaimed");
   });
+
+  test("concurrent withLock callers reclaiming one dead lock never overlap", async () => {
+    const lockPath = path.join(workDir, ".huntline.lock");
+    mkdirSync(lockPath);
+    writeFileSync(
+      path.join(lockPath, "holder.json"),
+      JSON.stringify({ pid: 2_147_483_646, acquiredAt: Date.now() }),
+    );
+    let active = 0;
+    let maxActive = 0;
+    await Promise.all(
+      Array.from({ length: 6 }, () =>
+        withLock(workDir, async () => {
+          active += 1;
+          maxActive = Math.max(maxActive, active);
+          await Bun.sleep(15);
+          active -= 1;
+        }),
+      ),
+    );
+    expect(maxActive).toBe(1);
+  });
 });
 
 describe("approval", () => {

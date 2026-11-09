@@ -25,12 +25,18 @@ function readDirectoryFlag(argv: readonly string[]): string | undefined {
   return index === -1 ? undefined : argv[index + 1];
 }
 
-export async function runInit(argv: string[], cwd: string): Promise<Envelope<unknown>> {
+export async function runInit(
+  argv: string[],
+  cwd: string,
+  env: Record<string, string | undefined> = {},
+): Promise<Envelope<unknown>> {
   const requested = readDirectoryFlag(argv);
   if (argv.includes("--data") && (requested === undefined || requested.startsWith("--"))) {
     return failure("usage", "--data needs a directory");
   }
-  const target = path.resolve(cwd, requested ?? ".");
+  const homeOverride = env["HUNTLINE_HOME"];
+  const fallback = homeOverride !== undefined && homeOverride !== "" ? homeOverride : ".";
+  const target = path.resolve(cwd, requested ?? fallback);
   const force = argv.includes("--force");
   const existing = Object.keys(SCAFFOLD_FILES).filter((name) => existsSync(path.join(target, name)));
   if (existing.length > 0 && !force) {

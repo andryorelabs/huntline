@@ -65,8 +65,11 @@ A tagged CV line built only from Fact bank facts.
 **Never-claim list**:
 Skills or claims a CV must never contain.
 
+**Entry**:
+An experience or project in the Fact bank that Bullets belong to.
+
 **Variant**:
-A CV produced by selecting Bullets by tag.
+A CV produced by selecting Bullets with tag rules (all, any, none).
 
 **Tailored CV**:
 A Variant built for one Lead.

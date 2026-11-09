@@ -1,0 +1,176 @@
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
+import type { FetchLike } from "../tracker/linear.ts";
+import type { CommandContext } from "./commands.ts";
+import { runDoctor } from "./doctor.ts";
+import { exitCodeFor } from "./envelope.ts";
+
+const RECOVERY = "claude plugin marketplace add AndryOre/huntline && claude plugin install huntline";
+
+let workDir = "";
+
+function writeDataDir(tracker: Record<string, unknown>): CommandContext {
+  const dir = path.join(workDir, "data");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(path.join(dir, "huntline.json"), '{"version":1}\n');
+  writeFileSync(
+    path.join(dir, "profile.yaml"),
+    JSON.stringify({
+      regions: ["LATAM"],
+      contractTypes: ["full-time"],
+      remote: "remote-only",
+      stack: { include: ["typescript"], exclude: [] },
+      salaryFloor: null,
+      excludedCompanies: [],
+      outreachDailyCap: 5,
+      sources: [],
+      tracker,
+    }),
+  );
+  return { dataDir: { path: dir }, env: { HOME: workDir }, cwd: workDir };
+}
+
+function withEnv(ctx: CommandContext, env: Record<string, string>): CommandContext {
+  return { ...ctx, env: { ...ctx.env, ...env } };
+}
+
+function guardOf(envelope: Awaited<ReturnType<typeof runDoctor>>): Record<string, unknown> {
+  if (!envelope.ok) throw new Error(`doctor failed: ${envelope.error.message}`);
+  const data = envelope.data as Record<string, unknown>;
+  return data["guard"] as Record<string, unknown>;
+}
+
+function warningsOf(envelope: Awaited<ReturnType<typeof runDoctor>>): { code: string; recoveryAction: string }[] {
+  if (!envelope.ok) throw new Error("doctor failed");
+  return (envelope.data as { warnings: { code: string; recoveryAction: string }[] }).warnings;
+}
+
+function pluginsFile(contents: string, index = 0): string {
+  const file = path.join(workDir, `installed_plugins_${index}.json`);
+  writeFileSync(file, contents);
+  return file;
+}
+
+beforeEach(() => {
+  workDir = mkdtempSync(path.join(os.tmpdir(), "huntline-doctor-"));
+});
+
+afterEach(() => {
+  rmSync(workDir, { recursive: true, force: true });
+});
+
+describe("doctor guard readiness", () => {
+  test("a hook matcher that no longer covers the guarded tools fails doctor", async () => {
+    const brokenHooks = { hooks: { PreToolUse: [{ matcher: "Read", hooks: [] }] } };
+    const envelope = await runDoctor(writeDataDir({ kind: "local" }), { guardHooks: brokenHooks });
+    expect(envelope.ok).toBe(false);
+    expect(exitCodeFor(envelope)).toBe(1);
+    expect(JSON.stringify(envelope)).toContain("guard-self-test-failed");
+  });
+
+  test("a missing plugins file warns with the recovery action and still succeeds", async () => {
+    const ctx = withEnv(writeDataDir({ kind: "local" }), {
+      HUNTLINE_CLAUDE_PLUGINS_FILE: path.join(workDir, "absent.json"),
+    });
+    const envelope = await runDoctor(ctx);
+    expect(envelope.ok).toBe(true);
+    expect(guardOf(envelope)).toEqual({ selfTest: "pass", pluginInstalled: false });
+    const [warning] = warningsOf(envelope);
+    expect(warning?.recoveryAction).toBe(RECOVERY);
+  });
+
+  test("a plugins file without a huntline entry warns", async () => {
+    const file = pluginsFile(JSON.stringify({ version: 2, plugins: { "other@market": [{}] } }));
+    const envelope = await runDoctor(withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }));
+    expect(envelope.ok).toBe(true);
+    expect(guardOf(envelope)["pluginInstalled"]).toBe(false);
+    expect(warningsOf(envelope)[0]?.recoveryAction).toBe(RECOVERY);
+  });
+
+  test("a huntline@ entry means installed and no warning", async () => {
+    const file = pluginsFile(JSON.stringify({ version: 2, plugins: { "huntline@acme-market": [{}] } }));
+    const envelope = await runDoctor(withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }));
+    expect(guardOf(envelope)).toEqual({ selfTest: "pass", pluginInstalled: true });
+    expect(warningsOf(envelope)).toEqual([]);
+  });
+
+  test("a malformed plugins file warns instead of crashing", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    const files = ["{oops", "null", "[]", '{"plugins": 3}'].map((contents, index) => pluginsFile(contents, index));
+    const envelopes = await Promise.all(
+      files.map((file) => runDoctor(withEnv(ctx, { HUNTLINE_CLAUDE_PLUGINS_FILE: file }))),
+    );
+    for (const envelope of envelopes) {
+      expect(envelope.ok).toBe(true);
+      expect(guardOf(envelope)["pluginInstalled"]).toBe(false);
+      expect(warningsOf(envelope).length).toBeGreaterThan(0);
+    }
+  });
+
+  test("defaults to ~/.claude/plugins/installed_plugins.json under HOME", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    mkdirSync(path.join(workDir, ".claude/plugins"), { recursive: true });
+    writeFileSync(
+      path.join(workDir, ".claude/plugins/installed_plugins.json"),
+      JSON.stringify({ plugins: { "huntline@acme-market": [] } }),
+    );
+    expect(guardOf(await runDoctor(ctx))["pluginInstalled"]).toBe(true);
+  });
+});
+
+const failingFetch = (): FetchLike => async () => {
+  throw new Error("network must not be touched");
+};
+
+const WORKFLOW_NAMES = ["Backlog", "Todo", "In Progress", "Done", "Canceled"];
+
+function teamFetch(names: readonly string[]): FetchLike {
+  return async () =>
+    new Response(
+      JSON.stringify({
+        data: {
+          teams: { nodes: [{ id: "t1", key: "JOB", states: { nodes: names.map((name, i) => ({ id: `s${i}`, name })) } }] },
+        },
+      }),
+      { status: 200 },
+    );
+}
+
+describe("doctor linear readiness", () => {
+  const linearTracker = { kind: "linear", team: "JOB" };
+
+  test("local tracker never touches the network", async () => {
+    const envelope = await runDoctor(writeDataDir({ kind: "local" }), { fetch: failingFetch() });
+    expect(envelope.ok).toBe(true);
+  });
+
+  test("linear without LINEAR_API_KEY fails with linear-not-ready", async () => {
+    const envelope = await runDoctor(writeDataDir(linearTracker), { fetch: failingFetch() });
+    expect(envelope.ok).toBe(false);
+    if (envelope.ok) return;
+    expect(envelope.error.code).toBe("linear-not-ready");
+    expect(envelope.error.message).toContain("LINEAR_API_KEY");
+    expect(exitCodeFor(envelope)).toBe(1);
+  });
+
+  test("lists every problem when the team lacks mapped states", async () => {
+    const fetchStub = teamFetch(["Backlog"]);
+    const ctx = withEnv(writeDataDir(linearTracker), { LINEAR_API_KEY: "lin_api_synthetic" });
+    const envelope = await runDoctor(ctx, { fetch: fetchStub });
+    expect(envelope.ok).toBe(false);
+    if (envelope.ok) return;
+    expect(envelope.error.code).toBe("linear-not-ready");
+    expect(envelope.error.message).toContain('state "In Progress" not found in team JOB');
+    expect(envelope.error.message).toContain('state "Done" not found in team JOB');
+  });
+
+  test("passes when the fixture team has every mapped state", async () => {
+    const fetchStub = teamFetch(WORKFLOW_NAMES);
+    const ctx = withEnv(writeDataDir(linearTracker), { LINEAR_API_KEY: "lin_api_synthetic" });
+    const envelope = await runDoctor(ctx, { fetch: fetchStub });
+    expect(envelope.ok).toBe(true);
+  });
+});

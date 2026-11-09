@@ -1,8 +1,9 @@
 import { writeSync } from "node:fs";
 
 import type { CommandContext } from "../core/commands.ts";
-import type { Envelope } from "../core/envelope.ts";
+import { failure, success, type Envelope } from "../core/envelope.ts";
 import { decideGuard, snapshotScope, type GuardDecision } from "./decide.ts";
+import { runGuardSelfTest, SELF_TEST_HOOKS, type SelfTestResult } from "./self-test.ts";
 import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
 
 export const MAX_STDIN_BYTES = 1024 * 1024;
@@ -84,7 +85,20 @@ async function runRecorder(): Promise<never> {
   process.exit(0);
 }
 
+export function selfTestEnvelope(result: SelfTestResult): Envelope<unknown> {
+  if (result.pass) return success({ cases: result.cases });
+  const lines = result.cases.map(
+    (entry) =>
+      `${entry.pass ? "ok" : "FAIL"} ${entry.name}: expected ${entry.expected}, actual ${entry.actual}, matcher ${entry.matcherCovers ? "covers" : "misses"} ${entry.tool}`,
+  );
+  const failed = result.cases.filter((entry) => !entry.pass).map((entry) => entry.name);
+  return failure("guard-self-test-failed", `failing cases: ${failed.join("; ")}\n${lines.join("\n")}`, {
+    recoveryAction: "do not use the Guard until decideGuard and hooks/hooks.json agree again",
+  });
+}
+
 export async function run(argv: string[], _ctx: CommandContext): Promise<Envelope<unknown>> {
+  if (argv.includes("--self-test")) return selfTestEnvelope(runGuardSelfTest(SELF_TEST_HOOKS));
   if (argv.includes("--record")) return runRecorder();
   const decision = await guardDecisionFor(process.stdin);
   writeSync(1, `${JSON.stringify(formatHookOutput(decision))}\n`);

@@ -13,7 +13,9 @@ huntline never submits a form and never sends a message. No command and no skill
 - It fails closed: invalid JSON, oversized input (over 1 MiB) and any internal error deny.
 - `huntline guard --record` runs after `take_snapshot` and records element labels so later clicks can be judged by label.
 
-See ADR 0002 in `docs/adr`.
+- `huntline guard --self-test` checks that the Guard still denies the canned submit and send actions and that the shipped hook matcher still covers those tools. `huntline doctor` runs the same check and fails if it does not pass. The self-test never changes the decision or the matcher; it only reads them.
+
+See ADR 0002 in `docs/adr`. After each release, follow the [dogfooding checklist](dogfooding.md).
 
 ## Untrusted content
 

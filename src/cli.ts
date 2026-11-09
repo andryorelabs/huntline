@@ -52,7 +52,7 @@ export async function dispatch(
     if (!dataDir.ok && hasExplicitSource) {
       return failure(dataDir.error.code, dataDir.error.message);
     }
-    return runDoctor(ctx);
+    return await runDoctor(ctx);
   }
   const command = resolveCommand(argv);
   if (command === null) {

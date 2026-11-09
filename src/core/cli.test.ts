@@ -176,7 +176,6 @@ describe("stub commands", () => {
     ["interview", "pack", "k"],
     ["migrate", "legacy", "dir"],
     ["migrate", "linear"],
-    ["guard"],
   ];
 
   for (const args of invocations) {

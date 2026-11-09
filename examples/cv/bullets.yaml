@@ -1,0 +1,13 @@
+bullets:
+  - id: b-latency
+    text: Reduced checkout API p95 latency from 900 ms to 300 ms.
+    tags: [backend, performance]
+    facts: [f-api-latency]
+  - id: b-ci
+    text: Built the CI pipeline for 12 services with GitHub Actions.
+    tags: [devops]
+    facts: [f-ci-pipeline]
+  - id: b-mentoring
+    text: Mentored 3 junior engineers.
+    tags: [leadership]
+    facts: [f-mentoring]

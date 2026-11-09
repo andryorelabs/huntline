@@ -77,6 +77,15 @@ describe("lintDraft", () => {
 });
 
 describe("logOutreach and CLI", () => {
+  test("concurrent logs never exceed the daily cap", async () => {
+    const dir = { path: root };
+    const entry = { channel: "email", recipient: "Ada" } as const;
+    const results = await Promise.all(Array.from({ length: 6 }, () => logOutreach(dir, profile, entry)));
+    expect(results.filter((result) => result.ok)).toHaveLength(2);
+    const logged = (await readEvents(dir)).filter((event) => event.kind === "outreach.logged");
+    expect(logged).toHaveLength(2);
+  });
+
   test("refuses once the daily cap is reached", async () => {
     const dir = { path: root };
     const entry = { channel: "email", recipient: "Ada" } as const;

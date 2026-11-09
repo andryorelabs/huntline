@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import { loadProfile } from "../core/data-dir.ts";
+import { writeAtomic } from "../core/fs.ts";
 import { errorMessage } from "../core/narrow.ts";
 import type {
   DataDir,
@@ -61,13 +64,36 @@ function trackerFor(ctx: CommandContext, prepared: Prepared, injected: TrackerAd
   return createTracker(prepared.profile.tracker, prepared.dir, { apiKey: ctx.env["LINEAR_API_KEY"] });
 }
 
-async function projectLeads(tracker: TrackerAdapter, dir: DataDir): Promise<Result<TrackerSummary>> {
-  const events = await readEvents(dir);
-  if (!events.some((event) => event.kind === "lead.created")) return { ok: true, value: { created: 0, updated: 0 } };
+const PENDING_FILE = "pending-projection.json";
+
+function readPending(dir: DataDir): string[] {
+  try {
+    const parsed: unknown = JSON.parse(readFileSync(path.join(dir.path, PENDING_FILE), "utf8"));
+    return Array.isArray(parsed) ? parsed.filter((entry): entry is string => typeof entry === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writePending(dir: DataDir, keys: readonly string[]): void {
+  writeAtomic(path.join(dir.path, PENDING_FILE), `${JSON.stringify(keys)}\n`);
+}
+
+async function projectLeads(
+  tracker: TrackerAdapter,
+  dir: DataDir,
+  newKeys: readonly string[],
+): Promise<Result<TrackerSummary>> {
+  const keys = [...new Set([...readPending(dir), ...newKeys])];
+  if (keys.length === 0) return { ok: true, value: { created: 0, updated: 0 } };
+  const wanted = new Set(keys);
+  const events = (await readEvents(dir)).filter((event) => event.key !== undefined && wanted.has(event.key));
   const projected = await projectEvents(tracker, dir, events);
   if (!projected.ok) {
+    writePending(dir, keys);
     return fail(projected.error.code, `leads recorded but not projected: ${projected.error.message}`);
   }
+  writePending(dir, []);
   return { ok: true, value: projected.value };
 }
 
@@ -177,7 +203,11 @@ export async function runSweep(ctx: CommandContext, options: SweepOptions = {}):
   );
   try {
     const collected = await ingestFetched(prepared.value, fetched, 0, { reports: [], events: [], leads: [] });
-    const tracker = await projectLeads(trackerFor(ctx, prepared.value, options.tracker), prepared.value.dir);
+    const tracker = await projectLeads(
+      trackerFor(ctx, prepared.value, options.tracker),
+      prepared.value.dir,
+      collected.leads,
+    );
     if (!tracker.ok) return tracker;
     return { ok: true, value: summarize(collected, tracker.value) };
   } catch (error) {
@@ -196,7 +226,11 @@ export async function ingestPostings(
   const labelled = postings.map((posting) => (posting.source.trim() === "" ? { ...posting, source } : posting));
   try {
     const batch = await processBatch(prepared.value.dir, prepared.value.profile, labelled);
-    const tracker = await projectLeads(trackerFor(ctx, prepared.value, options.tracker), prepared.value.dir);
+    const tracker = await projectLeads(
+      trackerFor(ctx, prepared.value, options.tracker),
+      prepared.value.dir,
+      batch.leadKeys,
+    );
     if (!tracker.ok) return tracker;
     return { ok: true, value: { source, ...batch.counts, leads: batch.leadKeys, tracker: tracker.value } };
   } catch (error) {

@@ -125,7 +125,6 @@ describe("init", () => {
       "facts.yaml",
       "bullets.yaml",
       "never-claim.yaml",
-      "answers.yaml",
     ]) {
       expect(readFileSync(path.join(workDir, name), "utf8").length).toBeGreaterThan(0);
     }

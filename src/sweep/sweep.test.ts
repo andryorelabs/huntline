@@ -123,6 +123,28 @@ describe("runSweep", () => {
     expect(operations.filter((operation) => operation === "CreateIssue")).toHaveLength(1);
   });
 
+  test("a failed tracker projection fails the run and the next sweep projects the orphaned Lead", async () => {
+    writeProfile(["himalayas"], { kind: "linear", team: "HNT" });
+    const operations: string[] = [];
+    const responses: Record<string, unknown> = linearFixture;
+    let healthy = false;
+    const fetchImpl: FetchLike = (_input, init) => {
+      const body = JSON.parse(String(init.body)) as { query: string };
+      const operation = /(?:query|mutation) (\w+)/.exec(body.query)?.[1] ?? "";
+      if (healthy) operations.push(operation);
+      const payload = healthy ? responses[operation] : { errors: [{ message: "down" }] };
+      return Promise.resolve(Response.json(payload ?? { errors: [{ message: "unrecorded" }] }));
+    };
+    const tracker = createTracker({ kind: "linear", team: "HNT" }, { path: root }, { apiKey: "lin_api_synthetic", fetch: fetchImpl });
+    const adapters = { himalayas: staticAdapter("himalayas", [posting()]) };
+    const first = await runSweep(makeContext(), { adapters, tracker });
+    expect(first.ok).toBe(false);
+    healthy = true;
+    const second = await runSweep(makeContext(), { adapters, tracker });
+    if (!second.ok) throw new Error("second sweep failed");
+    expect(operations.filter((operation) => operation === "CreateIssue")).toHaveLength(1);
+  });
+
   test("a Posting that states a US-only region is dismissed with a reason", async () => {
     writeProfile(["himalayas"]);
     const adapters = { himalayas: staticAdapter("himalayas", [posting({ location: "US only" })]) };
@@ -202,6 +224,24 @@ async function seedLead(): Promise<string> {
 function lastScore(events: HuntEvent[]): HuntEvent | undefined {
   return events.findLast((event) => event.kind === "score.recorded");
 }
+
+describe("ingest payload validation", () => {
+  test("null optional fields are dropped and mistyped ones are rejected", async () => {
+    writeProfile([]);
+    const accepted = await run(
+      ["ingest", "--source", "wellfound", "--json", JSON.stringify([{ ...posting(), remote: null, location: null, contract: null }])],
+      makeContext(),
+    );
+    expect(accepted).toMatchObject({ ok: true, data: { new: 1 } });
+    const events = await readEvents({ path: root });
+    expect(events.find((event) => event.kind === "lead.created")).toMatchObject({ eligibility: "unknown" });
+    const rejected = await run(
+      ["ingest", "--source", "wellfound", "--json", JSON.stringify([{ ...posting({ id: "2" }), remote: "no" }])],
+      makeContext(),
+    );
+    expect(rejected).toMatchObject({ ok: false });
+  });
+});
 
 describe("recordScore", () => {
   test("records score, reasons and liveness as an Event", async () => {

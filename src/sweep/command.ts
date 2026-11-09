@@ -54,7 +54,45 @@ function toPosting(value: unknown, index: number): Posting | string {
     return `posting ${index} needs string company and title`;
   }
   const source = typeof value["source"] === "string" ? value["source"] : "";
-  return { ...value, id, url, company, title, source };
+  const optional = optionalFields(value, index);
+  if (typeof optional === "string") return optional;
+  return { id, url, company, title, source, ...optional };
+}
+
+function optionalFields(value: Record<string, unknown>, index: number): Partial<Posting> | string {
+  const result: Record<string, unknown> = {};
+  for (const field of ["location", "contract", "description", "postedAt"] as const) {
+    const entry = value[field];
+    if (entry === undefined || entry === null) continue;
+    if (typeof entry !== "string") return `posting ${index} field ${field} must be a string`;
+    result[field] = entry;
+  }
+  const remote = value["remote"];
+  if (remote !== undefined && remote !== null) {
+    if (typeof remote !== "boolean") return `posting ${index} field remote must be a boolean`;
+    result["remote"] = remote;
+  }
+  const stack = value["stack"];
+  if (stack !== undefined && stack !== null) {
+    if (!Array.isArray(stack) || stack.some((item) => typeof item !== "string")) {
+      return `posting ${index} field stack must be an array of strings`;
+    }
+    result["stack"] = stack;
+  }
+  const salary = value["salary"];
+  if (salary !== undefined && salary !== null) {
+    if (!isObject(salary)) return `posting ${index} field salary must be an object`;
+    const parsed: Record<string, unknown> = {};
+    for (const bound of ["min", "max"] as const) {
+      const amount = salary[bound];
+      if (amount === undefined || amount === null) continue;
+      if (typeof amount !== "number" || !Number.isFinite(amount)) return `posting ${index} salary ${bound} must be a number`;
+      parsed[bound] = amount;
+    }
+    if (typeof salary["currency"] === "string") parsed["currency"] = salary["currency"];
+    result["salary"] = parsed;
+  }
+  return result as Partial<Posting>;
 }
 
 function parsePostings(raw: unknown): Posting[] | string {

@@ -14,6 +14,7 @@ import type {
 } from "../core/types.ts";
 import { readCompanies } from "../sources/companies.ts";
 import { sources as defaultSources } from "../sources/index.ts";
+import { readEvents } from "../ledger/events.ts";
 import { createTracker, projectEvents } from "../tracker/index.ts";
 import { addCounts, EMPTY_COUNTS, processBatch } from "./pipeline.ts";
 import type {
@@ -60,16 +61,14 @@ function trackerFor(ctx: CommandContext, prepared: Prepared, injected: TrackerAd
   return createTracker(prepared.profile.tracker, prepared.dir, { apiKey: ctx.env["LINEAR_API_KEY"] });
 }
 
-async function projectLeads(
-  tracker: TrackerAdapter,
-  dir: DataDir,
-  events: readonly HuntEvent[],
-): Promise<TrackerSummary> {
-  const leads = events.filter((event) => event.kind === "lead.created");
-  if (leads.length === 0) return { created: 0, updated: 0 };
-  const projected = await projectEvents(tracker, dir, leads);
-  if (!projected.ok) return { created: 0, updated: 0, error: projected.error.message };
-  return projected.value;
+async function projectLeads(tracker: TrackerAdapter, dir: DataDir): Promise<Result<TrackerSummary>> {
+  const events = await readEvents(dir);
+  if (!events.some((event) => event.kind === "lead.created")) return { ok: true, value: { created: 0, updated: 0 } };
+  const projected = await projectEvents(tracker, dir, events);
+  if (!projected.ok) {
+    return fail(projected.error.code, `leads recorded but not projected: ${projected.error.message}`);
+  }
+  return { ok: true, value: projected.value };
 }
 
 function queryFor(slug: string | undefined, keywords: readonly string[] | undefined): SourceQuery {
@@ -178,12 +177,9 @@ export async function runSweep(ctx: CommandContext, options: SweepOptions = {}):
   );
   try {
     const collected = await ingestFetched(prepared.value, fetched, 0, { reports: [], events: [], leads: [] });
-    const tracker = await projectLeads(
-      trackerFor(ctx, prepared.value, options.tracker),
-      prepared.value.dir,
-      collected.events,
-    );
-    return { ok: true, value: summarize(collected, tracker) };
+    const tracker = await projectLeads(trackerFor(ctx, prepared.value, options.tracker), prepared.value.dir);
+    if (!tracker.ok) return tracker;
+    return { ok: true, value: summarize(collected, tracker.value) };
   } catch (error) {
     return fail("sweep-failed", errorMessage(error));
   }
@@ -200,12 +196,9 @@ export async function ingestPostings(
   const labelled = postings.map((posting) => (posting.source.trim() === "" ? { ...posting, source } : posting));
   try {
     const batch = await processBatch(prepared.value.dir, prepared.value.profile, labelled);
-    const tracker = await projectLeads(
-      trackerFor(ctx, prepared.value, options.tracker),
-      prepared.value.dir,
-      batch.events,
-    );
-    return { ok: true, value: { source, ...batch.counts, leads: batch.leadKeys, tracker } };
+    const tracker = await projectLeads(trackerFor(ctx, prepared.value, options.tracker), prepared.value.dir);
+    if (!tracker.ok) return tracker;
+    return { ok: true, value: { source, ...batch.counts, leads: batch.leadKeys, tracker: tracker.value } };
   } catch (error) {
     return fail("ingest-failed", errorMessage(error));
   }

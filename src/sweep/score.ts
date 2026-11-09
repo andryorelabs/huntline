@@ -36,6 +36,8 @@ export async function recordScore(
   const dir = ctx.dataDir;
   const existing = await readEvents(dir, key);
   if (existing.length === 0) return fail("not-found", `no events for key ${key}`);
+  const profile = loadProfile(dir);
+  if (!profile.ok) return profile;
   const stored = await appendEvent(dir, {
     kind: "score.recorded",
     key,
@@ -43,8 +45,6 @@ export async function recordScore(
     reasons: [...score.reasons],
     liveness: normalizeLiveness(score),
   });
-  const profile = loadProfile(dir);
-  if (!profile.ok) return profile;
   try {
     const projected = await projectEvents(
       createTracker(profile.value.tracker, dir, { apiKey: ctx.env["LINEAR_API_KEY"] }),

@@ -46,7 +46,7 @@ function firstName(fullName: string): string {
 
 function lengthFinding(draft: Draft): LintFinding | null {
   if (draft.channel === "linkedin") {
-    const length = [...draft.body].length;
+    const length = [...draft.body.trimEnd()].length;
     if (length > LINKEDIN_MAX_CHARS) {
       return {
         rule: "too-long",

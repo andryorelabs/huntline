@@ -1,6 +1,9 @@
 import { isObject, isOneOf } from "./narrow.ts";
 import {
+  APPLICATION_STATES,
   CONTRACT_TYPES,
+  SALARY_PERIODS,
+  TITLE_FORMATS,
   REMOTE_PREFERENCES,
   TRACKER_KINDS,
   type ContractType,
@@ -66,19 +69,37 @@ function checkStack(value: unknown): Checked<Profile["stack"]> {
 function checkSalaryFloor(value: unknown): Checked<Profile["salaryFloor"]> {
   if (value === null) return { value: null };
   if (!isObject(value)) return fail("salaryFloor", "must be null or {amount, currency}");
-  const { amount, currency } = value;
+  const { amount, currency, period } = value;
   if (typeof amount !== "number" || !Number.isFinite(amount) || amount < 0) {
     return fail("salaryFloor.amount", "must be a non-negative number");
   }
   if (typeof currency !== "string" || !/^[A-Z]{3}$/.test(currency)) {
     return fail("salaryFloor.currency", "must be a three-letter uppercase code");
   }
-  return { value: { amount, currency } };
+  if (period !== undefined && !isOneOf(SALARY_PERIODS, period)) {
+    return fail("salaryFloor.period", `must be one of ${SALARY_PERIODS.join(", ")}`);
+  }
+  return { value: { amount, currency, ...(period === undefined ? {} : { period }) } };
+}
+
+function checkStringMap(value: unknown, field: string, allowedKeys?: readonly string[]): Checked<Record<string, string>> {
+  if (!isObject(value)) return fail(field, "must be an object of non-empty strings");
+  const entries: [string, string][] = [];
+  for (const [key, entry] of Object.entries(value)) {
+    if (allowedKeys !== undefined && !allowedKeys.includes(key)) {
+      return fail(`${field}.${key}`, `unknown key; use one of ${allowedKeys.join(", ")}`);
+    }
+    if (typeof entry !== "string" || entry.trim() === "") {
+      return fail(`${field}.${key}`, "must be a non-empty string");
+    }
+    entries.push([key, entry]);
+  }
+  return { value: Object.fromEntries(entries) };
 }
 
 function checkTracker(value: unknown): Checked<TrackerConfig> {
   if (!isObject(value)) return fail("tracker", "must be an object with a kind");
-  const { kind, directory, team } = value;
+  const { kind, directory, team, states, channelLabels, channelLabelPrefix, titleFormat } = value;
   if (!isOneOf(TRACKER_KINDS, kind)) {
     return fail("tracker.kind", `must be one of ${TRACKER_KINDS.join(", ")}`);
   }
@@ -86,11 +107,25 @@ function checkTracker(value: unknown): Checked<TrackerConfig> {
     return fail("tracker.directory", "must be a string");
   }
   if (team !== undefined && typeof team !== "string") return fail("tracker.team", "must be a string");
+  const checkedStates = states === undefined ? undefined : checkStringMap(states, "tracker.states", APPLICATION_STATES);
+  if (checkedStates !== undefined && "problem" in checkedStates) return checkedStates;
+  const checkedLabels = channelLabels === undefined ? undefined : checkStringMap(channelLabels, "tracker.channelLabels");
+  if (checkedLabels !== undefined && "problem" in checkedLabels) return checkedLabels;
+  if (channelLabelPrefix !== undefined && typeof channelLabelPrefix !== "string") {
+    return fail("tracker.channelLabelPrefix", "must be a string");
+  }
+  if (titleFormat !== undefined && !isOneOf(TITLE_FORMATS, titleFormat)) {
+    return fail("tracker.titleFormat", `must be one of ${TITLE_FORMATS.join(", ")}`);
+  }
   return {
     value: {
       kind,
       ...(directory === undefined ? {} : { directory }),
       ...(team === undefined ? {} : { team }),
+      ...(checkedStates === undefined ? {} : { states: checkedStates.value }),
+      ...(checkedLabels === undefined ? {} : { channelLabels: checkedLabels.value }),
+      ...(channelLabelPrefix === undefined ? {} : { channelLabelPrefix }),
+      ...(titleFormat === undefined ? {} : { titleFormat }),
     },
   };
 }

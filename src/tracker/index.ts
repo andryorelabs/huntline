@@ -10,7 +10,7 @@ import type {
   Result,
   TrackerAdapter,
 } from "../core/types.ts";
-import { createLinearTracker, type FetchLike } from "./linear.ts";
+import { createLinearTracker, DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "./linear.ts";
 import { createLocalTracker } from "./local.ts";
 
 const LEAD_MAP_FILE = "tracker-leads.json";
@@ -22,6 +22,14 @@ export type TrackerEnvironment = {
   readonly fetch?: FetchLike;
 };
 
+function mappingFor(config: Profile["tracker"]): LinearMapping {
+  return {
+    states: { ...DEFAULT_LINEAR_MAPPING.states, ...config.states },
+    channelLabelPrefix: config.channelLabelPrefix ?? DEFAULT_LINEAR_MAPPING.channelLabelPrefix,
+    channelLabels: config.channelLabels ?? {},
+  };
+}
+
 export function createTracker(
   config: Profile["tracker"],
   dir: DataDir,
@@ -31,6 +39,8 @@ export function createTracker(
   return createLinearTracker({
     apiKey: "apiKey" in environment ? environment.apiKey : process.env["LINEAR_API_KEY"],
     team: config.team,
+    mapping: mappingFor(config),
+    ...(config.titleFormat === undefined ? {} : { titleFormat: config.titleFormat }),
     idempotency: new IdempotencyMap(path.join(dir.path, LEAD_MAP_FILE)),
     ...(environment.fetch === undefined ? {} : { fetch: environment.fetch }),
   });

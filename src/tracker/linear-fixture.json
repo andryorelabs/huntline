@@ -8,6 +8,7 @@
             "key": "HNT",
             "states": {
               "nodes": [
+                { "id": "st-lead", "name": "Lead" },
                 { "id": "st-backlog", "name": "Backlog" },
                 { "id": "st-todo", "name": "Todo" },
                 { "id": "st-progress", "name": "In Progress" },

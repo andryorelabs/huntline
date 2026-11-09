@@ -56,10 +56,17 @@ export type Liveness = "live" | "closed" | "unknown";
 export type EmailClass = "rejection" | "interview" | "info-request" | "offer" | "other";
 export type BlockerScope = "field" | "section" | "application";
 
+export const SALARY_PERIODS = ["year", "month"] as const;
+export type SalaryPeriod = (typeof SALARY_PERIODS)[number];
+
+export const TITLE_FORMATS = ["role-at-company", "company-role"] as const;
+export type TitleFormat = (typeof TITLE_FORMATS)[number];
+
 export type Salary = {
   readonly min?: number;
   readonly max?: number;
   readonly currency?: string;
+  readonly period?: SalaryPeriod;
 };
 
 export type Posting = {
@@ -156,6 +163,10 @@ export type TrackerConfig = {
   readonly kind: TrackerKind;
   readonly directory?: string;
   readonly team?: string;
+  readonly states?: Partial<Record<ApplicationState, string>>;
+  readonly channelLabels?: Record<string, string>;
+  readonly channelLabelPrefix?: string;
+  readonly titleFormat?: TitleFormat;
 };
 
 export type Profile = {
@@ -166,7 +177,11 @@ export type Profile = {
     readonly include: readonly string[];
     readonly exclude: readonly string[];
   };
-  readonly salaryFloor: { readonly amount: number; readonly currency: string } | null;
+  readonly salaryFloor: {
+    readonly amount: number;
+    readonly currency: string;
+    readonly period?: SalaryPeriod;
+  } | null;
   readonly excludedCompanies: readonly string[];
   readonly outreachDailyCap: number;
   readonly sources: readonly string[];

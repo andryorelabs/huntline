@@ -1,0 +1,21 @@
+[
+  {"messageId":"fx-026","language":"es","from":"reclutamiento@solaris.example","subject":"Actualización de tu postulación","body":"Gracias por tu interés. Lamentablemente hemos decidido continuar con otros candidatos.","label":"rejection"},
+  {"messageId":"fx-027","language":"es","from":"talento@andesdev.example","subject":"Sobre tu candidatura","body":"Después de revisar tu perfil, no continuaremos con tu proceso de selección.","label":"rejection"},
+  {"messageId":"fx-028","language":"es","from":"rrhh@pampatech.example","subject":"Vacante cerrada","body":"La vacante de Desarrollador Backend ha sido cerrada y ya no recibimos postulaciones.","label":"rejection"},
+  {"messageId":"fx-029","language":"es","from":"empleos@cordillera.example","subject":"Resultado del proceso","body":"Lamentamos informarte que la posición ya fue cubierta.","label":"rejection"},
+  {"messageId":"fx-030","language":"es","from":"seleccion@lunaweb.example","subject":"Requisición cerrada","body":"Cerramos la requisición para Ingeniero de Datos. Gracias por postularte.","label":"rejection"},
+  {"messageId":"fx-031","language":"es","from":"reclutamiento@solaris.example","subject":"Invitación a entrevista","body":"Nos gustaría invitarte a una entrevista técnica de 45 minutos. Elige un horario en el enlace.","label":"interview"},
+  {"messageId":"fx-032","language":"es","from":"talento@andesdev.example","subject":"Siguiente paso: llamada inicial","body":"¿Tienes disponibilidad el martes a las 10am para una llamada con nuestra líder de equipo?","label":"interview"},
+  {"messageId":"fx-033","language":"es","from":"rrhh@pampatech.example","subject":"Confirmación de entrevista","body":"Tu entrevista final está confirmada para el jueves. Recibirás la invitación de calendario.","label":"interview"},
+  {"messageId":"fx-034","language":"es","from":"empleos@cordillera.example","subject":"Agenda tu prueba técnica","body":"Por favor agenda una sesión de programación en vivo con nuestro equipo de ingeniería.","label":"interview"},
+  {"messageId":"fx-035","language":"es","from":"reclutamiento@solaris.example","subject":"Una pregunta sobre tu postulación","body":"¿Podrías compartir tu pretensión salarial y tu fecha de inicio disponible?","label":"info-request"},
+  {"messageId":"fx-036","language":"es","from":"talento@lunaweb.example","subject":"Necesitamos más información","body":"Por favor envíanos el enlace a tu portafolio y confirma tu autorización de trabajo.","label":"info-request"},
+  {"messageId":"fx-037","language":"es","from":"rrhh@andesdev.example","subject":"Documento faltante","body":"No pudimos abrir tu currículum. ¿Puedes reenviarlo en PDF?","label":"info-request"},
+  {"messageId":"fx-038","language":"es","from":"rrhh@solaris.example","subject":"Oferta de empleo","body":"Nos complace ofrecerte el puesto de Ingeniero Senior. Adjuntamos la carta de oferta.","label":"offer"},
+  {"messageId":"fx-039","language":"es","from":"talento@andesdev.example","subject":"Tu oferta de Andesdev","body":"Felicidades, queremos hacerte una oferta formal. Revisa la carta adjunta y firma antes del viernes.","label":"offer"},
+  {"messageId":"fx-040","language":"es","from":"empleos@pampatech.example","subject":"Entrevista final y oferta","body":"Tras tu entrevista final, te extendemos una oferta de trabajo. Los detalles están adjuntos.","label":"offer"},
+  {"messageId":"fx-041","language":"es","from":"noreply@solaris.example","subject":"Recibimos tu postulación","body":"Gracias por postularte. Este es un mensaje automático de confirmación.","label":"other"},
+  {"messageId":"fx-042","language":"es","from":"encuestas@andesdev.example","subject":"Cuéntanos tu experiencia","body":"Te invitamos a responder una breve encuesta sobre tu experiencia como candidato.","label":"other"},
+  {"messageId":"fx-043","language":"es","from":"boletin@pampatech.example","subject":"Alertas de empleo semanales","body":"Estas son 10 nuevas vacantes que coinciden con tu búsqueda guardada.","label":"other"},
+  {"messageId":"fx-044","language":"es","from":"eventos@cordillera.example","subject":"Feria virtual de empleo","body":"Conoce a nuestros equipos en la feria virtual del próximo mes.","label":"other"}
+]

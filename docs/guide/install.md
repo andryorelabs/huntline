@@ -26,8 +26,8 @@ HUNTLINE_FROM_SOURCE=1 bin/huntline doctor
 
 | Tool | Needed for |
 | --- | --- |
-| `typst` | `cv build` |
-| `pdftotext` (poppler) | `cv build` text extraction |
+| `typst` | `cv build`. Installed by `huntline setup` (or on first `cv build`) into the huntline cache, checksum-verified, no sudo. |
+| `pdftotext` (poppler) | `cv build` text extraction. Install with `sudo apt install poppler-utils` or `brew install poppler`; `huntline setup` and `doctor` report it. |
 | Browser MCP over CDP | `apply`, `browser-source` skills |
 | Gmail MCP | `inbox`, `outreach` skills |
 

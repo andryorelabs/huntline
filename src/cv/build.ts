@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { writeAtomic } from "../core/fs.ts";
 import { errorMessage } from "../core/narrow.ts";
+import { ensureTypst, systemInstallDeps, toolStatus } from "../core/tools.ts";
 import type { DataDir, Result } from "../core/types.ts";
 import { loadBullets, loadFactBank, loadVariants } from "./facts.ts";
 import { selectBullets } from "./select.ts";
@@ -57,8 +58,12 @@ async function runProcess(command: string[]): Promise<Result<string>> {
 export const systemRunner: TypstRunner = {
   async compile(request) {
     const dataInput = path.relative(request.root, request.dataFile);
+    const typst = await ensureTypst(process.env, systemInstallDeps());
+    if (!typst.ok) {
+      return { ok: false, error: { code: "cv-tool-missing", message: typst.error.message } };
+    }
     const result = await runProcess([
-      "typst",
+      typst.value,
       "compile",
       "--root",
       request.root,
@@ -70,6 +75,16 @@ export const systemRunner: TypstRunner = {
     return result.ok ? { ok: true, value: undefined } : result;
   },
   extractText(pdf) {
+    const pdftotext = toolStatus(process.env).pdftotext;
+    if (!pdftotext.found) {
+      return Promise.resolve({
+        ok: false,
+        error: {
+          code: "cv-tool-missing",
+          message: `pdftotext (poppler) is not installed; run: ${pdftotext.installHint}`,
+        },
+      });
+    }
     return runProcess(["pdftotext", "-layout", pdf, "-"]);
   },
 };

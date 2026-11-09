@@ -7,7 +7,7 @@ export type ParsedDocument = {
   readonly body: string;
 };
 
-const BUILTIN_COMMANDS: ReadonlySet<string> = new Set(["init", "doctor"]);
+const BUILTIN_COMMANDS: ReadonlySet<string> = new Set(["init", "doctor", "setup"]);
 
 const FIXED_SUBCOMMANDS: Record<string, readonly string[]> = {
   cv: ["build", "lint", "coverage"],

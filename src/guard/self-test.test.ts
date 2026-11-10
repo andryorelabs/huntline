@@ -21,7 +21,7 @@ describe("runGuardSelfTest", () => {
       expect(entry.actual).toBe(entry.expected);
     }
     const tools = result.cases.map((entry) => entry.tool);
-    expect(tools).toContain("mcp__user-chrome__click");
+    expect(tools).toContain("mcp__playwright__click");
     expect(tools).toContain("mcp__chrome-devtools__click");
     expect(tools).toContain("mcp__chrome-devtools__press_key");
     expect(tools).toContain("mcp__chrome-devtools__evaluate_script");
@@ -91,7 +91,7 @@ describe("runGuardSelfTest", () => {
     };
     const result = runGuardSelfTest(narrowed);
     expect(result.pass).toBe(false);
-    const click = result.cases.find((entry) => entry.tool === "mcp__user-chrome__click");
+    const click = result.cases.find((entry) => entry.tool === "mcp__playwright__click");
     expect(click?.matcherCovers).toBe(false);
     expect(click?.pass).toBe(false);
     const gmail = result.cases.find((entry) => entry.tool.includes("Gmail"));

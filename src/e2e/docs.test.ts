@@ -51,7 +51,7 @@ describe("onboarding docs", () => {
     "schema/profile.schema.json",
   ];
 
-  test("uses the andryorelabs repo URL and never user-chrome", () => {
+  test("uses the andryorelabs repo URL and drops the old browser server name", () => {
     for (const file of prose) {
       const text = read(file);
       expect(text).not.toContain(["Andry", "Ore/huntline"].join(""));

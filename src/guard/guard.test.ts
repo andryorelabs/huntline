@@ -308,7 +308,7 @@ describe("snapshot labels", () => {
     expect(lookupLabel("other-session", "2_1")).toBeNull();
     const payload = { ...call(`${CHROME}click`, { uid: "2_1" }), session_id: session };
     expect(decideGuard(payload, lookupLabel).decision).toBe("deny");
-    const otherServer = { ...call("mcp__user-chrome__click", { uid: "2_2" }), session_id: session };
+    const otherServer = { ...call("mcp__playwright__click", { uid: "2_2" }), session_id: session };
     expect(decideGuard(otherServer, lookupLabel).decision).toBe("deny");
   });
 

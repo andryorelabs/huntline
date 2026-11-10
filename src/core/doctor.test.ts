@@ -12,7 +12,7 @@ import { exitCodeFor } from "./envelope.ts";
 import { isObject } from "./narrow.ts";
 
 const RECOVERY =
-  "claude plugin marketplace add AndryOre/huntline && claude plugin install huntline";
+  "claude plugin marketplace add andryorelabs/huntline && claude plugin install huntline@huntline-marketplace";
 
 let workDir = "";
 

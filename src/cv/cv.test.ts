@@ -224,15 +224,44 @@ describe("requirementCoverage significant words", () => {
     ]);
   });
 
-  test("a stop-word or two-letter tag never covers a phrase", () => {
+  test("a stop-word tag never covers a phrase", () => {
     const tagged: FactBank = {
       facts: [
-        { id: "f-go", text: "Wrote tooling at Globex", tags: ["go"] },
         { id: "f-experience", text: "Shipped features at Initech", tags: ["experience", "years"] },
       ],
     };
     expect(requirementCoverage(["3+ years experience with Go"], tagged).missing).toEqual([
       "3+ years experience with Go",
+    ]);
+  });
+
+  test("allowlisted short tokens are significant", () => {
+    const tagged: FactBank = {
+      facts: [
+        { id: "f-go", text: "Wrote tooling at Globex", tags: ["go"] },
+        { id: "f-cpp", text: "Built engines at Initech", tags: ["c++"] },
+      ],
+    };
+    expect(requirementCoverage(["Strong Go experience"], tagged).covered).toEqual([
+      { requirement: "Strong Go experience", factIds: ["f-go"] },
+    ]);
+    expect(requirementCoverage(["Modern C++ and Rust"], tagged).covered).toEqual([
+      { requirement: "Modern C++ and Rust", factIds: ["f-cpp"] },
+    ]);
+  });
+
+  test("stop words and other short tags stay missing", () => {
+    const tagged: FactBank = {
+      facts: [
+        { id: "f-to", text: "Wrote tooling at Globex", tags: ["to"] },
+        { id: "f-c", text: "Built engines at Initech", tags: ["c"] },
+      ],
+    };
+    expect(requirementCoverage(["to be a team player"], tagged).missing).toEqual([
+      "to be a team player",
+    ]);
+    expect(requirementCoverage(["C-level communication"], tagged).missing).toEqual([
+      "C-level communication",
     ]);
   });
 

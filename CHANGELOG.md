@@ -4,11 +4,27 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-10
+
 ### Added
 
+- `huntline status <key> --set <state>` to mark an Application, such as applied.
+- `huntline --help` and per-command flag validation.
+- Versioned data dir, fuller `init` and `doctor` checks, and a SessionStart prefetch of the binary.
+- Onboarding docs for a stranger: install-first README, Source names, browser and Gmail MCP setup, poppler per distro and a terms-of-service warning.
 - Type-aware lint, formatter, dead-code check, commit hooks and docs link check.
-- `AGENTS.md`, contributing guide, security policy and issue and PR templates.
-- `PRODUCT.md`, `GOVERNANCE.md`, a labels sync workflow and a bun cache in CI.
+- `AGENTS.md`, contributing guide, security policy, `PRODUCT.md`, `GOVERNANCE.md` and issue and PR templates.
+- A labels sync workflow and a bun cache in CI.
+
+### Changed
+
+- The Guard fails closed when its launcher cannot run and never grants permission itself.
+- The region Gate is region-neutral, and short tokens such as `go` count in CV coverage.
+- Answers are scoped per company, and sweep reports misconfigured Sources.
+
+### Fixed
+
+- Gmail and nested browser MCP tool names are matched case-insensitively.
 
 ## [0.1.1] - 2026-11-10
 

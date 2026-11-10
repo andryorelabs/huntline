@@ -19,7 +19,7 @@ Fill one application form for one Lead in the user's own Chrome through the CDP 
 1. Confirm the Tailored CV exists for this Lead (see the tailor-cv skill) and that `huntline cv lint` passed on it. If not, stop and say so.
 2. Identify the ATS from the URL and read the matching file in `references/` (greenhouse, lever, ashby, workday, workable) for its form quirks.
 3. Take a snapshot of the page and list every field: name, kind (text or file), required flag, options.
-4. Build the intended values. For each question that is not plain Profile data, run `huntline apply answer "<question>" --key <lead key>`.
+4. Build the intended values. For each question that is not plain Profile data, run `huntline apply answer "<question>" --key <lead key> --scope <scope>`. Use `company:<name>` for answers specific to this company and omit `--scope` for answers that hold everywhere.
    - `answer`: use the text as given.
    - `abstain`: a field Blocker was recorded. Do not guess. Skip the field and continue.
 5. Fill the fields in the page. Navigate with Next or Continue only; stop at any step whose only forward control is Submit.
@@ -29,3 +29,4 @@ Fill one application form for one Lead in the user's own Chrome through the CDP 
    - Never report the form as ready before `apply verify` exits 0.
 8. Run `huntline needs`. Present all open Blockers for this Application as one batch and ask the human once. For each answer the human gives, persist it with `huntline apply answer "<question>" --scope <scope> --save "<text>" --provenance human`, fill the field, and run `apply verify` again.
 9. Stop with the form filled and verified, the Submit control untouched. Tell the human the form is ready for them to review and submit, and list any Blockers still open.
+10. Ask the human whether they pressed Submit. Only after they confirm, run `huntline status <key> --set applied`. If they did not, do not run it.

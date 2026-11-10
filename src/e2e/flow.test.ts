@@ -305,13 +305,13 @@ describe("end-to-end flow with the local tracker", () => {
     const needs = ok(["needs"]);
     expect(needs["groups"]).toHaveLength(1);
 
-    ok([
-      "events",
-      "append",
-      "--json",
-      JSON.stringify({ kind: "status.changed", key: LEAD_KEY, to: "applied" }),
-    ]);
+    expect(ok(["status", LEAD_KEY, "--set", "applied"])).toEqual({
+      key: LEAD_KEY,
+      from: "lead",
+      to: "applied",
+    });
     expect(ok(["status", LEAD_KEY])["state"]).toBe("applied");
+    expect(errorCodeOf(runCli(["status", LEAD_KEY, "--set", "bogus"]))).toBe("usage");
 
     const emails = writeJson("emails.json", [
       {

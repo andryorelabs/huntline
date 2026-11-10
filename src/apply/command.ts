@@ -5,7 +5,7 @@ import { failure, success, type Envelope } from "../core/envelope.ts";
 import { errorMessage, isObject, isOneOf } from "../core/narrow.ts";
 import type { DataDir } from "../core/types.ts";
 import { GLOBAL_SCOPE, listAnswers, lookupAnswer, saveAnswer } from "./answers.ts";
-import { listNeeds, recordBlocker, UNANSWERED_PREFIX } from "./blockers.ts";
+import { listNeeds, recordBlocker, unansweredDetail } from "./blockers.ts";
 import type { FieldDump, IntendedField } from "./types.ts";
 import { verifyFields } from "./verify.ts";
 
@@ -85,7 +85,7 @@ async function runAnswer(argv: readonly string[], dir: DataDir): Promise<Envelop
   if (key === undefined) return usage("apply answer needs --key <lead key>");
   const result = lookupAnswer(dir, question, scope);
   if (result.status === "answer") return success(result);
-  const event = await recordBlocker(dir, key, "field", `${UNANSWERED_PREFIX}${question}`);
+  const event = await recordBlocker(dir, key, "field", unansweredDetail(question, scope));
   return success({
     status: "abstain",
     blockerId: event.kind === "blocker.opened" ? event.blockerId : null,

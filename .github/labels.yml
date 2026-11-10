@@ -1,0 +1,27 @@
+- name: needs-triage
+  color: "F9D0C4"
+  description: Freshly captured, not yet reviewed
+
+- name: needs-info
+  color: "BFD4F2"
+  description: Waiting on more information
+
+- name: ready-for-agent
+  color: "BFD4F2"
+  description: Spec'd and unblocked, eligible for agent dispatch
+
+- name: ready-for-human
+  color: "FEF2C0"
+  description: Needs a human decision
+
+- name: "status:todo"
+  color: "ededed"
+  description: "emet: not started"
+
+- name: "status:in-progress"
+  color: "fbca04"
+  description: "emet: a worker is on this"
+
+- name: "status:in-review"
+  color: "0e8a16"
+  description: "emet: PR open, awaiting merge"

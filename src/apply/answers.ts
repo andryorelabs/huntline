@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { writeAtomic } from "../core/fs.ts";
 import { errorMessage, isObject } from "../core/narrow.ts";
-import { closeFieldBlockers, UNANSWERED_PREFIX } from "./blockers.ts";
+import { closeFieldBlockers, normalizeQuestion } from "./blockers.ts";
 import type { DataDir, Result } from "../core/types.ts";
 import type { AnswerResult, AnswerScope } from "./types.ts";
 
@@ -15,13 +15,6 @@ type StoredAnswer = {
   readonly text: string;
   readonly provenance: string;
 };
-
-function normalizeQuestion(question: string): string {
-  return question
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
-}
 
 function isStoredAnswer(value: unknown): value is StoredAnswer {
   return (
@@ -75,12 +68,7 @@ export async function saveAnswer(
     );
     const next = [...kept, { question: normalized, scope, text, provenance }];
     writeAtomic(path.join(dir.path, ANSWERS_FILE), `${JSON.stringify(next, null, 2)}\n`);
-    await closeFieldBlockers(
-      dir,
-      (detail) =>
-        detail.startsWith(UNANSWERED_PREFIX) &&
-        normalizeQuestion(detail.slice(UNANSWERED_PREFIX.length)) === normalized,
-    );
+    await closeFieldBlockers(dir, normalized, scope);
     return { ok: true, value: undefined };
   } catch (error) {
     return { ok: false, error: { code: "internal", message: errorMessage(error) } };

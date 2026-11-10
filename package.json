@@ -1,9 +1,30 @@
 {
   "name": "huntline",
   "private": true,
+  "description": "Local-first job-search system for Claude Code: a plugin plus a CLI. You press Submit.",
+  "keywords": [
+    "bun",
+    "claude-code",
+    "claude-code-plugin",
+    "cli",
+    "cv",
+    "job-search",
+    "local-first",
+    "typescript"
+  ],
+  "homepage": "https://github.com/andryorelabs/huntline#readme",
+  "bugs": {
+    "url": "https://github.com/andryorelabs/huntline/issues"
+  },
+  "license": "MIT",
+  "author": "Andry Orellana",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andryorelabs/huntline.git"
+  },
   "type": "module",
   "scripts": {
-    "check": "bun run typecheck && bun run lint && bun run format:check && bun run knip",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run knip && bun run lint:docs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "oxlint --type-aware --deny-warnings",
     "format": "oxfmt",
@@ -14,7 +35,8 @@
     "test:coverage": "bun test --coverage",
     "build": "bun tools/build-binaries.ts",
     "ci:local": "bun install --frozen-lockfile && bun run check && bun run test:coverage && bun x --no-install commitlint --from origin/main --to HEAD",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint:docs": "bun tools/lint-docs.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

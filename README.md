@@ -1,5 +1,9 @@
 # huntline
 
+[![CI](https://github.com/andryorelabs/huntline/actions/workflows/ci.yml/badge.svg)](https://github.com/andryorelabs/huntline/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/andryorelabs/huntline)](https://github.com/andryorelabs/huntline/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Local-first job-search system for Claude Code: a plugin plus a CLI that sweeps job sources, filters and deduplicates in code, builds CVs only from verified facts, assists form filling in your own browser, and syncs replies from your inbox. You press Submit.
 
 Status: under construction. Working name; the final name is not decided.
@@ -25,6 +29,16 @@ huntline status "<key>"
 
 Every command prints exactly one JSON envelope on stdout and exits 0, 1, 2 or 3. See the [CLI reference](docs/reference/cli.md).
 
+## How it works
+
+1. **Sweep** postings from configured Sources and dedupe them in code.
+2. **Score** each Lead against your Profile and check the Posting is still live.
+3. **Tailor** a CV from Fact bank facts only, then lint it.
+4. **Apply** in your own Chrome: huntline fills the form and stops before Submit.
+5. **Inbox** classifies replies and records them, so status is always a fold over the event log.
+
+Everything lives in a local data dir you own; code and personal data stay apart.
+
 ## Safety model
 
 - **No-submit rule.** huntline never submits a form and never sends a message. There is no code path that does either. You press Submit and Send yourself.
@@ -49,4 +63,15 @@ Details: [safety model](docs/guide/safety.md). After a release, follow the [dogf
 - [Safety model](docs/guide/safety.md)
 - [CLI reference](docs/reference/cli.md)
 - [Profile reference](docs/reference/profile.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Architecture decisions](docs/adr/README.md)
 - [Glossary](GLOSSARY.md)
+- [Changelog](CHANGELOG.md)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). Report vulnerabilities privately as described in [SECURITY.md](.github/SECURITY.md).
+
+## License
+
+[MIT](LICENSE)

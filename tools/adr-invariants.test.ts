@@ -1,0 +1,28 @@
+import { describe, expect, test } from "bun:test";
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+const ADR_DIRECTORY = path.join(import.meta.dir, "..", "docs", "adr");
+const ADR_FILE = /^(\d{4})-[a-z0-9-]+\.md$/;
+
+const adrFiles = readdirSync(ADR_DIRECTORY).filter((name) => ADR_FILE.test(name));
+const index = readFileSync(path.join(ADR_DIRECTORY, "README.md"), "utf8");
+
+describe("ADR index", () => {
+  test("every ADR file is linked from the index", () => {
+    const missing = adrFiles.filter((name) => !index.includes(`(${name})`));
+    expect(missing).toEqual([]);
+  });
+
+  test("every indexed ADR file exists", () => {
+    const linked = [...index.matchAll(/\((\d{4}-[a-z0-9-]+\.md)\)/g)].map(
+      (match) => match[1] ?? "",
+    );
+    expect(linked.filter((name) => !adrFiles.includes(name))).toEqual([]);
+  });
+
+  test("numbers are unique and sequential from 0001", () => {
+    const numbers = adrFiles.map((name) => Number(name.slice(0, 4))).toSorted((a, b) => a - b);
+    expect(numbers).toEqual(numbers.map((_, position) => position + 1));
+  });
+});

@@ -22,7 +22,7 @@ export type TrackerSummary = {
 
 export type SourceReport = SourceCounts & {
   readonly source: string;
-  readonly status: "ok" | "empty" | "failed";
+  readonly status: "ok" | "empty" | "failed" | "misconfigured";
   readonly errors: readonly string[];
   readonly warnings: readonly string[];
 };
@@ -31,6 +31,7 @@ export type SweepReport = {
   readonly sources: readonly SourceReport[];
   readonly failed: readonly { readonly source: string; readonly errors: readonly string[] }[];
   readonly empty: readonly string[];
+  readonly misconfigured: readonly string[];
   readonly totals: SourceCounts;
   readonly leads: readonly string[];
   readonly tracker: TrackerSummary;

@@ -396,6 +396,30 @@ describe("command", () => {
   });
 });
 
+describe("sweep configuration", () => {
+  test("an ATS Source with no saved companies is misconfigured, not empty", async () => {
+    writeProfile(["greenhouse"]);
+    const result = await runSweep(makeContext(), {
+      adapters: { greenhouse: staticAdapter("greenhouse", []) },
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.sources[0]).toMatchObject({
+      source: "greenhouse",
+      status: "misconfigured",
+    });
+    expect(result.value.sources[0]?.warnings.join(" ")).toContain("huntline company add");
+    expect(result.value.empty).toEqual([]);
+    expect(result.value.misconfigured).toEqual(["greenhouse"]);
+  });
+
+  test("--source naming a Source outside the Profile is a usage failure", async () => {
+    writeProfile(["hn"]);
+    const result = await run(["sweep", "--source", "lever"], makeContext());
+    expect(result).toMatchObject({ ok: false, error: { code: "usage" } });
+    expect(JSON.stringify(result)).toContain("lever");
+  });
+});
+
 describe("skills", () => {
   const skillsRoot = path.join(import.meta.dir, "..", "..", "skills");
   for (const name of ["sweep", "score", "browser-source"]) {

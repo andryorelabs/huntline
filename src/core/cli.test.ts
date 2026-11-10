@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import os from "node:os";
 import path from "node:path";
 import { MODULE_FILES } from "../cli.ts";
-import { COMMANDS } from "./commands.ts";
+import { COMMANDS, COMMAND_FLAGS } from "./commands.ts";
 import { isObject } from "./narrow.ts";
 
 const cliPath = path.join(import.meta.dir, "../cli.ts");
@@ -216,6 +216,52 @@ describe("shared command modules", () => {
 
   test("every command table target has a loader", () => {
     expect([...MODULE_FILES].toSorted()).toEqual([...new Set(Object.values(COMMANDS))].toSorted());
+  });
+});
+
+describe("usage", () => {
+  test.each([[[]], [["--help"]], [["help"]]])("%j prints usage listing every command", (args) => {
+    const result = runCli(args);
+    expect(result.code).toBe(0);
+    const text = JSON.stringify(result.envelope["data"]);
+    for (const name of ["init", "setup", "doctor", ...Object.keys(COMMANDS)]) {
+      expect(text).toContain(name);
+    }
+  });
+});
+
+describe("flag registry", () => {
+  test("every command in the table has a registry entry", () => {
+    for (const name of Object.keys(COMMANDS)) {
+      expect(COMMAND_FLAGS[name]).toBeDefined();
+    }
+  });
+
+  test("an undeclared flag is a usage failure naming it", () => {
+    const fixture = path.join(workDir, "fixture");
+    writeValidDataDir(fixture);
+    const result = runCli(["sweep", "--keywords", "x", "--data", fixture]);
+    expect(result.code).toBe(2);
+    expect(errorOf(result).code).toBe("usage");
+    expect(errorOf(result).message).toContain("--keywords");
+  });
+
+  test("status accepts --set", () => {
+    expect(COMMAND_FLAGS["status"]).toContain("--set");
+  });
+});
+
+describe("data dir failures", () => {
+  test("an explicit --data path that does not exist is named in the message", () => {
+    const result = runCli(["--data", "/nope", "ledger", "list"]);
+    expect(result.code).toBe(2);
+    expect(errorOf(result).code).toBe("data-dir-not-found");
+    expect(errorOf(result).message).toContain("/nope");
+  });
+
+  test("a missing data dir fails with the not-found cause", () => {
+    const result = runCli(["ledger", "list"]);
+    expect(errorOf(result).message).toContain("huntline.json");
   });
 });
 

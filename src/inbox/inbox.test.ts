@@ -50,7 +50,12 @@ function posting(company: string): Posting {
 }
 
 async function seedLead(key: string, company: string): Promise<void> {
-  await appendEvent(dir, { kind: "lead.created", key, posting: posting(company), eligibility: "eligible" });
+  await appendEvent(dir, {
+    kind: "lead.created",
+    key,
+    posting: posting(company),
+    eligibility: "eligible",
+  });
   await appendEvent(dir, { kind: "status.changed", key, from: "lead", to: "applied" });
 }
 
@@ -75,7 +80,11 @@ describe("matching", () => {
 
   test("sender domain of an ATS vendor never matches a company by itself", () => {
     const apps = [{ key: "greenhouse|dev", company: "Greenhouse", state: "applied" as const }];
-    const change = matchEmail(email({ from: "no-reply@greenhouse.io", subject: "Update" }), apps, new Map());
+    const change = matchEmail(
+      email({ from: "no-reply@greenhouse.io", subject: "Update" }),
+      apps,
+      new Map(),
+    );
     expect(change.key).toBeNull();
     expect(change.confirmed).toBe(false);
   });
@@ -95,7 +104,12 @@ describe("matching", () => {
   test("company domain is a confirmed high match", () => {
     const apps = [{ key: "acme|dev", company: "Acme Inc.", state: "applied" as const }];
     const change = matchEmail(email(), apps, new Map());
-    expect(change).toMatchObject({ key: "acme|dev", band: "high", reason: "sender-domain", confirmed: true });
+    expect(change).toMatchObject({
+      key: "acme|dev",
+      band: "high",
+      reason: "sender-domain",
+      confirmed: true,
+    });
     expect(change.targetState).toBe("rejected");
   });
 
@@ -172,7 +186,10 @@ describe("propose and apply", () => {
     const first = await proposeBatch(context(), [email()]);
     if (!first.ok) throw new Error(first.error.message);
     await applyBatch(context(), first.value.batchPath);
-    const second = await proposeBatch(context(), [email(), email({ messageId: "m2", classification: "interview" })]);
+    const second = await proposeBatch(context(), [
+      email(),
+      email({ messageId: "m2", classification: "interview" }),
+    ]);
     if (!second.ok) throw new Error(second.error.message);
     expect(second.value.items.map((item) => item.messageId)).toEqual(["m2"]);
   });
@@ -183,15 +200,26 @@ describe("propose and apply", () => {
     if (!first.ok) throw new Error(first.error.message);
     await applyBatch(context(), first.value.batchPath);
     const later = await proposeBatch(context(), [
-      email({ messageId: "m3", from: "no-reply@greenhouse.io", subject: "Re: update", classification: "interview" }),
+      email({
+        messageId: "m3",
+        from: "no-reply@greenhouse.io",
+        subject: "Re: update",
+        classification: "interview",
+      }),
     ]);
     if (!later.ok) throw new Error(later.error.message);
-    expect(later.value.items[0]).toMatchObject({ key: "acme|dev", reason: "thread", confirmed: true });
+    expect(later.value.items[0]).toMatchObject({
+      key: "acme|dev",
+      reason: "thread",
+      confirmed: true,
+    });
   });
 
   test("unconfirmed items are not applied", async () => {
     await seedLead("acme|dev", "Acme Inc.");
-    const proposed = await proposeBatch(context(), [email({ from: "x@unrelated.test", subject: "Hello" })]);
+    const proposed = await proposeBatch(context(), [
+      email({ from: "x@unrelated.test", subject: "Hello" }),
+    ]);
     if (!proposed.ok) throw new Error(proposed.error.message);
     expect(proposed.value.items[0]?.confirmed).toBe(false);
     const applied = await applyBatch(context(), proposed.value.batchPath);

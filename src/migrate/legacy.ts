@@ -2,7 +2,13 @@ import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from "node
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import type { ApplicationState, Posting } from "../core/types.ts";
-import { legacyIdNote, linkLegacyIds, withImporter, type Importer, type KeyedId } from "./importer.ts";
+import {
+  legacyIdNote,
+  linkLegacyIds,
+  withImporter,
+  type Importer,
+  type KeyedId,
+} from "./importer.ts";
 import { mapOutcome, mapState, mapVerdict } from "./states.ts";
 import { headersMatch, parseTableBlocks, type TableBlock, type TableRow } from "./table.ts";
 import { leadIdentity, leadPosting, parseSweepLeads } from "./sweep-leads.ts";
@@ -11,7 +17,12 @@ import type { ImportResult } from "./types.ts";
 
 const DATE_PATTERN = /\d{4}-\d{2}-\d{2}/;
 
-type LegacyFile = { readonly absolute: string; readonly display: string; readonly name: string; readonly date: string };
+type LegacyFile = {
+  readonly absolute: string;
+  readonly display: string;
+  readonly name: string;
+  readonly date: string;
+};
 
 type FileContext = {
   readonly importer: Importer;
@@ -89,7 +100,13 @@ function isRecognised(block: TableBlock): boolean {
   return block.columns.includes("company") || block.columns.includes("role");
 }
 
-function describe(kind: string, ctx: FileContext, date: string, row: TableRow, extra: string[]): string {
+function describe(
+  kind: string,
+  ctx: FileContext,
+  date: string,
+  row: TableRow,
+  extra: string[],
+): string {
   const notes = row["notes"] ?? "";
   return [
     `legacy ${kind} ${ctx.file}`,
@@ -122,7 +139,9 @@ function warnUnrecognised(block: TableBlock, ctx: FileContext): void {
 
 function warnRow(ctx: FileContext, row: TableRow): void {
   const label = row["role"] ?? row["company"] ?? "";
-  ctx.importer.warn(`row without company and role in ${ctx.display}${label === "" ? "" : `: "${label}"`}; skipped`);
+  ctx.importer.warn(
+    `row without company and role in ${ctx.display}${label === "" ? "" : `: "${label}"`}; skipped`,
+  );
 }
 
 function roleRows(block: TableBlock, ctx: FileContext): TableRow[] {
@@ -155,7 +174,9 @@ function fileContext(file: LegacyFile, importer: Importer): FileContext {
 }
 
 function sweepLeadNote(fields: Readonly<Record<string, string>>): string[] {
-  return ["fit", "salary", "posted"].flatMap((name) => ((fields[name] ?? "") === "" ? [] : [`${name} ${fields[name]}`]));
+  return ["fit", "salary", "posted"].flatMap((name) =>
+    (fields[name] ?? "") === "" ? [] : [`${name} ${fields[name]}`],
+  );
 }
 
 function importSweepLeads(markdown: string, ctx: FileContext): number {
@@ -163,7 +184,9 @@ function importSweepLeads(markdown: string, ctx: FileContext): number {
   for (const lead of leads) {
     const { company, role } = leadIdentity(lead);
     if (company === "" || role === "") {
-      ctx.importer.warn(`sweep lead "${lead.heading}" in ${ctx.display} has no company or role; skipped`);
+      ctx.importer.warn(
+        `sweep lead "${lead.heading}" in ${ctx.display} has no company or role; skipped`,
+      );
       continue;
     }
     const posting = leadPosting(lead, company, role, ctx.fallbackDate);
@@ -196,7 +219,8 @@ function importSweepFile(file: LegacyFile, importer: Importer): void {
     }
   }
   const leadCount = importSweepLeads(markdown, ctx);
-  if (blocks.length === 0 && leadCount === 0) importer.warn(`no parseable content in ${file.display}`);
+  if (blocks.length === 0 && leadCount === 0)
+    importer.warn(`no parseable content in ${file.display}`);
 }
 
 function importReviewRow(row: TableRow, ctx: FileContext, postingById: Map<string, Posting>): void {
@@ -225,7 +249,11 @@ function importReviewRow(row: TableRow, ctx: FileContext, postingById: Map<strin
   );
 }
 
-function importReviewFile(file: LegacyFile, importer: Importer, postingById: Map<string, Posting>): void {
+function importReviewFile(
+  file: LegacyFile,
+  importer: Importer,
+  postingById: Map<string, Posting>,
+): void {
   const markdown = readFile(file, importer);
   if (markdown === null) return;
   const ctx = fileContext(file, importer);
@@ -245,7 +273,12 @@ type ApplicationEntry = {
   readonly legacyId: string;
 };
 
-type OutcomeMapping = { readonly known: boolean; readonly state: ApplicationState | null; readonly label: string; readonly text: string };
+type OutcomeMapping = {
+  readonly known: boolean;
+  readonly state: ApplicationState | null;
+  readonly label: string;
+  readonly text: string;
+};
 
 function applicationOutcome(row: TableRow): OutcomeMapping {
   if ("outcome" in row) {
@@ -259,7 +292,12 @@ function applicationOutcome(row: TableRow): OutcomeMapping {
 
 function leadOutcomeEntry(row: TableRow, ctx: FileContext, followUp: boolean): ApplicationEntry {
   const { company, role } = splitCompanyRole(row["lead"] ?? "");
-  const mapped: TableRow = { outcome: row["outcome"] ?? "", notes: row["notes"] ?? "", company, role };
+  const mapped: TableRow = {
+    outcome: row["outcome"] ?? "",
+    notes: row["notes"] ?? "",
+    company,
+    role,
+  };
   return { row: mapped, ctx, followUp, legacyId: row["linear"] ?? "" };
 }
 
@@ -272,7 +310,8 @@ function collectApplicationRows(file: LegacyFile, importer: Importer): Applicati
   if (blocks.length === 0) importer.warn(`no parseable content in ${file.display}`);
   return blocks.flatMap((block) => {
     if (isCoverageTable(block)) return [];
-    if (isLeadOutcomeTable(block)) return block.rows.map((row) => leadOutcomeEntry(row, ctx, followUp));
+    if (isLeadOutcomeTable(block))
+      return block.rows.map((row) => leadOutcomeEntry(row, ctx, followUp));
     if (!isRecognised(block)) {
       warnUnrecognised(block, ctx);
       return [];
@@ -281,10 +320,14 @@ function collectApplicationRows(file: LegacyFile, importer: Importer): Applicati
   });
 }
 
-function fillFromIds(entries: readonly ApplicationEntry[], postingById: Map<string, Posting>): ApplicationEntry[] {
+function fillFromIds(
+  entries: readonly ApplicationEntry[],
+  postingById: Map<string, Posting>,
+): ApplicationEntry[] {
   for (const { row } of entries) {
     const id = row["id"] ?? "";
-    if (id !== "" && isRoleRow(row) && !postingById.has(id)) postingById.set(id, toPosting(row, ""));
+    if (id !== "" && isRoleRow(row) && !postingById.has(id))
+      postingById.set(id, toPosting(row, ""));
   }
   return entries.map((entry) => {
     const known = postingById.get(entry.row["id"] ?? "");
@@ -293,9 +336,12 @@ function fillFromIds(entries: readonly ApplicationEntry[], postingById: Map<stri
   });
 }
 
-function effectiveState(group: readonly (ApplicationEntry & { mapping: OutcomeMapping })[]): ApplicationState | null {
+function effectiveState(
+  group: readonly (ApplicationEntry & { mapping: OutcomeMapping })[],
+): ApplicationState | null {
   const stateful = (followUp: boolean) =>
-    group.findLast((entry) => entry.followUp === followUp && entry.mapping.state !== null)?.mapping.state ?? null;
+    group.findLast((entry) => entry.followUp === followUp && entry.mapping.state !== null)?.mapping
+      .state ?? null;
   return stateful(true) ?? stateful(false);
 }
 
@@ -311,7 +357,8 @@ function importApplications(entries: readonly ApplicationEntry[], importer: Impo
     }
     const date = rowDate(row, ctx.fallbackDate);
     const mapping = applicationOutcome(row);
-    if (!mapping.known) importer.unknownState(`application ${mapping.label} "${mapping.text}" in ${ctx.file}`);
+    if (!mapping.known)
+      importer.unknownState(`application ${mapping.label} "${mapping.text}" in ${ctx.file}`);
     const key = importer.lead(toPosting(row, date));
     const groupKey = (row["id"] ?? "") === "" ? key : `id:${row["id"]}`;
     keys.set(groupKey, key);
@@ -343,17 +390,24 @@ export function importLegacy(ctx: CommandContext, dir: string): Promise<ImportRe
   if (ctx.dataDir === null) {
     return Promise.resolve({
       ok: false,
-      error: { code: "data-dir-not-found", message: "no data dir resolved; pass --data or set HUNTLINE_HOME" },
+      error: {
+        code: "data-dir-not-found",
+        message: "no data dir resolved; pass --data or set HUNTLINE_HOME",
+      },
     });
   }
   const root = path.resolve(ctx.cwd, dir);
   if (!isDirectory(root)) {
-    return Promise.resolve({ ok: false, error: { code: "usage", message: `${root} is not a directory` } });
+    return Promise.resolve({
+      ok: false,
+      error: { code: "usage", message: `${root} is not a directory` },
+    });
   }
   return withImporter(ctx.dataDir, "legacy", "migrate-legacy.json", (importer) => {
     const postingById = new Map<string, Posting>();
     for (const file of walk(path.join(root, "sweeps"), root, "")) importSweepFile(file, importer);
-    for (const file of walk(path.join(root, "reviews"), root, "")) importReviewFile(file, importer, postingById);
+    for (const file of walk(path.join(root, "reviews"), root, ""))
+      importReviewFile(file, importer, postingById);
     const entries = walk(path.join(root, "applications"), root, "").flatMap((file) =>
       collectApplicationRows(file, importer),
     );

@@ -68,7 +68,9 @@ function renderPack(key: string, facts: FactIndex): string {
     "",
     "## Stories",
     "",
-    stories.length === 0 ? "TODO: add facts to the Fact bank, then add Stories" : stories.join("\n\n"),
+    stories.length === 0
+      ? "TODO: add facts to the Fact bank, then add Stories"
+      : stories.join("\n\n"),
     "",
   ].join("\n");
 }
@@ -130,7 +132,11 @@ export function validatePrepPack(markdown: string, facts: FactIndex): Finding[] 
       current.factIds = ids;
       for (const id of ids) {
         if (!known.has(id)) {
-          findings.push({ rule: "unknown-fact", line, message: `${current.title}: unknown fact id ${id}` });
+          findings.push({
+            rule: "unknown-fact",
+            line,
+            message: `${current.title}: unknown fact id ${id}`,
+          });
         }
       }
     } else {
@@ -138,15 +144,24 @@ export function validatePrepPack(markdown: string, facts: FactIndex): Finding[] 
     }
   }
   for (const name of SECTIONS) {
-    if (!headings.has(name)) findings.push({ rule: "missing-section", line: 1, message: `missing section: ${name}` });
+    if (!headings.has(name))
+      findings.push({ rule: "missing-section", line: 1, message: `missing section: ${name}` });
   }
   for (const story of stories) {
     if (story.factIds === null || story.factIds.length === 0) {
-      findings.push({ rule: "story-without-facts", line: story.line, message: `${story.title}: no fact ids` });
+      findings.push({
+        rule: "story-without-facts",
+        line: story.line,
+        message: `${story.title}: no fact ids`,
+      });
     }
     for (const field of STORY_FIELDS) {
       if (!story.fields.has(field)) {
-        findings.push({ rule: "missing-field", line: story.line, message: `${story.title}: missing ${field}` });
+        findings.push({
+          rule: "missing-field",
+          line: story.line,
+          message: `${story.title}: missing ${field}`,
+        });
       }
     }
   }

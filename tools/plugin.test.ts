@@ -6,7 +6,8 @@ const root = path.join(import.meta.dir, "..");
 
 function readJson(relative: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(readFileSync(path.join(root, relative), "utf8"));
-  if (typeof parsed !== "object" || parsed === null) throw new Error(`${relative} is not an object`);
+  if (typeof parsed !== "object" || parsed === null)
+    throw new Error(`${relative} is not an object`);
   return { ...parsed };
 }
 
@@ -36,7 +37,9 @@ describe("plugin manifest", () => {
 describe("repo tooling", () => {
   test("selfCheck runs check and test", () => {
     const config = readJson("emet.config.json");
-    expect(JSON.stringify(config["commands"])).toContain('"selfCheck":["bun run check","bun test"]');
+    expect(JSON.stringify(config["commands"])).toContain(
+      '"selfCheck":["bun run check","bun test"]',
+    );
   });
 
   test("the check script runs typecheck and lint", () => {

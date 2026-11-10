@@ -59,9 +59,15 @@ function prepare(ctx: CommandContext): Result<Prepared> {
   return { ok: true, value: { dir: ctx.dataDir, profile: profile.value } };
 }
 
-function trackerFor(ctx: CommandContext, prepared: Prepared, injected: TrackerAdapter | undefined): TrackerAdapter {
+function trackerFor(
+  ctx: CommandContext,
+  prepared: Prepared,
+  injected: TrackerAdapter | undefined,
+): TrackerAdapter {
   if (injected !== undefined) return injected;
-  return createTracker(prepared.profile.tracker, prepared.dir, { apiKey: ctx.env["LINEAR_API_KEY"] });
+  return createTracker(prepared.profile.tracker, prepared.dir, {
+    apiKey: ctx.env["LINEAR_API_KEY"],
+  });
 }
 
 const PENDING_FILE = "pending-projection.json";
@@ -69,7 +75,9 @@ const PENDING_FILE = "pending-projection.json";
 function readPending(dir: DataDir): string[] {
   try {
     const parsed: unknown = JSON.parse(readFileSync(path.join(dir.path, PENDING_FILE), "utf8"));
-    return Array.isArray(parsed) ? parsed.filter((entry): entry is string => typeof entry === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((entry): entry is string => typeof entry === "string")
+      : [];
   } catch {
     return [];
   }
@@ -87,11 +95,16 @@ async function projectLeads(
   const keys = [...new Set([...readPending(dir), ...newKeys])];
   if (keys.length === 0) return { ok: true, value: { created: 0, updated: 0 } };
   const wanted = new Set(keys);
-  const events = (await readEvents(dir)).filter((event) => event.key !== undefined && wanted.has(event.key));
+  const events = (await readEvents(dir)).filter(
+    (event) => event.key !== undefined && wanted.has(event.key),
+  );
   const projected = await projectEvents(tracker, dir, events);
   if (!projected.ok) {
     writePending(dir, keys);
-    return fail(projected.error.code, `leads recorded but not projected: ${projected.error.message}`);
+    return fail(
+      projected.error.code,
+      `leads recorded but not projected: ${projected.error.message}`,
+    );
   }
   writePending(dir, []);
   return { ok: true, value: projected.value };
@@ -178,8 +191,13 @@ function summarize(collected: Collected, tracker: TrackerSummary): SweepReport {
   const failed = collected.reports
     .filter((report) => report.status === "failed")
     .map((report) => ({ source: report.source, errors: report.errors }));
-  const empty = collected.reports.filter((report) => report.status === "empty").map((report) => report.source);
-  const totals = collected.reports.reduce<SourceCounts>((sum, report) => addCounts(sum, report), EMPTY_COUNTS);
+  const empty = collected.reports
+    .filter((report) => report.status === "empty")
+    .map((report) => report.source);
+  const totals = collected.reports.reduce<SourceCounts>(
+    (sum, report) => addCounts(sum, report),
+    EMPTY_COUNTS,
+  );
   return { sources: collected.reports, failed, empty, totals, leads: collected.leads, tracker };
 }
 
@@ -189,7 +207,10 @@ function selectSources(profile: Profile, options: SweepOptions): string[] {
   return options.only.filter((name) => configured.includes(name));
 }
 
-export async function runSweep(ctx: CommandContext, options: SweepOptions = {}): Promise<Result<SweepReport>> {
+export async function runSweep(
+  ctx: CommandContext,
+  options: SweepOptions = {},
+): Promise<Result<SweepReport>> {
   const prepared = prepare(ctx);
   if (!prepared.ok) return prepared;
   const companies = readCompanies(prepared.value.dir);
@@ -202,7 +223,11 @@ export async function runSweep(ctx: CommandContext, options: SweepOptions = {}):
     ),
   );
   try {
-    const collected = await ingestFetched(prepared.value, fetched, 0, { reports: [], events: [], leads: [] });
+    const collected = await ingestFetched(prepared.value, fetched, 0, {
+      reports: [],
+      events: [],
+      leads: [],
+    });
     const tracker = await projectLeads(
       trackerFor(ctx, prepared.value, options.tracker),
       prepared.value.dir,
@@ -223,7 +248,9 @@ export async function ingestPostings(
 ): Promise<Result<IngestReport>> {
   const prepared = prepare(ctx);
   if (!prepared.ok) return prepared;
-  const labelled = postings.map((posting) => (posting.source.trim() === "" ? { ...posting, source } : posting));
+  const labelled = postings.map((posting) =>
+    posting.source.trim() === "" ? { ...posting, source } : posting,
+  );
   try {
     const batch = await processBatch(prepared.value.dir, prepared.value.profile, labelled);
     const tracker = await projectLeads(
@@ -232,7 +259,10 @@ export async function ingestPostings(
       batch.leadKeys,
     );
     if (!tracker.ok) return tracker;
-    return { ok: true, value: { source, ...batch.counts, leads: batch.leadKeys, tracker: tracker.value } };
+    return {
+      ok: true,
+      value: { source, ...batch.counts, leads: batch.leadKeys, tracker: tracker.value },
+    };
   } catch (error) {
     return fail("ingest-failed", errorMessage(error));
   }

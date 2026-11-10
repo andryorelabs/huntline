@@ -24,11 +24,16 @@ function runSync(argv: string[], ctx: CommandContext): Envelope<unknown> {
 
   const target = packPath(dir, key);
   if (!existsSync(target)) {
-    return failure("not-found", `no Prep pack for ${key}`, { recoveryAction: `run: interview pack ${key}` });
+    return failure("not-found", `no Prep pack for ${key}`, {
+      recoveryAction: `run: interview pack ${key}`,
+    });
   }
   const findings = validatePrepPack(readFileSync(target, "utf8"), bank.value);
   if (findings.length > 0) {
-    return failure("pack-invalid", findings.map((finding) => `line ${finding.line}: ${finding.message}`).join("; "));
+    return failure(
+      "pack-invalid",
+      findings.map((finding) => `line ${finding.line}: ${finding.message}`).join("; "),
+    );
   }
   return success({ key, path: target, findings: [] });
 }

@@ -33,7 +33,8 @@ function toEmail(value: unknown): ClassifiedEmail | null {
   if (!isObject(value)) return null;
   const { messageId, threadId, from, subject, classification } = value;
   if (typeof messageId !== "string" || messageId === "") return null;
-  if (typeof threadId !== "string" || typeof from !== "string" || typeof subject !== "string") return null;
+  if (typeof threadId !== "string" || typeof from !== "string" || typeof subject !== "string")
+    return null;
   if (!isOneOf(EMAIL_CLASSES, classification)) return null;
   return { messageId, threadId, from, subject, classification };
 }
@@ -50,12 +51,17 @@ function readEmails(file: string, cwd: string): ClassifiedEmail[] | null {
   return emails;
 }
 
-async function runPropose(argv: readonly string[], ctx: CommandContext): Promise<Envelope<unknown>> {
+async function runPropose(
+  argv: readonly string[],
+  ctx: CommandContext,
+): Promise<Envelope<unknown>> {
   const file = flagValue(argv, "--emails");
   if (file === undefined) return usage("inbox propose needs --emails <classified.json>");
   const emails = readEmails(file, ctx.cwd);
   if (emails === null) {
-    return usage("emails must be a JSON array of {messageId, threadId, from, subject, classification}");
+    return usage(
+      "emails must be a JSON array of {messageId, threadId, from, subject, classification}",
+    );
   }
   const proposed = await proposeBatch(ctx, emails);
   if (!proposed.ok) return failure(proposed.error.code, proposed.error.message);

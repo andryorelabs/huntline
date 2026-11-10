@@ -4,13 +4,20 @@ import { errorMessage, isObject } from "../core/narrow.ts";
 import type { DataDir, Result } from "../core/types.ts";
 import type { Bullet, Entry, Fact, FactBank, Profile, SkillGroup, Variant } from "./types.ts";
 
-type Failure = { readonly ok: false; readonly error: { readonly code: string; readonly message: string } };
+type Failure = {
+  readonly ok: false;
+  readonly error: { readonly code: string; readonly message: string };
+};
 
 function fail(message: string): Failure {
   return { ok: false, error: { code: "cv-data-invalid", message } };
 }
 
-function readYamlDocument(dir: DataDir, file: string, key: string): Result<Record<string, unknown>> {
+function readYamlDocument(
+  dir: DataDir,
+  file: string,
+  key: string,
+): Result<Record<string, unknown>> {
   const target = path.join(dir.path, file);
   if (!existsSync(target)) return fail(`${file} is missing in ${dir.path}`);
   let parsed: unknown;
@@ -82,7 +89,8 @@ function parseEntries(value: unknown, key: string): Result<Entry[] | undefined> 
       return fail(`facts.yaml: ${key} entry ${item["id"]} has invalid dates`);
     }
     const metadata = stringMap(item["metadata"]);
-    if (metadata === null) return fail(`facts.yaml: ${key} entry ${item["id"]} has invalid metadata`);
+    if (metadata === null)
+      return fail(`facts.yaml: ${key} entry ${item["id"]} has invalid metadata`);
     entries.push({
       id: item["id"],
       name: item["name"],
@@ -161,7 +169,11 @@ export function loadBullets(dir: DataDir): Result<Bullet[]> {
     if (entryId !== undefined && entryId !== null && typeof entryId !== "string") {
       return fail(`bullets.yaml: bullet ${entry["id"]} has invalid entry`);
     }
-    if (order !== undefined && order !== null && (typeof order !== "number" || !Number.isFinite(order))) {
+    if (
+      order !== undefined &&
+      order !== null &&
+      (typeof order !== "number" || !Number.isFinite(order))
+    ) {
       return fail(`bullets.yaml: bullet ${entry["id"]} has invalid order`);
     }
     bullets.push({

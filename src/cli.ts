@@ -1,4 +1,9 @@
-import { COMMANDS, resolveCommand, type CommandContext, type CommandModule } from "./core/commands.ts";
+import {
+  COMMANDS,
+  resolveCommand,
+  type CommandContext,
+  type CommandModule,
+} from "./core/commands.ts";
 import { resolveDataDir } from "./core/data-dir.ts";
 import { runDoctor } from "./core/doctor.ts";
 import { exitCodeFor, failure, printEnvelope, success, type Envelope } from "./core/envelope.ts";
@@ -64,8 +69,7 @@ export async function dispatch(
   if (load === undefined) {
     return failure("internal", `no loader registered for ${command.file}`, { recoverable: false });
   }
-  const sharedModule =
-    Object.values(COMMANDS).filter((file) => file === command.file).length > 1;
+  const sharedModule = Object.values(COMMANDS).filter((file) => file === command.file).length > 1;
   const moduleArgv = sharedModule ? [command.path, ...command.rest] : command.rest;
   return (await load()).run(withoutDataFlag(moduleArgv), ctx);
 }

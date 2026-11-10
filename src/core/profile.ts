@@ -82,7 +82,11 @@ function checkSalaryFloor(value: unknown): Checked<Profile["salaryFloor"]> {
   return { value: { amount, currency, ...(period === undefined ? {} : { period }) } };
 }
 
-function checkStringMap(value: unknown, field: string, allowedKeys?: readonly string[]): Checked<Record<string, string>> {
+function checkStringMap(
+  value: unknown,
+  field: string,
+  allowedKeys?: readonly string[],
+): Checked<Record<string, string>> {
   if (!isObject(value)) return fail(field, "must be an object of non-empty strings");
   const entries: [string, string][] = [];
   for (const [key, entry] of Object.entries(value)) {
@@ -106,10 +110,15 @@ function checkTracker(value: unknown): Checked<TrackerConfig> {
   if (directory !== undefined && typeof directory !== "string") {
     return fail("tracker.directory", "must be a string");
   }
-  if (team !== undefined && typeof team !== "string") return fail("tracker.team", "must be a string");
-  const checkedStates = states === undefined ? undefined : checkStringMap(states, "tracker.states", APPLICATION_STATES);
+  if (team !== undefined && typeof team !== "string")
+    return fail("tracker.team", "must be a string");
+  const checkedStates =
+    states === undefined ? undefined : checkStringMap(states, "tracker.states", APPLICATION_STATES);
   if (checkedStates !== undefined && "problem" in checkedStates) return checkedStates;
-  const checkedLabels = channelLabels === undefined ? undefined : checkStringMap(channelLabels, "tracker.channelLabels");
+  const checkedLabels =
+    channelLabels === undefined
+      ? undefined
+      : checkStringMap(channelLabels, "tracker.channelLabels");
   if (checkedLabels !== undefined && "problem" in checkedLabels) return checkedLabels;
   if (channelLabelPrefix !== undefined && typeof channelLabelPrefix !== "string") {
     return fail("tracker.channelLabelPrefix", "must be a string");
@@ -154,7 +163,11 @@ export function validateProfile(raw: unknown): Result<Profile> {
   const excludedCompanies = checkStringList(raw["excludedCompanies"], "excludedCompanies");
   if ("problem" in excludedCompanies) return failed(excludedCompanies.problem);
   const outreachDailyCap = raw["outreachDailyCap"];
-  if (typeof outreachDailyCap !== "number" || !Number.isInteger(outreachDailyCap) || outreachDailyCap < 0) {
+  if (
+    typeof outreachDailyCap !== "number" ||
+    !Number.isInteger(outreachDailyCap) ||
+    outreachDailyCap < 0
+  ) {
     return failed("outreachDailyCap: must be a non-negative integer");
   }
   const sources = checkStringList(raw["sources"], "sources");

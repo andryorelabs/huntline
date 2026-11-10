@@ -90,7 +90,11 @@ function repeatedPhraseFindings(text: string): LintFinding[] {
   const words: { word: string; line: number; column: number }[] = [];
   for (const [lineIndex, line] of text.split("\n").entries()) {
     for (const match of line.matchAll(/[\p{L}\p{N}]+/gu)) {
-      words.push({ word: match[0].toLowerCase(), line: lineIndex + 1, column: (match.index ?? 0) + 1 });
+      words.push({
+        word: match[0].toLowerCase(),
+        line: lineIndex + 1,
+        column: (match.index ?? 0) + 1,
+      });
     }
   }
   const seen = new Map<string, { line: number; column: number }>();

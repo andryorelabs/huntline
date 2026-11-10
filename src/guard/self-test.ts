@@ -4,7 +4,7 @@ import { decideGuard, snapshotScope, type GuardDecision, type LabelLookup } from
 
 export const SELF_TEST_HOOKS: unknown = hooksJson;
 
-export type SelfTestCase = {
+type SelfTestCase = {
   readonly name: string;
   readonly tool: string;
   readonly expected: "allow" | "deny";

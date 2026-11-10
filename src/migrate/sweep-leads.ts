@@ -2,7 +2,10 @@ import type { Posting } from "../core/types.ts";
 import { extractUrl } from "./table.ts";
 import { splitCompanyRole } from "./title.ts";
 
-export type SweepLead = { readonly heading: string; readonly fields: Readonly<Record<string, string>> };
+export type SweepLead = {
+  readonly heading: string;
+  readonly fields: Readonly<Record<string, string>>;
+};
 
 const HEADING = /^###\s+(.+?)\s*$/;
 const FIELD = /^\s*(?:[-*]\s+)?\*\*([^*:]+):\*\*\s*(.*?)\s*$/;
@@ -43,7 +46,12 @@ export function leadIdentity(lead: SweepLead): { company: string; role: string }
   };
 }
 
-export function leadPosting(lead: SweepLead, company: string, role: string, fallbackDate: string): Posting {
+export function leadPosting(
+  lead: SweepLead,
+  company: string,
+  role: string,
+  fallbackDate: string,
+): Posting {
   const portal = (lead.fields["source portal"] ?? "").toLowerCase();
   const posted = DATE_PATTERN.exec(lead.fields["posted"] ?? "")?.[0] ?? fallbackDate;
   const contract = lead.fields["contract"] ?? "";

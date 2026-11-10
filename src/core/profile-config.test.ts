@@ -46,9 +46,15 @@ describe("profile tracker config and salary period", () => {
   });
 
   test("accepts salaryFloor.period and rejects an invalid one", () => {
-    const ok = validateProfile({ ...base, salaryFloor: { amount: 5000, currency: "USD", period: "month" } });
+    const ok = validateProfile({
+      ...base,
+      salaryFloor: { amount: 5000, currency: "USD", period: "month" },
+    });
     expect(ok.ok && ok.value.salaryFloor?.period).toBe("month");
-    const bad = validateProfile({ ...base, salaryFloor: { amount: 5000, currency: "USD", period: "week" } });
+    const bad = validateProfile({
+      ...base,
+      salaryFloor: { amount: 5000, currency: "USD", period: "week" },
+    });
     expect(bad.ok).toBe(false);
   });
 

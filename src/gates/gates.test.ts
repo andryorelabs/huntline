@@ -32,30 +32,127 @@ type Row = {
 
 const rows: Row[] = [
   { name: "remote true", dimension: "remote", posting: { remote: true }, expected: "eligible" },
-  { name: "remote false", dimension: "remote", posting: { remote: false }, expected: "ineligible", reason: "remote" },
+  {
+    name: "remote false",
+    dimension: "remote",
+    posting: { remote: false },
+    expected: "ineligible",
+    reason: "remote",
+  },
   { name: "remote silent", dimension: "remote", posting: {}, expected: "unknown" },
-  { name: "region match", dimension: "region", posting: { location: "LatAm" }, expected: "eligible" },
-  { name: "region worldwide", dimension: "region", posting: { location: "Worldwide" }, expected: "eligible" },
-  { name: "region US only", dimension: "region", posting: { location: "US only" }, expected: "ineligible", reason: "region" },
-  { name: "region remote only is silent", dimension: "region", posting: { location: "Remote only" }, expected: "unknown" },
-  { name: "region remote-only is silent", dimension: "region", posting: { location: "Remote-only" }, expected: "unknown" },
+  {
+    name: "region match",
+    dimension: "region",
+    posting: { location: "LatAm" },
+    expected: "eligible",
+  },
+  {
+    name: "region worldwide",
+    dimension: "region",
+    posting: { location: "Worldwide" },
+    expected: "eligible",
+  },
+  {
+    name: "region US only",
+    dimension: "region",
+    posting: { location: "US only" },
+    expected: "ineligible",
+    reason: "region",
+  },
+  {
+    name: "region remote only is silent",
+    dimension: "region",
+    posting: { location: "Remote only" },
+    expected: "unknown",
+  },
+  {
+    name: "region remote-only is silent",
+    dimension: "region",
+    posting: { location: "Remote-only" },
+    expected: "unknown",
+  },
   { name: "region silent", dimension: "region", posting: {}, expected: "unknown" },
-  { name: "region ambiguous city", dimension: "region", posting: { location: "Lisbon" }, expected: "unknown" },
-  { name: "contract match", dimension: "contract", posting: { contract: "Full_Time" }, expected: "eligible" },
-  { name: "contract mismatch", dimension: "contract", posting: { contract: "internship" }, expected: "ineligible", reason: "contract" },
+  {
+    name: "region ambiguous city",
+    dimension: "region",
+    posting: { location: "Lisbon" },
+    expected: "unknown",
+  },
+  {
+    name: "contract match",
+    dimension: "contract",
+    posting: { contract: "Full_Time" },
+    expected: "eligible",
+  },
+  {
+    name: "contract mismatch",
+    dimension: "contract",
+    posting: { contract: "internship" },
+    expected: "ineligible",
+    reason: "contract",
+  },
   { name: "contract silent", dimension: "contract", posting: {}, expected: "unknown" },
-  { name: "contract unrecognized", dimension: "contract", posting: { contract: "seasonal" }, expected: "unknown" },
-  { name: "stack match", dimension: "stack", posting: { stack: ["TypeScript", "React"] }, expected: "eligible" },
-  { name: "stack excluded", dimension: "stack", posting: { stack: ["php", "typescript"] }, expected: "ineligible", reason: "stack" },
-  { name: "stack no overlap", dimension: "stack", posting: { stack: ["cobol"] }, expected: "ineligible", reason: "stack" },
+  {
+    name: "contract unrecognized",
+    dimension: "contract",
+    posting: { contract: "seasonal" },
+    expected: "unknown",
+  },
+  {
+    name: "stack match",
+    dimension: "stack",
+    posting: { stack: ["TypeScript", "React"] },
+    expected: "eligible",
+  },
+  {
+    name: "stack excluded",
+    dimension: "stack",
+    posting: { stack: ["php", "typescript"] },
+    expected: "ineligible",
+    reason: "stack",
+  },
+  {
+    name: "stack no overlap",
+    dimension: "stack",
+    posting: { stack: ["cobol"] },
+    expected: "ineligible",
+    reason: "stack",
+  },
   { name: "stack silent", dimension: "stack", posting: {}, expected: "unknown" },
-  { name: "salary above", dimension: "salary", posting: { salary: { min: 70000, max: 90000, currency: "USD", period: "year" } }, expected: "eligible" },
-  { name: "salary below", dimension: "salary", posting: { salary: { max: 40000, currency: "USD", period: "year" } }, expected: "ineligible", reason: "salary" },
+  {
+    name: "salary above",
+    dimension: "salary",
+    posting: { salary: { min: 70000, max: 90000, currency: "USD", period: "year" } },
+    expected: "eligible",
+  },
+  {
+    name: "salary below",
+    dimension: "salary",
+    posting: { salary: { max: 40000, currency: "USD", period: "year" } },
+    expected: "ineligible",
+    reason: "salary",
+  },
   { name: "salary silent", dimension: "salary", posting: {}, expected: "unknown" },
-  { name: "salary other currency", dimension: "salary", posting: { salary: { max: 100, currency: "EUR" } }, expected: "unknown" },
-  { name: "salary no currency", dimension: "salary", posting: { salary: { max: 100 } }, expected: "unknown" },
+  {
+    name: "salary other currency",
+    dimension: "salary",
+    posting: { salary: { max: 100, currency: "EUR" } },
+    expected: "unknown",
+  },
+  {
+    name: "salary no currency",
+    dimension: "salary",
+    posting: { salary: { max: 100 } },
+    expected: "unknown",
+  },
   { name: "company ok", dimension: "company", posting: { company: "Acme" }, expected: "eligible" },
-  { name: "company excluded", dimension: "company", posting: { company: " badco " }, expected: "ineligible", reason: "company" },
+  {
+    name: "company excluded",
+    dimension: "company",
+    posting: { company: " badco " },
+    expected: "ineligible",
+    reason: "company",
+  },
   { name: "company blank", dimension: "company", posting: { company: "" }, expected: "unknown" },
 ];
 
@@ -63,7 +160,11 @@ function salaryVerdict(salary: Posting["salary"], floorPeriod?: "year" | "month"
   return evaluateGates(
     {
       ...profile,
-      salaryFloor: { amount: 60000, currency: "USD", ...(floorPeriod === undefined ? {} : { period: floorPeriod }) },
+      salaryFloor: {
+        amount: 60000,
+        currency: "USD",
+        ...(floorPeriod === undefined ? {} : { period: floorPeriod }),
+      },
     },
     { ...base, ...(salary === undefined ? {} : { salary }) },
   ).eligibility.salary;
@@ -98,7 +199,9 @@ describe("evaluateGates overall", () => {
     expect(salaryVerdict({ max: 6000, currency: "USD", period: "month" })).toBe("eligible");
     expect(salaryVerdict({ max: 100000, currency: "USD" })).toBe("unknown");
     expect(salaryVerdict({ max: 6000, currency: "USD", period: "month" }, "year")).toBe("eligible");
-    expect(salaryVerdict({ max: 70000, currency: "USD", period: "year" }, "month")).toBe("ineligible");
+    expect(salaryVerdict({ max: 70000, currency: "USD", period: "year" }, "month")).toBe(
+      "ineligible",
+    );
   });
 
   test("no salary floor never dismisses on salary", () => {

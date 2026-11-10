@@ -47,7 +47,9 @@ describe("unbacked-number rule", () => {
   });
 
   test("flags a different number", () => {
-    const findings = rulesFor("Ahorré 76.000", "Saved 75,000").filter((rule) => rule === "unbacked-number");
+    const findings = rulesFor("Ahorré 76.000", "Saved 75,000").filter(
+      (rule) => rule === "unbacked-number",
+    );
     expect(findings).toHaveLength(1);
   });
 });

@@ -86,7 +86,10 @@ afterEach(() => {
 
 describe("splitCompanyRole", () => {
   test("splits on the first separator", () => {
-    expect(splitCompanyRole("Acme - Backend - Senior")).toEqual({ company: "Acme", role: "Backend - Senior" });
+    expect(splitCompanyRole("Acme - Backend - Senior")).toEqual({
+      company: "Acme",
+      role: "Backend - Senior",
+    });
     expect(splitCompanyRole("Solo")).toEqual({ company: "", role: "Solo" });
   });
 });
@@ -105,7 +108,9 @@ describe("importLegacy real layout", () => {
   test("sweep lead heading carries its fields", async () => {
     await importLegacy(ctx, legacyDir);
     const events = await readEvents(dir());
-    const lead = events.find((event) => event.kind === "lead.created" && event.posting.company === "Acme Corp");
+    const lead = events.find(
+      (event) => event.kind === "lead.created" && event.posting.company === "Acme Corp",
+    );
     if (lead?.kind !== "lead.created") throw new Error("missing lead");
     expect(lead.posting.url).toBe("https://example.test/jobs/77");
     expect(lead.posting.title).toBe("Backend Engineer");
@@ -118,7 +123,9 @@ describe("importLegacy real layout", () => {
   test("needs-human adds a note without changing state", async () => {
     await importLegacy(ctx, legacyDir);
     const events = await readEvents(dir());
-    expect(events.some((event) => event.kind === "note" && event.text.includes("needs-human"))).toBe(true);
+    expect(
+      events.some((event) => event.kind === "note" && event.text.includes("needs-human")),
+    ).toBe(true);
     expect(await stateOf("globex")).toBe("to-apply");
   });
 
@@ -188,7 +195,6 @@ describe("coverage and lead-outcome tables", () => {
 | Acme Corp - Backend Engineer | AO-7 | applied | sent by email |
 `;
 
-
   test("skips the three coverage tables without warnings or events", async () => {
     const result = await importLegacy(ctx, isolated({ "sweeps/2026-05-01/cover.md": COVERAGE }));
     if (!result.ok) throw new Error(result.error.message);
@@ -197,7 +203,8 @@ describe("coverage and lead-outcome tables", () => {
   });
 
   test("a partly matching coverage table still warns", async () => {
-    const partial = "| Portal | Status | Counts | Extra |\n| --- | --- | --- | --- |\n| a | b | c | d |\n";
+    const partial =
+      "| Portal | Status | Counts | Extra |\n| --- | --- | --- | --- |\n| a | b | c | d |\n";
     const result = await importLegacy(ctx, isolated({ "sweeps/2026-05-01/cover.md": partial }));
     if (!result.ok) throw new Error(result.error.message);
     expect(result.value.warnings.some((warning) => warning.includes("recognised"))).toBe(true);

@@ -54,7 +54,8 @@ function labelNames(value: unknown): string[] {
 }
 
 function toIssue(node: unknown): LinearIssue | null {
-  if (!isObject(node) || typeof node["id"] !== "string" || typeof node["title"] !== "string") return null;
+  if (!isObject(node) || typeof node["id"] !== "string" || typeof node["title"] !== "string")
+    return null;
   const state = node["state"];
   return {
     id: node["id"],
@@ -85,7 +86,8 @@ async function fetchPage(
   } catch (error) {
     return fail("migrate-linear-network", errorMessage(error).split(apiKey).join("[redacted]"));
   }
-  if (!response.ok) return fail("migrate-linear-http", `Linear responded with HTTP ${response.status}`);
+  if (!response.ok)
+    return fail("migrate-linear-http", `Linear responded with HTTP ${response.status}`);
   let body: unknown;
   try {
     body = await response.json();
@@ -95,7 +97,10 @@ async function fetchPage(
   if (!isObject(body)) return fail("migrate-linear-malformed", "response is not an object");
   if (Array.isArray(body["errors"]) && body["errors"].length > 0) {
     const first: unknown = body["errors"][0];
-    return fail("migrate-linear-graphql", isObject(first) ? text(first["message"]) : "unknown error");
+    return fail(
+      "migrate-linear-graphql",
+      isObject(first) ? text(first["message"]) : "unknown error",
+    );
   }
   const data = body["data"];
   const issues = isObject(data) ? data["issues"] : undefined;
@@ -107,7 +112,9 @@ async function fetchPage(
     .filter((issue): issue is LinearIssue => issue !== null);
   const pageInfo = issues["pageInfo"];
   const next =
-    isObject(pageInfo) && pageInfo["hasNextPage"] === true && typeof pageInfo["endCursor"] === "string"
+    isObject(pageInfo) &&
+    pageInfo["hasNextPage"] === true &&
+    typeof pageInfo["endCursor"] === "string"
       ? pageInfo["endCursor"]
       : null;
   return { ok: true, value: { issues: parsed, next } };
@@ -147,7 +154,8 @@ export function splitTitle(title: string): { role: string; company: string } {
 function toPosting(issue: LinearIssue): Posting {
   const { role, company } = splitTitle(issue.title);
   const channelLabel = issue.labels.find((label) => label.toLowerCase().startsWith("channel:"));
-  const channel = channelLabel === undefined ? "" : channelLabel.slice("channel:".length).trim().toLowerCase();
+  const channel =
+    channelLabel === undefined ? "" : channelLabel.slice("channel:".length).trim().toLowerCase();
   const firstLine = issue.description.split("\n")[0]?.trim() ?? "";
   return {
     id: "",
@@ -163,14 +171,19 @@ function importIssue(issue: LinearIssue, importer: Importer): KeyedId | null {
   const label = issue.identifier === "" ? issue.id : issue.identifier;
   const posting = toPosting(issue);
   if (posting.company === "") {
-    importer.warn(`issue ${label} has no "<role> at <company>" or "<company> - <role>" title; skipped`);
+    importer.warn(
+      `issue ${label} has no "<role> at <company>" or "<company> - <role>" title; skipped`,
+    );
     return null;
   }
   const key = importer.lead(posting, KEY_MARKER.exec(issue.description)?.[1]?.trim());
   const state = mapState(issue.stateName);
   if (state === null) importer.unknownState(`Linear state "${issue.stateName}" on ${label}`);
   else if (state !== "lead" && !importer.hadLead(key)) importer.status(key, state, issue.id);
-  importer.note(key, `linear ${label}; state ${issue.stateName}; created ${issue.createdAt}; ${issue.url}`);
+  importer.note(
+    key,
+    `linear ${label}; state ${issue.stateName}; created ${issue.createdAt}; ${issue.url}`,
+  );
   return issue.identifier === "" ? null : { id: issue.identifier, key };
 }
 
@@ -182,7 +195,8 @@ export async function importLinear(
     return fail("data-dir-not-found", "no data dir resolved; pass --data or set HUNTLINE_HOME");
   }
   const apiKey = ctx.env["LINEAR_API_KEY"];
-  if (apiKey === undefined || apiKey === "") return fail("migrate-linear-no-key", "LINEAR_API_KEY is not set");
+  if (apiKey === undefined || apiKey === "")
+    return fail("migrate-linear-no-key", "LINEAR_API_KEY is not set");
   const send: FetchLike = options.fetch ?? ((input, init) => fetch(input, init));
   const issues = await fetchAll(send, apiKey, options);
   if (!issues.ok) return issues;

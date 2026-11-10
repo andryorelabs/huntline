@@ -1,5 +1,12 @@
 import { failure, success, type Envelope } from "./envelope.ts";
-import { ensureTypst, systemInstallDeps, toolStatus, type InstallDeps, type PlatformInfo, type ToolEnv } from "./tools.ts";
+import {
+  ensureTypst,
+  systemInstallDeps,
+  toolStatus,
+  type InstallDeps,
+  type PlatformInfo,
+  type ToolEnv,
+} from "./tools.ts";
 
 export async function runSetup(
   env: ToolEnv,

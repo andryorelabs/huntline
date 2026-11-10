@@ -1,7 +1,14 @@
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import { failure, success, type Envelope } from "../core/envelope.ts";
-import { buildCv, isSafeVariantName, outputPaths, readCvText, systemRunner, type TypstRunner } from "./build.ts";
+import {
+  buildCv,
+  isSafeVariantName,
+  outputPaths,
+  readCvText,
+  systemRunner,
+  type TypstRunner,
+} from "./build.ts";
 import { loadFactBank, loadNeverClaim } from "./facts.ts";
 import { lintCv } from "./lint.ts";
 import { requirementCoverage } from "./select.ts";
@@ -38,7 +45,10 @@ function single(parsed: Parsed, flag: string): string | undefined {
 
 function splitList(values: string[] | undefined): string[] | undefined {
   if (values === undefined) return undefined;
-  return values.flatMap((value) => value.split(",")).map((item) => item.trim()).filter((item) => item !== "");
+  return values
+    .flatMap((value) => value.split(","))
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
 }
 
 function usage(message: string): Envelope<never> {
@@ -82,9 +92,12 @@ export async function runWith(
     const file = single(parsed, "--file");
     const variant = single(parsed, "--variant") ?? "cv";
     if (file === undefined && !isSafeVariantName(variant)) {
-      return failure("invalid-variant", `variant name "${variant}" is not allowed`, { recoverable: false });
+      return failure("invalid-variant", `variant name "${variant}" is not allowed`, {
+        recoverable: false,
+      });
     }
-    const textPath = file === undefined ? outputPaths(dir, variant).text : path.resolve(ctx.cwd, file);
+    const textPath =
+      file === undefined ? outputPaths(dir, variant).text : path.resolve(ctx.cwd, file);
     const text = readCvText(textPath);
     if (!text.ok) return resultFailure(text.error);
     const facts = loadFactBank(dir);

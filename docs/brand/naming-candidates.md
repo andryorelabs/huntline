@@ -1936,3 +1936,441 @@ This is input for the maintainer, who decides.
    what the web search surfaced.
 
 Nothing was bought or registered for this research.
+
+## Round 6
+
+Run 6 research, 2026-11-10. Status: options and a recommendation, input for
+the maintainer, who decides. Nothing here is a decision, and no name is
+registered, bought or renamed. Rounds 1 to 5 above are unchanged.
+
+### Why territory D, and the rules
+
+The maintainer picked territory D, "The craft of getting hired", in the canvas
+on 2026-11-10, with no note. It comes from `docs/brand/naming-research.md`
+(section 7). The idea is a trade learned and practised: the human is the maker
+and the tool is a workshop, and the feeling is skill and pride. The words come
+from apprenticeship and the trades (craft, trade, guild, journeyman, bench,
+workshop). The research names the territory's own risks: a trades word can make
+the tool the apprentice or the worker, and a name must not hint that the tool
+applies for the user. Axes that matter most here are Brief fit and Overpromise
+risk.
+
+The rules for this round are the round 5 rules plus the territory's risks.
+**One word**, English (not Spanish), memorable and friendly, lowercase and
+CLI-friendly, and it must read well as `/<name>:sweep`. **A stranger connects it
+to work, jobs, hiring or careers: Findability at least 7, scored honestly, and
+names below 7 are cut.** A suffix with no meaning of its own (`-ling`, `-kin`,
+`-ship`, `-hood`) keeps a name one word. Two real words stuck together (`-hand`,
+`-smith`, `-wright`, `-bench`, `-craft`, `-mate`, `-desk`) do not, so those are
+listed and checked but cannot be finalists. Hard filters are unchanged: no
+hunting or weapon imagery (so no anvil, blade or hammer-as-weapon imagery,
+and `forge` was not proposed), no purple, LinkedIn-blue or Claude-orange
+associations, no "AI magic" or auto-apply tone, npm and GitHub slug free. Names
+in rounds 1 to 5 were checked against this file and are not proposed again
+(`guild`, `journeyman`, `workbench`, `trade`, `apprentice`, `workling` and
+others were already used, so they are absent below).
+
+### Long list by style
+
+127 candidates in 5 styles, each with one line on the idea. Style tags:
+(t) trade and apprenticeship words, (d) friendly or diminutive forms of trade
+words and job roots, (b) invented blends that keep a work cue, (s) short forms
+of 4 to 6 letters, (j) words from the craft idea that also read as a job (shift,
+post, gig-like words). The npm column is the availability result below.
+
+| Name        | Style             | Idea                                                       | npm   |
+| ----------- | ----------------- | ---------------------------------------------------------- | ----- |
+| apprenti    | (d) friendly form | Spanish-flavoured clip of apprentice, a learner of a trade | free  |
+| artisan     | (t) trade word    | One who practises a craft by hand                          | taken |
+| bench       | (t) trade word    | The workbench where work is laid out                       | taken |
+| benchie     | (d) friendly form | A friendly form of bench                                   | taken |
+| benchkin    | (d) friendly form | A small bench, kin ending                                  | free  |
+| benchly     | (b) blend         | Bench plus -ly, an adverb-like tool name                   | taken |
+| benchmate   | (b) blend         | The person beside you at the bench                         | taken |
+| benchwork   | (b) blend         | Work done at the bench                                     | taken |
+| careercraft | (b) blend         | The craft of a career                                      | free  |
+| careerhand  | (b) blend         | A hand at your career, a skilled helper                    | free  |
+| careerio    | (b) blend         | Career with a soft -io ending                              | free  |
+| careerkin   | (d) friendly form | Career with the family ending -kin                         | free  |
+| careerling  | (d) friendly form | A small career creature, a cousin of jobling               | free  |
+| careerly    | (b) blend         | Career as an adverb-like name                              | free  |
+| careermate  | (b) blend         | A mate for your career                                     | taken |
+| careership  | (d) friendly form | Career plus -ship, like apprenticeship                     | free  |
+| careerwise  | (b) blend         | Career-wise, sensible about careers                        | free  |
+| crafter     | (t) trade word    | One who crafts                                             | taken |
+| craftio     | (b) blend         | Craft with a soft -io ending                               | free  |
+| craftkin    | (d) friendly form | The craft family, kin ending                               | free  |
+| craftling   | (d) friendly form | A small maker, a learner of a craft                        | free  |
+| craftship   | (d) friendly form | Craft plus -ship, the state of craftsmanship               | free  |
+| craftsman   | (t) trade word    | A skilled maker of things                                  | taken |
+| craftwise   | (b) blend         | Wise in the craft                                          | free  |
+| craftwork   | (t) trade word    | Work done by craft                                         | free  |
+| craftwright | (b) blend         | A maker of craft, wright from shipwright                   | free  |
+| crafty      | (t) trade word    | Skilled, but also sly                                      | taken |
+| gigship     | (d) friendly form | Gig plus -ship, the state of gig work                      | free  |
+| gigster     | (j) job reading   | A person who works gigs                                    | taken |
+| guildhand   | (b) blend         | A hand of the guild                                        | free  |
+| guildie     | (d) friendly form | A friendly member of a guild                               | free  |
+| guildkin    | (d) friendly form | Guild family, kin ending                                   | free  |
+| guildling   | (d) friendly form | A small guild member, an apprentice                        | free  |
+| guildmate   | (b) blend         | A fellow member of a guild                                 | free  |
+| guildo      | (s) short form    | Short guild with an -o ending                              | free  |
+| guildwork   | (b) blend         | Work done for a guild                                      | free  |
+| handcraft   | (t) trade word    | Made by hand, a craft word                                 | taken |
+| handiwork   | (t) trade word    | A thing made by your own hands                             | free  |
+| handy       | (t) trade word    | Useful, skilled with tools                                 | taken |
+| handyling   | (d) friendly form | A small handy helper                                       | free  |
+| handyman    | (t) trade word    | A person who does odd jobs                                 | taken |
+| hardworking | (j) job reading   | Describes a person who works hard                          | free  |
+| hireable    | (j) job reading   | Fit to be hired                                            | taken |
+| hirecraft   | (b) blend         | The craft of hiring and being hired                        | taken |
+| hirekin     | (d) friendly form | Hire plus kin, the family of hirers                        | free  |
+| hiremate    | (b) blend         | A mate in the hire                                         | free  |
+| hireo       | (s) short form    | Hire with a soft -o ending                                 | free  |
+| hireship    | (d) friendly form | Hire plus -ship                                            | free  |
+| hirewise    | (b) blend         | Wise about hiring                                          | free  |
+| hirewright  | (b) blend         | One who makes hires, wright ending                         | free  |
+| jobbench    | (b) blend         | The bench where your job work sits                         | free  |
+| jobcraft    | (b) blend         | The craft of the job search                                | free  |
+| jobdesk     | (b) blend         | A desk for the job                                         | free  |
+| jobhand     | (b) blend         | A hand at the job                                          | free  |
+| jobhood     | (d) friendly form | Job plus -hood, the state of having a job                  | free  |
+| jobio       | (s) short form    | Job with a soft -io ending                                 | free  |
+| jobship     | (d) friendly form | Job plus -ship, as in apprenticeship                       | free  |
+| jobsmith    | (b) blend         | A smith of jobs, a maker                                   | free  |
+| jobster     | (j) job reading   | A person of jobs, like gangster or youngster               | free  |
+| jobsworth   | (j) job reading   | An official who sticks to the rules, British slang         | taken |
+| jobwright   | (b) blend         | Job plus wright, a maker of jobs                           | free  |
+| journeyer   | (t) trade word    | One on a journey, close to journeyman                      | free  |
+| journeykin  | (d) friendly form | Journey plus kin                                           | free  |
+| journeymate | (b) blend         | A companion on the journey                                 | free  |
+| journeywork | (t) trade word    | The work of a journeyman                                   | free  |
+| journo      | (s) short form    | Short form of journalist                                   | taken |
+| ledgerling  | (d) friendly form | A small ledger, a tally creature                           | free  |
+| ledgerwork  | (b) blend         | Work kept in a ledger                                      | free  |
+| legwork     | (j) job reading   | The footwork of a search                                   | taken |
+| mastercraft | (t) trade word    | Mastery of a craft                                         | free  |
+| paywork     | (j) job reading   | Work for pay                                               | free  |
+| postling    | (d) friendly form | A small post, a job posting                                | taken |
+| postwise    | (b) blend         | Wise about posts                                           | free  |
+| prentice    | (t) trade word    | Old short form of apprentice                               | free  |
+| prentis     | (t) trade word    | Variant of prentice                                        | free  |
+| shiftly     | (b) blend         | Shift plus -ly                                             | taken |
+| shiftwork   | (j) job reading   | Work done in shifts                                        | taken |
+| shopwork    | (t) trade word    | Work done in the shop                                      | free  |
+| sidework    | (j) job reading   | Work on the side                                           | free  |
+| skillcraft  | (b) blend         | The craft of skill                                         | taken |
+| skilled     | (t) trade word    | Having a trained skill                                     | taken |
+| skillet     | (t) trade word    | A frying pan, a false friend of skill                      | taken |
+| skillful    | (t) trade word    | Having skill                                               | taken |
+| skillhand   | (b) blend         | A skilled hand                                             | free  |
+| skillkin    | (d) friendly form | The skill family                                           | free  |
+| skillship   | (d) friendly form | Skill plus -ship                                           | taken |
+| skilly      | (d) friendly form | Skill with a friendly -y                                   | taken |
+| stintling   | (d) friendly form | A small stint, a short job                                 | free  |
+| stitchwork  | (t) trade word    | Work made by stitching, a hand trade                       | free  |
+| tallyhand   | (b) blend         | A hand that keeps the tally                                | free  |
+| tallyman    | (t) trade word    | One who keeps a tally                                      | taken |
+| toolbench   | (t) trade word    | The bench for tools                                        | taken |
+| toolkit     | (t) trade word    | A set of tools                                             | taken |
+| toolling    | (d) friendly form | A small tool                                               | free  |
+| toolwise    | (b) blend         | Wise about tools                                           | free  |
+| tradehand   | (b) blend         | A hand in the trade                                        | free  |
+| tradekin    | (d) friendly form | Trade plus kin                                             | free  |
+| tradeling   | (d) friendly form | A small trade, a trade learner                             | free  |
+| tradely     | (b) blend         | Trade plus -ly                                             | free  |
+| tradeo      | (s) short form    | Trade with an -o ending                                    | free  |
+| trader      | (t) trade word    | One who trades                                             | taken |
+| tradesfolk  | (t) trade word    | People of the trades                                       | free  |
+| tradeship   | (d) friendly form | Trade plus -ship                                           | taken |
+| tradesman   | (t) trade word    | A skilled worker in a trade                                | free  |
+| tradeswoman | (t) trade word    | A woman in the trades                                      | free  |
+| tradesy     | (d) friendly form | Trade with a friendly -sy                                  | free  |
+| tradewise   | (b) blend         | Wise in the trade                                          | free  |
+| tradey      | (d) friendly form | Trade with a friendly -y                                   | free  |
+| tradie      | (d) friendly form | Australian slang for a tradesperson                        | taken |
+| tradio      | (s) short form    | Trade with an -io ending                                   | free  |
+| workaday    | (t) trade word    | Ordinary and daily, from the working day                   | free  |
+| workday     | (t) trade word    | A day of work                                              | free  |
+| workery     | (b) blend         | A place where work happens                                 | taken |
+| workful     | (b) blend         | Full of work                                               | taken |
+| workhand    | (b) blend         | A hand at work                                             | free  |
+| workhood    | (d) friendly form | Work plus -hood, the state of working                      | free  |
+| workio      | (s) short form    | Work with a soft -io ending                                | taken |
+| workish     | (d) friendly form | A bit like work                                            | free  |
+| workkin     | (d) friendly form | Work plus kin                                              | free  |
+| workroom    | (t) trade word    | A room for work                                            | free  |
+| workship    | (d) friendly form | Work plus -ship                                            | free  |
+| workshop    | (t) trade word    | A place where a trade is practised                         | taken |
+| workwear    | (t) trade word    | Clothes for work                                           | free  |
+| workweek    | (t) trade word    | The week of work                                           | free  |
+| workwright  | (b) blend         | A maker of work                                            | taken |
+| wright      | (t) trade word    | A maker, as in shipwright                                  | taken |
+| yardwork    | (t) trade word    | Outdoor work                                               | free  |
+
+### Availability filter
+
+Checked 2026-11-10 with the same method as earlier rounds: `npm view <name>
+name`, `gh api repos/andryorelabs/<name>`, `gh api users/<name>`, RDAP for
+`.dev` (`https://pubapi.registry.google/rdap/domain/<name>.dev`) and `.com`
+(`https://rdap.verisign.com/com/v1/domain/<name>.com`); `rdap.org` was not used.
+Lookups ran one name at a time with a pause between calls. A "free" npm result
+was confirmed as a 404 (E404) from the registry. The slug, account, `.dev` and
+`.com` lookups ran only on names free on npm. `no record` is not a registrar
+quote, and `none` in the account column means no GitHub account of that name.
+
+**40 of the 127 names are taken on npm and drop at once:** artisan, bench,
+benchie, benchly, benchmate, benchwork, careermate, crafter, craftsman, crafty,
+gigster, handcraft, handy, handyman, hireable, hirecraft, jobsworth, journo,
+legwork, postling, shiftly, shiftwork, skillcraft, skilled, skillet, skillful,
+skillship, skilly, tallyman, toolbench, toolkit, trader, tradeship, tradie,
+workery, workful, workio, workshop, workwright, wright. Most plain trade words
+are gone, as in round 5.
+
+The other 87 passed npm and the GitHub slug (all 87 slugs are free). 84 of the
+87 `.com` names are taken, so `.com` does not separate them; only `handyling`,
+`stintling` and `toolling` have no `.com` record. 59 have no `.dev` record and 24
+have no GitHub account of that name.
+
+| Name        | GitHub slug | GitHub account | `.dev`    | `.com`    |
+| ----------- | ----------- | -------------- | --------- | --------- |
+| apprenti    | free        | User           | taken     | taken     |
+| benchkin    | free        | none           | no record | taken     |
+| careercraft | free        | Organization   | taken     | taken     |
+| careerhand  | free        | none           | no record | taken     |
+| careerio    | free        | User           | no record | taken     |
+| careerkin   | free        | none           | no record | taken     |
+| careerling  | free        | none           | no record | taken     |
+| careerly    | free        | User           | taken     | taken     |
+| careership  | free        | Organization   | no record | taken     |
+| careerwise  | free        | Organization   | no record | taken     |
+| craftio     | free        | User           | taken     | taken     |
+| craftkin    | free        | User           | no record | taken     |
+| craftling   | free        | Organization   | no record | taken     |
+| craftship   | free        | Organization   | no record | taken     |
+| craftwise   | free        | User           | no record | taken     |
+| craftwork   | free        | Organization   | taken     | taken     |
+| craftwright | free        | User           | no record | taken     |
+| gigship     | free        | User           | no record | taken     |
+| guildhand   | free        | none           | no record | taken     |
+| guildie     | free        | none           | no record | taken     |
+| guildkin    | free        | none           | no record | taken     |
+| guildling   | free        | none           | no record | taken     |
+| guildmate   | free        | none           | no record | taken     |
+| guildo      | free        | User           | no record | taken     |
+| guildwork   | free        | Organization   | no record | taken     |
+| handiwork   | free        | User           | taken     | taken     |
+| handyling   | free        | none           | no record | no record |
+| hardworking | free        | User           | taken     | taken     |
+| hirekin     | free        | none           | no record | taken     |
+| hiremate    | free        | Organization   | no record | taken     |
+| hireo       | free        | User           | no record | taken     |
+| hireship    | free        | Organization   | no record | taken     |
+| hirewise    | free        | Organization   | taken     | taken     |
+| hirewright  | free        | none           | no record | taken     |
+| jobbench    | free        | none           | no record | taken     |
+| jobcraft    | free        | Organization   | taken     | taken     |
+| jobdesk     | free        | Organization   | taken     | taken     |
+| jobhand     | free        | User           | no record | taken     |
+| jobhood     | free        | none           | no record | taken     |
+| jobio       | free        | User           | no record | taken     |
+| jobship     | free        | none           | no record | taken     |
+| jobsmith    | free        | User           | no record | taken     |
+| jobster     | free        | User           | no record | taken     |
+| jobwright   | free        | Organization   | no record | taken     |
+| journeyer   | free        | User           | no record | taken     |
+| journeykin  | free        | none           | no record | taken     |
+| journeymate | free        | User           | no record | taken     |
+| journeywork | free        | User           | no record | taken     |
+| ledgerling  | free        | none           | no record | taken     |
+| ledgerwork  | free        | User           | no record | taken     |
+| mastercraft | free        | User           | taken     | taken     |
+| paywork     | free        | User           | no record | taken     |
+| postwise    | free        | User           | no record | taken     |
+| prentice    | free        | User           | taken     | taken     |
+| prentis     | free        | User           | taken     | taken     |
+| shopwork    | free        | Organization   | no record | taken     |
+| sidework    | free        | User           | taken     | taken     |
+| skillhand   | free        | User           | no record | taken     |
+| skillkin    | free        | none           | no record | taken     |
+| stintling   | free        | none           | no record | no record |
+| stitchwork  | free        | Organization   | no record | taken     |
+| tallyhand   | free        | none           | no record | taken     |
+| toolling    | free        | User           | no record | no record |
+| toolwise    | free        | Organization   | taken     | taken     |
+| tradehand   | free        | User           | no record | taken     |
+| tradekin    | free        | none           | no record | taken     |
+| tradeling   | free        | Organization   | taken     | taken     |
+| tradely     | free        | Organization   | taken     | taken     |
+| tradeo      | free        | Organization   | taken     | taken     |
+| tradesfolk  | free        | none           | no record | taken     |
+| tradesman   | free        | User           | taken     | taken     |
+| tradeswoman | free        | none           | no record | taken     |
+| tradesy     | free        | User           | no record | taken     |
+| tradewise   | free        | none           | taken     | taken     |
+| tradey      | free        | User           | taken     | taken     |
+| tradio      | free        | User           | no record | taken     |
+| workaday    | free        | Organization   | no record | taken     |
+| workday     | free        | Organization   | taken     | taken     |
+| workhand    | free        | User           | no record | taken     |
+| workhood    | free        | Organization   | no record | taken     |
+| workish     | free        | User           | taken     | taken     |
+| workkin     | free        | Organization   | no record | taken     |
+| workroom    | free        | Organization   | taken     | taken     |
+| workship    | free        | Organization   | taken     | taken     |
+| workwear    | free        | User           | taken     | taken     |
+| workweek    | free        | User           | taken     | taken     |
+| yardwork    | free        | Organization   | taken     | taken     |
+
+### Cut by Findability and by the one-word rule
+
+Of the 87 survivors, the pure trade words score 5 or less on Findability, so
+the rule cuts them: `guildling`, `guildie`, `guildkin`, `guildo`, `craftling`,
+`craftkin`, `tradeling`, `tradekin`, `tradesy`, `tradey`, `journeyer`,
+`prentice`, `apprenti`, `stintling`, `ledgerling` and the rest of the (t) group.
+A stranger reads `guildie` as a game or a club and `tradeling` as stock trading.
+This is the main finding of the round: **territory D is strong on pride and weak
+on the job cue, so the survivors are the names that bolt a trade suffix onto a
+job, career or hire root.** The blends `jobsmith`, `jobwright`, `jobbench`,
+`jobhand`, `careerhand`, `hirewright` and `hiremate` have the cue and a clean
+registry profile in most cases, but they are two real words stuck together and
+fail the one-word rule. `jobsmith` and `jobwright` also lean on forge imagery.
+`workday` is free on npm but is the name of Workday, Inc., a large HR software
+vendor, and `workaday` sits one letter from it.
+
+### Web collision on the finalists
+
+Checked 2026-11-10. `gh search repos <name> --match name` on the eight finalists
+found only tiny, unrelated repos: `jobship` (JobShip, 0 stars), `jobhood`
+(JobHood, 0), `careership` (CareerShip, 1), `hirekin` (hirekinkx1, 0), `workhood`
+(workhood-equipo9, 0), `workaday` (3 and 10 stars), and none for `careerling`
+and `careerkin` (nearest: Careerlingo, Careerkind). Web search found no job
+product called `jobship`, `jobhood`, `careerling`, `careerkin`, `hirekin` or
+`workhood`. The nearest hits are Jobshift (a job-application organizer, France
+and Europe, 2023), Joblee and JobJack. A `CareerShip` AI career-advice app
+exists (a July 2024 hackathon entry, `careership.io` listed; not confirmed
+still live), which is a real collision for `careership`. `workaday` finds only
+Workday, Inc. trademarks. Web search is not a trademark search.
+
+### Round 6 finalists: scored /80
+
+Eight finalists, all with Findability 7 or more, all one word by the suffix
+rule: `jobship`, `jobhood`, `careership`, `careerling`, `hirekin`, `workhood`,
+`workaday` and `careerkin`. Axes are the round 2 definitions as updated in the
+research (section 8): Sound, Registry collision, Brand collision, Brief fit,
+Headroom, Warmth, Overpromise risk and Findability, each 0 to 10. The two
+gates (Memorability and Pronunciation/spelling) and the two fixed checks (the
+`:sweep` test and the one-word and job-cue test) were applied as **thought
+experiments**: no four people were asked, so a gate "fail" below is my own
+prediction. This is directional judgment, not a formula.
+
+Fixed checks: all eight read as a name in `/<name>:sweep`, and all eight pass the
+one-word and job-cue test. Gates: `careerkin` is predicted to fail
+Pronunciation (the stress and the "r-k" run are unclear, so Sound is capped at
+5); the other seven are predicted to pass both.
+
+| Axis               | jobship                               | jobhood                                | careership                            | careerling                      | hirekin                               | workhood                               | workaday                               | careerkin                       |
+| ------------------ | ------------------------------------- | -------------------------------------- | ------------------------------------- | ------------------------------- | ------------------------------------- | -------------------------------------- | -------------------------------------- | ------------------------------- |
+| Sound              | 7: two beats, an apprenticeship echo  | 7: two beats, a soft ending            | 7: three beats, even                  | 6: long, the stress is a guess  | 6: easy, "kin" is flat                | 6: two beats, a little heavy           | 8: a real word, easy to say            | 5: gate fail, an awkward run    |
+| Registry collision | 8: npm, slug, `.dev` free, no account | 8: npm, slug, `.dev` free, no account  | 6: `.dev` free, an empty organization | 9: npm, slug, `.dev` free, none | 9: npm, slug, `.dev` free, no account | 6: `.dev` free, an active organization | 6: `.dev` free, an organization exists | 9: npm, slug, `.dev` free, none |
+| Brand collision    | 7: JobShip repos, Jobshift is near    | 8: only a 0-star repo                  | 5: a CareerShip app exists            | 8: no product, Careerlingo near | 8: no product                         | 8: no product                          | 4: one letter off Workday, Inc.        | 8: no product, Careerkind near  |
+| Brief fit          | 7: craft and pride, calm              | 6: a state of being, a little abstract | 7: craft and pride, calm              | 6: cute, less precise           | 5: small and light                    | 6: plain, a little vague               | 7: calm, plain, human                  | 6: cute, less precise           |
+| Headroom           | 5: bound to jobs                      | 5: bound to jobs                       | 6: bound to careers                   | 6: bound to careers             | 5: bound to hiring                    | 6: bound to work                       | 7: a plain word that can stretch       | 6: bound to careers             |
+| Warmth             | 6: dignified, not cuddly              | 6: dignified, a little stiff           | 6: dignified                          | 7: a pet name                   | 7: a family word                      | 5: neutral                             | 6: modest and human                    | 7: a family word                |
+| Overpromise risk   | 10: nothing promised                  | 10: nothing promised                   | 10: nothing promised                  | 10: nothing promised            | 10: nothing promised                  | 10: nothing promised                   | 10: nothing promised                   | 10: nothing promised            |
+| Findability        | 8: "job" is the first syllable        | 8: "job" is the first syllable         | 8: "career" is clear                  | 8: "career" is clear            | 8: "hire" is the first syllable       | 7: "work" is clear, "hood" is odd      | 7: "work" is inside, it reads as daily | 8: "career" is clear            |
+| **Total /80**      | **58**                                | **58**                                 | **55**                                | **60**                          | **58**                                | **54**                                 | **55**                                 | **59**                          |
+
+Each total is the sum of its eight scores: jobship 7+8+7+7+5+6+10+8 = 58,
+jobhood 7+8+8+6+5+6+10+8 = 58, careership 7+6+5+7+6+6+10+8 = 55, careerling
+6+9+8+6+6+7+10+8 = 60, hirekin 6+9+8+5+5+7+10+8 = 58, workhood 6+6+8+6+6+5+10+7
+= 54, workaday 8+6+4+7+7+6+10+7 = 55, careerkin 5+9+8+6+6+7+10+8 = 59.
+
+### Cross-language check and trademark risk
+
+English, Spanish and Portuguese, by the method in research section 6 (a
+dictionary look-up as a word, a prefix and a suffix, and reading the name aloud
+as a Spanish and a Portuguese speaker would). No native speaker was asked, so
+this is my own reading, not a test. Trademark notes come from a web search of
+software and hiring names on 2026-11-10; the USPTO trademark search and EUIPO
+TMview named in research section 6 were not queried. **They are not legal
+advice, and a web search is not a trademark search**: a USPTO and TMview search
+in classes 9 and 42 and the job-service classes still has to be run by the
+maintainer or an attorney before any rename.
+
+| Name       | English                                     | Spanish                                                                   | Portuguese                                 | Trademark-risk note                                                                                                  |
+| ---------- | ------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| jobship    | "Job" plus "ship", like "apprenticeship"    | Read "yob-ship"; "ship" is not a Spanish word, no clash found             | Read "djob-ship"; no word or slang found   | No mark found by web search; Jobshift is the nearest job-app name. Medium-low, needs a class 9, 42 and 35 search     |
+| jobhood    | "Job" plus "-hood", like "childhood"        | "-hood" is not Spanish; "yob-hud" forms no word                           | "djob-hud"; no word found                  | No mark found by web search. Low, but "-hood" names are common in HR and community brands, so search class 35 and 42 |
+| careership | "Career" plus "-ship"                       | "career" is "carrera" in Spanish; "careership" reads as English, no clash | "carreira" in Portuguese; reads as English | A CareerShip AI career app exists, the highest brand-collision risk in the set. Medium-high                          |
+| careerling | "Career" plus "-ling", a small thing        | No Spanish word; "-ling" is unknown                                       | No Portuguese word; "-ling" is unknown     | No product found; Careerlingo is near (a "lingo" app). Low                                                           |
+| hirekin    | "Hire" plus "kin", family                   | "kin" has no meaning; no word formed                                      | "kin" has no meaning; no word formed       | No product found. Low, but "hire" is a crowded root in HR marks (HIREDSCORE is Workday's), so search class 35        |
+| workhood   | "Work" plus "-hood"                         | "work" is not Spanish; reads as "wurk-hud"                                | Reads as "wurk-hud"; no word found         | No product found; a small Spanish-language repo, "workhood-equipo9", uses the name. Low-medium                       |
+| workaday   | A real word, "ordinary, of the working day" | No Spanish meaning; no clash                                              | No clash found                             | Close to WORKDAY, owned by Workday, Inc. in HR software, a large vendor with many marks. **High**; do not rely on it |
+| careerkin  | "Career" plus "kin"                         | No word formed                                                            | No word formed                             | No product found; Careerkind is near. Low                                                                            |
+
+### Rounds 1 to 6 compared
+
+The round 6 finalists next to the previous best of rounds 1 to 5, on the same /80
+scale, with the round 5 leaders (jobling 63, jobkin 61, careerie 60) kept.
+
+| Rank | Name       | Round | Total /80 | Brief fit | Warmth | Findability |
+| ---- | ---------- | ----- | --------- | --------- | ------ | ----------- |
+| 1    | jobling    | 5     | 63        | 6         | 9      | 9           |
+| 2    | jobkin     | 5     | 61        | 6         | 7      | 9           |
+| 3    | careerie   | 5     | 60        | 6         | 7      | 8           |
+| 3    | careerling | 6     | 60        | 6         | 7      | 8           |
+| 5    | careerkin  | 6     | 59        | 6         | 7      | 8           |
+| 6    | jobship    | 6     | 58        | 7         | 6      | 8           |
+| 6    | jobhood    | 6     | 58        | 6         | 6      | 8           |
+| 6    | hirekin    | 6     | 58        | 5         | 7      | 8           |
+| 9    | careership | 6     | 55        | 7         | 6      | 8           |
+| 9    | workaday   | 6     | 55        | 7         | 6      | 7           |
+| 11   | workhood   | 6     | 54        | 6         | 5      | 7           |
+
+Reading it straight:
+
+- **No round 6 name beats `jobling` (63).** The best new name, `careerling`
+  (60), ties `careerie` and sits 3 points under `jobling`, which is inside the
+  noise of a judgment score. Eight finalists survived, so the list is not
+  padded.
+- **Territory D pays in Findability.** The words that carry its pride (guild,
+  journeyman, craft, tradie) score 5 or less on Findability and were cut. What
+  survives is a job, career or hire root with a suffix, which is the round 5 idea
+  again.
+- **The territory's own words do win on Brief fit.** `jobship` and `careership`
+  score 7, higher than `jobling` and `jobkin` at 6: "-ship" echoes
+  apprenticeship and craftsmanship, and reads calmer and more precise than a
+  pet name. They give up 2 to 3 points of Warmth for it.
+- **The trade has no home in the registry.** 40 of 127 names were taken on npm,
+  and the plain trade words (`bench`, `workshop`, `artisan`, `trader`) are gone,
+  as the plain job words were in round 5.
+
+### Round 6 recommendation
+
+This is input for the maintainer, who decides.
+
+1. **If the highest total matters most, stay with `jobling` (63).** Territory D
+   did not produce a name that beats it.
+2. **If the craft idea matters, take `jobship` (58).** It is the finalist that
+   keeps the territory's meaning (a state of skill, as in "apprenticeship"), has
+   Brief fit 7 and Findability 8, and is clean in the registries: npm, slug and
+   `.dev` free and no GitHub account. Its price is 5 points under `jobling` and
+   less warmth. `jobhood` (58) is the alternative with the same registry profile
+   and a plainer meaning.
+3. **If a friendly form is still wanted, `careerling` (60)** is the best new
+   name and ties `careerie`, with a clean registry profile and no product found.
+   It is a `-ling` form again, so it is the round 5 idea, not territory D.
+4. **Avoid `workaday`.** It is a good real word and scores well on Sound, but it
+   sits one letter from Workday, Inc. and the trademark note is high-risk.
+   **Avoid `careership`** while a CareerShip app is listed.
+5. **If the maintainer wants a trades word that is not a job root,** the cost is
+   Findability 5 or less, which the round 5 rule cuts. That would need an
+   explicit decision to relax the rule, and nothing here recommends it.
+6. **Confirm before acting.** RDAP "no record" is a signal, not a quote. Re-run
+   the table, ask a registrar, run the USPTO and TMview searches in classes 9
+   and 42, and ask native Spanish and Portuguese speakers before any rename.
+   The gates here were thought experiments and should be run with real people
+   on the final two or three names.
+
+Nothing was bought or registered for this research.

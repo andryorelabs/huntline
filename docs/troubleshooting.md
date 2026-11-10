@@ -6,15 +6,23 @@ It lists the remaining `TODO(huntline):` markers in your data dir. Fill each one
 
 ## `cv build` cannot find Typst or `pdftotext`
 
-`huntline setup` downloads a checksum-verified Typst. `pdftotext` comes from poppler: `sudo apt install poppler-utils` or `brew install poppler`.
+`huntline setup` downloads a checksum-verified Typst. `pdftotext` comes from poppler: see [poppler](guide/install.md#poppler) for apt, brew, dnf and pacman.
 
 ## The `apply` or `browser-source` skill cannot reach the browser
 
-Both drive your own Chrome through a browser MCP server that speaks CDP, such as chrome-devtools. Install one and start Chrome with remote debugging enabled.
+Both drive your own Chrome through a browser MCP server that speaks CDP, such as chrome-devtools. Follow [Browser MCP](guide/install.md#browser-mcp) to start Chrome with remote debugging and register the server.
 
 ## The `inbox` or `outreach` skill cannot read mail
 
-They need the Gmail MCP server. Without it, `inbox propose` still works on classified emails you supply as a file.
+They need the Gmail MCP server ([setup](guide/install.md#gmail-mcp)). Without it, `inbox propose` still works on classified emails you supply as a file.
+
+## `sweep` reports an ATS Source as misconfigured
+
+ATS Sources need saved companies. Run `huntline company add <careers-url>`, for example `huntline company add https://jobs.ashbyhq.com/acme`. Valid Source names are listed in [Sources](guide/install.md#sources).
+
+## The launcher fails or the Guard denies everything
+
+The launcher needs Linux or macOS, `curl`, and `sha256sum` or `shasum`. When it cannot run as the Guard it denies the guarded call on purpose. Fix the reason in the deny message and restart the session. Windows is unsupported and WSL is untested.
 
 ## The Guard denied an action
 

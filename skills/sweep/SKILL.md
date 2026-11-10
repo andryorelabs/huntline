@@ -19,6 +19,7 @@ Find new Postings, dedup them against the Ledger, apply Gates and create Leads.
 2. Run `huntline sweep`. Optional filters: `--source <name>` (repeatable) and `--keyword <text>` (repeatable).
 3. Read the envelope. Per Source it lists `seen`, `known`, `new` and `dismissed`. Report these separately:
    - `failed`: the Source errored (HTTP 429, network, parse). Show the error. Do not retry in a loop; suggest retrying later.
+   - Misconfigured, with a hint to run `huntline company add <careers-url>`: an ATS Source (`greenhouse`, `lever`, `ashby`, `workable`, `smartrecruiters`) has no saved companies. Ask for the careers URL and run `huntline company add`; do not guess it.
    - `empty`: the Source answered with no Postings. This is not an error.
 4. For browser-only Sources (Wellfound, LinkedIn, X), follow the `browser-source` skill and pass the Posting JSON to `huntline ingest`.
 5. For each new Lead key in `leads`, offer to run the `score` skill.

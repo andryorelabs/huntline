@@ -7,9 +7,9 @@
 5. **Fill the Profile** following the [Profile reference](../reference/profile.md).
 6. **Add a Typst template** at `cv/template.typ`; `examples/cv/` in this repository has a synthetic starting point.
 7. **Run `huntline doctor`** until it exits 0.
-8. **Add companies**: `huntline company add https://jobs.ashbyhq.com/acme` stores `{ats: "ashby", slug: "acme"}`.
+8. **Add companies** (required for ATS Sources such as `greenhouse`, `lever` and `ashby`): `huntline company add https://jobs.ashbyhq.com/acme` stores `{ats: "ashby", slug: "acme"}`.
 9. **Sweep**: `huntline sweep`, or feed browser Sources and JobSpy output through `huntline ingest`.
 10. **Work a Lead**: `score`, `cv coverage`, `cv build`, `cv lint`, then the `apply` skill. Record the outcome with Events and let `inbox propose` and `inbox apply` track replies.
-11. **Bring history along**: `huntline migrate legacy <dir>` and `huntline migrate linear --team <key>` import old sweeps and Linear issues as Events, idempotently. Legacy ids (for example `AO-7` from a `Lead, Linear, Outcome, Detail` table) are kept as a `legacy id AO-7` note; when a Linear issue such as `JOB-12` matches the same Lead, either order of import adds one `legacy AO-7 = linear JOB-12` note. Ambiguous matches and legacy ids with no Linear match are reported as warnings, never guessed.
+11. **Bring history along (niche)**: `huntline migrate legacy <dir>` is an importer for one specific legacy Markdown format, and `huntline migrate linear --team <key>` imports Linear issues. Both write Events, idempotently. Skip this unless you have that history. Legacy ids (for example `AO-7` from a `Lead, Linear, Outcome, Detail` table) are kept as a `legacy id AO-7` note; when a Linear issue such as `JOB-12` matches the same Lead, either order of import adds one `legacy AO-7 = linear JOB-12` note. Ambiguous matches and legacy ids with no Linear match are reported as warnings, never guessed.
 
 Keep real data out of this repository: fixtures and examples here are synthetic, and the data dir is separate (ADR 0003).

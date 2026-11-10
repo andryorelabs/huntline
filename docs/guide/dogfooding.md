@@ -5,8 +5,8 @@ Follow this after each release, in order, with your own data dir. Stop at the fi
 ## 1. Install the plugin
 
 ```sh
-claude plugin marketplace add AndryOre/huntline
-claude plugin install huntline
+claude plugin marketplace add andryorelabs/huntline
+claude plugin install huntline@huntline-marketplace
 ```
 
 Pass: `claude plugin list` shows `huntline`.
@@ -31,7 +31,7 @@ Pass: exit 0 and per-Source `seen/known/new` counts. A Source listed under `fail
 
 ## 5. One apply, stopped at the Submit
 
-Run the `apply` skill on one real Lead in the user-chrome browser. It fills the form and runs `huntline apply verify`.
+Run the `apply` skill on one real Lead in your own Chrome, through the browser MCP. It fills the form and runs `huntline apply verify`.
 
 Pass: the form is filled, `huntline apply verify` reports no mismatch, and the run stops before Submit. Trying to click "Submit application" is denied by the Guard. You press Submit yourself, or close the tab.
 

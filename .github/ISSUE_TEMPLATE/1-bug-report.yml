@@ -1,0 +1,27 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got. Include the JSON envelope the CLI printed.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: huntline version
+      description: Output of `huntline --version`
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: OS and architecture
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Remove personal data, such as your Profile, Fact bank or CV text, before pasting logs.

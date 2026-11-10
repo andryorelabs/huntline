@@ -27,7 +27,7 @@ type CannedCase = {
 
 const SESSION_ID = "self-test";
 const LABELLED_SERVERS: readonly string[] = [
-  "user-chrome",
+  "playwright",
   "chrome-devtools",
   "remote-devices__Claude_Browser",
 ];
@@ -47,8 +47,8 @@ function clickCase(name: string, uid: string, expected: "allow" | "deny"): Canne
 
 const CANNED_CASES: readonly CannedCase[] = [
   {
-    name: "user-chrome click on Submit application",
-    tool: "mcp__user-chrome__click",
+    name: "playwright click on Submit application",
+    tool: "mcp__playwright__click",
     toolInput: { uid: "1_1" },
     expected: "deny",
   },

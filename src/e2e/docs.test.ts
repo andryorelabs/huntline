@@ -36,6 +36,74 @@ describe("docs/reference/cli.md", () => {
   });
 });
 
+describe("onboarding docs", () => {
+  const install = read("docs/guide/install.md");
+  const prose = [
+    "README.md",
+    "docs/guide/install.md",
+    "docs/guide/dogfooding.md",
+    "docs/guide/adopting.md",
+    "docs/reference/cli.md",
+    "docs/reference/profile.md",
+    "docs/troubleshooting.md",
+    "skills/browser-source/SKILL.md",
+    "skills/sweep/SKILL.md",
+    "schema/profile.schema.json",
+  ];
+
+  test("uses the andryorelabs repo URL and drops the old browser server name", () => {
+    for (const file of prose) {
+      const text = read(file);
+      expect(text).not.toContain(["Andry", "Ore/huntline"].join(""));
+      expect(text).not.toContain(["user", "chrome"].join("-"));
+    }
+  });
+
+  test("documents poppler for apt, brew, dnf and pacman", () => {
+    for (const command of [
+      "apt install poppler-utils",
+      "brew install poppler",
+      "dnf install poppler-utils",
+      "pacman -S poppler",
+    ]) {
+      expect(install).toContain(command);
+    }
+  });
+
+  test("lists every valid Source name and company add", () => {
+    for (const name of [
+      "greenhouse",
+      "lever",
+      "ashby",
+      "workable",
+      "smartrecruiters",
+      "getonboard",
+      "himalayas",
+      "remoteok",
+      "hn",
+    ]) {
+      expect(install).toContain(`\`${name}\``);
+    }
+    expect(install).toContain("huntline company add");
+  });
+
+  test("documents browser MCP setup, status --set and --help", () => {
+    expect(install).toContain("--remote-debugging-port=9222");
+    expect(install).toContain("mcpServers");
+    expect(install).toContain("status <key> --set <state>");
+    expect(install).toContain("--help");
+  });
+
+  test("warns about terms of service in the guide and the browser-source skill", () => {
+    expect(install).toContain("terms of service");
+    expect(read("skills/browser-source/SKILL.md")).toContain("terms of service");
+  });
+
+  test("describes migrate legacy as a single-format importer", () => {
+    expect(read("docs/reference/cli.md")).toContain("one specific legacy Markdown format");
+  });
+});
+
 describe("README.md", () => {
   const readme = read("README.md");
 
@@ -50,9 +118,24 @@ describe("README.md", () => {
     expect(readme).toContain("**Gmail MCP.**");
   });
 
+  test("starts with Install, before Quickstart, with the marketplace commands", () => {
+    expect(readme.indexOf("## Install")).toBeGreaterThan(-1);
+    expect(readme.indexOf("## Install")).toBeLessThan(readme.indexOf("## Quickstart"));
+    expect(readme).toContain("claude plugin marketplace add andryorelabs/huntline");
+    expect(readme).toContain("claude plugin install huntline@huntline-marketplace");
+    expect(readme).toContain("/huntline:init");
+    expect(readme).toContain("/huntline:doctor");
+    expect(readme).toContain("Windows is unsupported");
+  });
+
+  test("drops the construction notice and working name", () => {
+    expect(readme).not.toContain("under construction");
+    expect(readme).not.toContain("Working name");
+  });
+
   test("links to the guides and references that exist", () => {
     for (const match of readme.matchAll(/\]\((docs\/[^)]+|GLOSSARY\.md)\)/g)) {
-      expect(() => read(match[1] ?? "")).not.toThrow();
+      expect(() => read((match[1] ?? "").split("#")[0] ?? "")).not.toThrow();
     }
   });
 });

@@ -17,7 +17,7 @@ import { toolStatus } from "./tools.ts";
 import type { DataDir, Profile } from "./types.ts";
 
 const PLUGIN_RECOVERY_ACTION =
-  "claude plugin marketplace add AndryOre/huntline && claude plugin install huntline";
+  "claude plugin marketplace add andryorelabs/huntline && claude plugin install huntline@huntline-marketplace";
 
 export type DoctorDeps = { readonly fetch?: FetchLike; readonly guardHooks?: unknown };
 

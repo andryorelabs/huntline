@@ -30,6 +30,45 @@ describe("runGuardSelfTest", () => {
     expect(snapshot?.expected).toBe("allow");
   });
 
+  test("covers Gmail casing, nested names, dash, wider labels and dialogs", () => {
+    const result = runGuardSelfTest(REAL_HOOKS);
+    const byName = new Map(result.cases.map((entry) => [entry.name, entry]));
+    const expectations: ReadonlyArray<readonly [string, string, "allow" | "deny"]> = [
+      ["Gmail send_email on a lowercase server", "mcp__gmail__send_email", "deny"],
+      ["Gmail send_draft on a mixed-case server", "mcp__Gmail__send_draft", "deny"],
+      [
+        "nested Claude_Browser click on Apply",
+        "mcp__remote-devices__Claude_Browser__click",
+        "deny",
+      ],
+      ["dash is not a browser server", "mcp__x__delete_dashboard", "allow"],
+      ["click on Connect", "mcp__chrome-devtools__click", "deny"],
+      ["click on Confirm", "mcp__chrome-devtools__click", "deny"],
+      ["click on Post", "mcp__chrome-devtools__click", "deny"],
+      ["click on Send invitation", "mcp__chrome-devtools__click", "deny"],
+      ["click on Next", "mcp__chrome-devtools__click", "allow"],
+      ["handle_dialog accept", "mcp__chrome-devtools__handle_dialog", "deny"],
+      ["handle_dialog dismiss", "mcp__chrome-devtools__handle_dialog", "allow"],
+    ];
+    for (const [name, tool, expected] of expectations) {
+      const entry = byName.get(name);
+      expect(entry?.tool).toBe(tool);
+      expect(entry?.expected).toBe(expected);
+      expect(entry?.pass).toBe(true);
+    }
+    expect(byName.get("dash is not a browser server")?.matcherCovers).toBe(false);
+  });
+
+  test("a hook matcher that still covers dash fails the dash case", () => {
+    const tooWide = {
+      hooks: { PreToolUse: [{ matcher: "mcp__.*", hooks: [] }] },
+    };
+    const result = runGuardSelfTest(tooWide);
+    expect(result.pass).toBe(false);
+    const failed = result.cases.filter((entry) => !entry.pass).map((entry) => entry.name);
+    expect(failed).toEqual(["dash is not a browser server"]);
+  });
+
   test("embeds the shipped hooks.json that is on disk", () => {
     expect(SELF_TEST_HOOKS).toEqual(REAL_HOOKS);
     const source = readFileSync(path.join(ROOT, "src/guard/self-test.ts"), "utf8");
@@ -97,6 +136,31 @@ describe("dogfooding checklist", () => {
     for (const file of ["README.md", "docs/guide/install.md"]) {
       expect(readFileSync(path.join(ROOT, file), "utf8")).toContain("dogfooding.md");
     }
+  });
+});
+
+describe("posting-reader agent", () => {
+  const source = readFileSync(path.join(ROOT, "agents/posting-reader.md"), "utf8");
+
+  test("declares WebFetch as its only tool", () => {
+    const frontmatter = /^---\n([\s\S]*?)\n---/.exec(source)?.[1] ?? "";
+    const tools = /^tools:\s*(.*)$/m.exec(frontmatter)?.[1]?.trim();
+    expect(tools).toBe("WebFetch");
+  });
+
+  test("says it reads a Posting from a URL or from text in the prompt", () => {
+    expect(source).toContain("from a URL or from text given in the prompt");
+  });
+});
+
+describe("safety guide", () => {
+  const safety = readFileSync(path.join(ROOT, "docs/guide/safety.md"), "utf8");
+
+  test("states the Guard's limits and launcher behavior", () => {
+    for (const phrase of ["Bash", "computer-use", "never grants permission", "SessionStart"]) {
+      expect(safety).toContain(phrase);
+    }
+    expect(safety).not.toMatch(/permissionDecision` of `allow`/);
   });
 });
 

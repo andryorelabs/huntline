@@ -2,7 +2,26 @@
 
 set -u
 
+guard_mode=0
+if [ "${1:-}" = "guard" ]; then
+  guard_mode=1
+  for argument in "$@"; do
+    case $argument in
+      --record | --self-test) guard_mode=0 ;;
+    esac
+  done
+fi
+
+json_escape() {
+  printf '%s' "$1" | tr '\n\r\t' '   ' | tr -d '\000-\037' | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
 fail() {
+  if [ "$guard_mode" = "1" ]; then
+    reason=$(json_escape "huntline launcher: $1; the Guard cannot run, so this call is denied")
+    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$reason"
+    exit 0
+  fi
   echo "huntline: $1" >&2
   exit 1
 }
@@ -41,7 +60,7 @@ if [ ! -x "$cached_binary" ]; then
     *) fail "unsupported architecture $(uname -m)" ;;
   esac
   asset="huntline-$os-$arch"
-  base_url=${HUNTLINE_RELEASE_BASE_URL:-https://github.com/AndryOre/huntline/releases/download}
+  base_url=${HUNTLINE_RELEASE_BASE_URL:-https://github.com/andryorelabs/huntline/releases/download}
   release_url="$base_url/v$version"
   curl_protocol_flags=""
   case "$release_url" in
@@ -76,6 +95,14 @@ if [ ! -x "$cached_binary" ]; then
 fi
 
 if [ "${HUNTLINE_PREFETCH:-}" = "1" ]; then
+  exit 0
+fi
+
+if [ "$guard_mode" = "1" ]; then
+  guard_output=$("$cached_binary" "$@")
+  guard_status=$?
+  [ "$guard_status" -eq 0 ] || fail "the huntline binary exited with status $guard_status"
+  [ -z "$guard_output" ] || printf '%s\n' "$guard_output"
   exit 0
 fi
 

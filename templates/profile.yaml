@@ -15,6 +15,7 @@ stack:
 salaryFloor: null
 excludedCompanies: []
 outreachDailyCap: 5
+# TODO(huntline): list sources to sweep. Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `huntline company add`), getonboard, himalayas, remoteok, hn.
 sources: []
 tracker:
   kind: local

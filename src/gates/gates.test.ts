@@ -223,3 +223,31 @@ describe("evaluateGates overall", () => {
     expect(result.reason).toBe("company");
   });
 });
+
+describe("region gate aliases", () => {
+  const cases: [string[], string, Eligibility][] = [
+    [["US"], "Remote - United States", "eligible"],
+    [["us"], "Russia", "unknown"],
+    [["us"], "Australia", "ineligible"],
+    [["LATAM"], "USA only", "ineligible"],
+    [["EU"], "Remote, Europe", "eligible"],
+    [["EU"], "Neuss", "unknown"],
+    [["us"], "Remote - business status updates", "unknown"],
+    [["Canada"], "Remote - North America", "eligible"],
+    [["Mexico"], "Remote - North America", "eligible"],
+    [["US"], "Remote - North America", "eligible"],
+    [["LATAM"], "Remote, Central America", "eligible"],
+    [["EU"], "Remote - North America", "ineligible"],
+    [["US"], "Latin America", "ineligible"],
+    [["Chile"], "Remote - Argentina", "eligible"],
+    [["US"], "Remote (U.S.)", "eligible"],
+    [["UK"], "Remote, Britain", "eligible"],
+    [["US"], "Worldwide", "eligible"],
+  ];
+  for (const [regions, location, expected] of cases) {
+    test(`${regions.join(",")} vs ${location}`, () => {
+      const result = evaluateGates({ ...profile, regions }, { ...base, location });
+      expect(result.eligibility.region).toBe(expected);
+    });
+  }
+});

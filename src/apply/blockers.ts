@@ -7,14 +7,61 @@ type BlockerScope = "field" | "section" | "application";
 
 const SCOPE_ORDER: readonly BlockerScope[] = ["application", "section", "field"];
 
-export const UNANSWERED_PREFIX = "no answer for: ";
+const GLOBAL_ANSWER_SCOPE = "global";
+const UNANSWERED_PATTERN = /^no answer for(?: \((.+?)\))?: ([\s\S]*)$/u;
 
-export function recordBlocker(
+export function normalizeQuestion(question: string): string {
+  return question
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+export function unansweredDetail(question: string, answerScope: string): string {
+  return answerScope === GLOBAL_ANSWER_SCOPE
+    ? `no answer for: ${question}`
+    : `no answer for (${answerScope}): ${question}`;
+}
+
+type Unanswered = { readonly question: string; readonly answerScope: string };
+
+function parseUnanswered(detail: string): Unanswered | null {
+  const match = UNANSWERED_PATTERN.exec(detail);
+  if (match === null) return null;
+  return {
+    question: normalizeQuestion(match[2] ?? ""),
+    answerScope: match[1] ?? GLOBAL_ANSWER_SCOPE,
+  };
+}
+
+function dedupeId(detail: string): string {
+  const unanswered = parseUnanswered(detail);
+  return unanswered === null
+    ? `detail\u0000${normalizeQuestion(detail)}`
+    : `unanswered\u0000${unanswered.answerScope}\u0000${unanswered.question}`;
+}
+
+export async function recordBlocker(
   dir: DataDir,
   key: string,
   scope: BlockerScope,
   detail: string,
 ): Promise<HuntEvent> {
+  const events = await readEvents(dir);
+  const resolved = new Set<string>();
+  for (const event of events) {
+    if (event.kind === "blocker.resolved") resolved.add(event.blockerId);
+  }
+  const wanted = dedupeId(detail);
+  const existing = events.find(
+    (event) =>
+      event.kind === "blocker.opened" &&
+      event.key === key &&
+      event.scope === scope &&
+      !resolved.has(event.blockerId) &&
+      dedupeId(event.detail) === wanted,
+  );
+  if (existing !== undefined) return existing;
   return appendEvent(dir, {
     kind: "blocker.opened",
     key,
@@ -24,9 +71,20 @@ export function recordBlocker(
   });
 }
 
+function matchesSavedAnswer(
+  detail: string,
+  normalizedQuestion: string,
+  savedScope: string,
+): boolean {
+  const unanswered = parseUnanswered(detail);
+  if (unanswered === null || unanswered.question !== normalizedQuestion) return false;
+  return savedScope === GLOBAL_ANSWER_SCOPE || unanswered.answerScope === savedScope;
+}
+
 export async function closeFieldBlockers(
   dir: DataDir,
-  matchesDetail: (detail: string) => boolean,
+  normalizedQuestion: string,
+  savedScope: string,
 ): Promise<number> {
   const events = await readEvents(dir);
   const resolved = new Set<string>();
@@ -37,7 +95,7 @@ export async function closeFieldBlockers(
     event.kind === "blocker.opened" &&
     event.scope === "field" &&
     !resolved.has(event.blockerId) &&
-    matchesDetail(event.detail)
+    matchesSavedAnswer(event.detail, normalizedQuestion, savedScope)
       ? [event.blockerId]
       : [],
   );

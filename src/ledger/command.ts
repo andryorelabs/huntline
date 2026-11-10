@@ -8,6 +8,8 @@ import {
   type DataDir,
   type Posting,
 } from "../core/types.ts";
+import { loadProfile } from "../core/data-dir.ts";
+import { createTracker, projectEvents } from "../tracker/index.ts";
 import { findDuplicate, readLedger } from "./dedup.ts";
 import { appendEvent, readEvents, type NewEvent } from "./events.ts";
 import { foldState } from "./state.ts";
@@ -143,9 +145,42 @@ async function ledgerCommand(argv: string[], dir: DataDir): Promise<Envelope<unk
   return usage("usage: ledger list | ledger check --json <posting>");
 }
 
-async function statusCommand(argv: string[], dir: DataDir): Promise<Envelope<unknown>> {
+async function setStatus(
+  key: string,
+  target: string,
+  ctx: CommandContext,
+  dir: DataDir,
+): Promise<Envelope<unknown>> {
+  if (!isOneOf(APPLICATION_STATES, target)) {
+    return usage(`unknown state "${target}"; valid states: ${APPLICATION_STATES.join(", ")}`);
+  }
+  const current = foldState(await readEvents(dir, key));
+  if (current === null) {
+    return failure("not-found", `no events for key ${key}`, { recoverable: false });
+  }
+  await appendEvent(dir, { kind: "status.changed", key, from: current, to: target });
+  const profile = loadProfile(dir);
+  if (!profile.ok) return failure(profile.error.code, profile.error.message);
+  const projected = await projectEvents(
+    createTracker(profile.value.tracker, dir, { apiKey: ctx.env["LINEAR_API_KEY"] }),
+    dir,
+    await readEvents(dir, key),
+  );
+  if (!projected.ok) return failure(projected.error.code, projected.error.message);
+  return success({ key, from: current, to: target });
+}
+
+async function statusCommand(
+  argv: string[],
+  ctx: CommandContext,
+  dir: DataDir,
+): Promise<Envelope<unknown>> {
   const [key] = argv;
-  if (key === undefined || key.startsWith("--")) return usage("usage: status <key>");
+  if (key === undefined || key.startsWith("--"))
+    return usage("usage: status <key> [--set <state>]");
+  const target = flagValue(argv, "--set");
+  if (argv.includes("--set") && target === undefined) return usage("--set needs a state");
+  if (target !== undefined) return setStatus(key, target, ctx, dir);
   const state = foldState(await readEvents(dir, key));
   if (state === null) {
     return failure("not-found", `no events for key ${key}`, { recoverable: false });
@@ -160,6 +195,6 @@ export async function run(argv: string[], ctx: CommandContext): Promise<Envelope
   const [command, ...rest] = argv;
   if (command === "events") return eventsCommand(rest, ctx.dataDir);
   if (command === "ledger") return ledgerCommand(rest, ctx.dataDir);
-  if (command === "status") return statusCommand(rest, ctx.dataDir);
+  if (command === "status") return statusCommand(rest, ctx, ctx.dataDir);
   return usage(`unknown command "${command ?? ""}"`);
 }

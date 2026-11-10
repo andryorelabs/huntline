@@ -6,7 +6,10 @@ import { runGuardSelfTest, SELF_TEST_HOOKS } from "../guard/self-test.ts";
 import { checkLinearConnection } from "../tracker/check.ts";
 import { DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "../tracker/linear.ts";
 import type { CommandContext } from "./commands.ts";
-import { loadProfile } from "./data-dir.ts";
+import { createAtsAdapters } from "../sources/ats.ts";
+import { readCompanies } from "../sources/companies.ts";
+import { sources as registeredSources } from "../sources/index.ts";
+import { loadProfileWithWarnings } from "./data-dir.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
 import { MARKER } from "./init.ts";
 import { errorMessage, isObject } from "./narrow.ts";
@@ -66,6 +69,64 @@ function cvDataProblems(dir: DataDir): string[] {
     }
   }
   return problems;
+}
+
+function parseProblem(dir: DataDir, file: string): string | null {
+  const target = path.join(dir.path, file);
+  if (!existsSync(target)) return null;
+  try {
+    JSON.parse(readFileSync(target, "utf8"));
+    return null;
+  } catch (error) {
+    return `${file} is not valid JSON: ${errorMessage(error)}`;
+  }
+}
+
+function eventLogProblem(dir: DataDir): string | null {
+  const target = path.join(dir.path, "events.jsonl");
+  if (!existsSync(target)) return null;
+  const lines = readFileSync(target, "utf8").split("\n");
+  for (const [index, line] of lines.entries()) {
+    if (line.trim() === "") continue;
+    try {
+      JSON.parse(line);
+    } catch (error) {
+      return `events.jsonl line ${index + 1} is not valid JSON: ${errorMessage(error)}`;
+    }
+  }
+  return null;
+}
+
+function dataFileProblems(dir: DataDir): string[] {
+  const problems: string[] = [];
+  const events = eventLogProblem(dir);
+  if (events !== null) problems.push(events);
+  const companies = readCompanies(dir);
+  if (!companies.ok) problems.push(companies.error.message);
+  const answers = parseProblem(dir, "answers.json");
+  if (answers !== null) problems.push(answers);
+  return problems;
+}
+
+function unknownSources(profile: Profile): string[] {
+  const known = Object.keys(registeredSources);
+  return profile.sources.filter((name) => !known.includes(name));
+}
+
+function atsWithoutCompanies(dir: DataDir, profile: Profile): DoctorWarning[] {
+  const companies = readCompanies(dir);
+  if (!companies.ok) return [];
+  const atsNames = new Set(
+    createAtsAdapters((input, init) => fetch(input, init)).map((adapter) => adapter.name),
+  );
+  return profile.sources
+    .filter((name) => atsNames.has(name))
+    .filter((name) => !companies.value.some((company) => company.ats === name))
+    .map((name) => ({
+      code: "ats-without-companies",
+      message: `${name} is configured but no company is saved for it`,
+      recoveryAction: `run huntline company add for ${name}`,
+    }));
 }
 
 function pluginsFilePath(env: CommandContext["env"]): string {
@@ -142,10 +203,23 @@ export async function runDoctor(
       { recoveryAction: "run huntline init in an empty directory" },
     );
   }
-  const profile = loadProfile(ctx.dataDir);
-  if (!profile.ok) {
-    return failure(profile.error.code, profile.error.message, {
+  const loaded = loadProfileWithWarnings(ctx.dataDir);
+  if (!loaded.ok) {
+    return failure(loaded.error.code, loaded.error.message, {
       recoveryAction: "fix the named field in profile.yaml",
+    });
+  }
+  const profile = { ok: true as const, value: loaded.value.profile };
+  const badSources = unknownSources(profile.value);
+  if (badSources.length > 0) {
+    return failure("unknown-sources", `unknown Source names: ${badSources.join(", ")}`, {
+      recoveryAction: `use only: ${Object.keys(registeredSources).join(", ")}`,
+    });
+  }
+  const fileProblems = dataFileProblems(ctx.dataDir);
+  if (fileProblems.length > 0) {
+    return failure("data-file-invalid", fileProblems.join("; "), {
+      recoveryAction: "fix or remove the named file",
     });
   }
   const markers = findMarkers(ctx.dataDir);
@@ -180,7 +254,15 @@ export async function runDoctor(
   const plugin = probePlugin(ctx.env);
   return success({
     guard: { selfTest: "pass", pluginInstalled: plugin.installed },
-    warnings: plugin.warning === null ? [] : [plugin.warning],
+    warnings: [
+      ...loaded.value.warnings.map((message) => ({
+        code: "profile-unknown-field",
+        message,
+        recoveryAction: "remove the field from profile.yaml",
+      })),
+      ...atsWithoutCompanies(ctx.dataDir, profile.value),
+      ...(plugin.warning === null ? [] : [plugin.warning]),
+    ],
     dataDir: ctx.dataDir.path,
     tracker: profile.value.tracker.kind,
     sources: profile.value.sources.length,

@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { isObject } from "../core/narrow.ts";
 import { lookupAnswer, saveAnswer } from "./answers.ts";
-import { listNeeds, recordBlocker } from "./blockers.ts";
+import { listNeeds, recordBlocker, unansweredDetail } from "./blockers.ts";
 import { verifyFields } from "./verify.ts";
 
 const cliPath = path.join(import.meta.dir, "../cli.ts");
@@ -53,6 +53,45 @@ describe("answer bank", () => {
     const dir = { path: workDir };
     await saveAnswer(dir, "Work authorization", "global", "yes", "profile");
     expect(lookupAnswer(dir, "work authorization?", "acme").status).toBe("answer");
+  });
+
+  test("scoped save is found only by that scope", async () => {
+    const dir = { path: workDir };
+    await saveAnswer(dir, "Why us?", "company:acme", "great", "human");
+    expect(lookupAnswer(dir, "Why us?", "company:acme").status).toBe("answer");
+    expect(lookupAnswer(dir, "Why us?", "company:globex").status).toBe("abstain");
+  });
+
+  test("scoped save closes only blockers of that scope, global closes all", async () => {
+    const dir = { path: workDir };
+    await recordBlocker(dir, "acme-1", "field", unansweredDetail("Why us?", "company:acme"));
+    await recordBlocker(dir, "globex-1", "field", unansweredDetail("Why us?", "company:globex"));
+    await saveAnswer(dir, "Why us?", "company:acme", "great", "human");
+    const remaining = async () =>
+      (await listNeeds(dir)).flatMap((group) => group.items.map(() => group.key));
+    expect(await remaining()).toEqual(["globex-1"]);
+    await saveAnswer(dir, "Why us?", "global", "fine", "human");
+    expect(await remaining()).toEqual([]);
+  });
+
+  test("a scope containing spaces still closes its blockers and dedupes", async () => {
+    const dir = { path: workDir };
+    const detail = unansweredDetail("Why us?", "company:Acme Corp");
+    const first = await recordBlocker(dir, "acme-1", "field", detail);
+    expect(await recordBlocker(dir, "acme-1", "field", detail)).toEqual(first);
+    expect(await listNeeds(dir)).toHaveLength(1);
+    await saveAnswer(dir, "Why us?", "company:Acme Corp", "great", "human");
+    expect(await listNeeds(dir)).toEqual([]);
+  });
+
+  test("blocking the same question twice for one key is a no-op", async () => {
+    const dir = { path: workDir };
+    const first = await recordBlocker(dir, "acme-1", "field", unansweredDetail("Visa?", "global"));
+    const second = await recordBlocker(dir, "acme-1", "field", unansweredDetail("visa", "global"));
+    expect(second).toEqual(first);
+    await recordBlocker(dir, "acme-2", "field", unansweredDetail("Visa?", "global"));
+    expect(await listNeeds(dir)).toHaveLength(2);
+    expect((await listNeeds(dir))[0]?.items).toHaveLength(1);
   });
 
   test("rejects empty provenance", async () => {

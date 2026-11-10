@@ -25,8 +25,87 @@ const DISMISSAL_ORDER: readonly Dimension[] = [
 ];
 
 const WORLDWIDE_PATTERN = /\b(worldwide|anywhere|global|world[- ]wide)\b/;
-const RESTRICTED_REGION_PATTERN =
-  /\b(us|usa|u\.s\.|united states|europe|eu|emea|uk|united kingdom|canada|apac|asia|australia|india)\b/;
+
+const REGION_ALIAS_GROUPS: Readonly<Record<string, readonly string[]>> = {
+  us: ["us", "usa", "u.s.", "u.s.a.", "united states", "united states of america", "america"],
+  eu: ["eu", "europe", "emea", "european union"],
+  uk: ["uk", "united kingdom", "britain", "great britain", "england"],
+  latam: [
+    "latam",
+    "latin america",
+    "south america",
+    "mexico",
+    "colombia",
+    "argentina",
+    "chile",
+    "peru",
+    "venezuela",
+    "ecuador",
+    "guatemala",
+    "cuba",
+    "bolivia",
+    "dominican republic",
+    "honduras",
+    "paraguay",
+    "el salvador",
+    "nicaragua",
+    "costa rica",
+    "panama",
+    "uruguay",
+    "puerto rico",
+    "brazil",
+    "brasil",
+  ],
+  canada: ["canada"],
+  apac: ["apac", "asia", "asia pacific"],
+  australia: ["australia"],
+  india: ["india"],
+};
+
+const COMPOSITE_REGION_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  "north america": ["us", "canada", "latam"],
+  "central america": ["latam"],
+};
+
+type AliasEntry = { readonly alias: string; readonly groups: readonly string[] };
+
+const ALIAS_ENTRIES: readonly AliasEntry[] = [
+  ...Object.entries(REGION_ALIAS_GROUPS).flatMap(([group, aliases]) =>
+    aliases.map((alias) => ({ alias, groups: [group] })),
+  ),
+  ...Object.entries(COMPOSITE_REGION_ALIASES).map(([alias, groups]) => ({ alias, groups })),
+].toSorted((left, right) => right.alias.length - left.alias.length);
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function wholeWordPattern(term: string): RegExp {
+  return new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(term)}(?![\\p{L}\\p{N}])`, "u");
+}
+
+function groupsNamedIn(text: string): Set<string> {
+  const groups = new Set<string>();
+  let remaining = text;
+  for (const { alias, groups: aliasGroups } of ALIAS_ENTRIES) {
+    const pattern = wholeWordPattern(alias);
+    if (pattern.test(remaining)) {
+      for (const group of aliasGroups) groups.add(group);
+      remaining = remaining.replace(new RegExp(pattern.source, "gu"), " ");
+    }
+  }
+  return groups;
+}
+
+function groupsOfRegion(region: string): Set<string> {
+  const groups = new Set<string>();
+  for (const { alias, groups: aliasGroups } of ALIAS_ENTRIES) {
+    if (alias === region) {
+      for (const group of aliasGroups) groups.add(group);
+    }
+  }
+  return groups;
+}
 
 function normalize(text: string): string {
   return text.trim().toLowerCase().replace(/\s+/g, " ");
@@ -50,14 +129,19 @@ function regionGate(profile: Profile, posting: Posting): Eligibility {
     return "unknown";
   }
   const location = normalize(posting.location ?? "");
+  const locationGroups = groupsNamedIn(location);
   const matchesProfile = profile.regions.some((region) => {
     const needle = normalize(region);
-    return needle !== "" && location.includes(needle);
+    if (needle === "") {
+      return false;
+    }
+    const sharesGroup = [...groupsOfRegion(needle)].some((group) => locationGroups.has(group));
+    return sharesGroup || wholeWordPattern(needle).test(location);
   });
   if (matchesProfile || WORLDWIDE_PATTERN.test(location)) {
     return "eligible";
   }
-  return RESTRICTED_REGION_PATTERN.test(location) ? "ineligible" : "unknown";
+  return locationGroups.size > 0 ? "ineligible" : "unknown";
 }
 
 function remoteGate(profile: Profile, posting: Posting): Eligibility {

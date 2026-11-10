@@ -871,3 +871,505 @@ This is input for the maintainer, who decides.
    rename, and search for trademarks, which this research did not do.
 
 Nothing was bought or registered for this research.
+
+## Round 4
+
+Run 4 research, 2026-11-10. Status: options and a recommendation, input for
+the maintainer, who decides. Nothing here is a decision, and no name is
+registered, bought or renamed. Rounds 1 to 3 above are unchanged.
+
+### What went wrong in rounds 1 to 3
+
+The maintainer rejected all 15 finalists of rounds 1 to 3 as "too compound"
+and "not memorable", and asked for a wider exploration to react to. Two
+patterns explain it:
+
+- **Compounds of job + word.** `jobtally`, `roleline`, `jobwren`, `jobotter`
+  and the rest are two words stuck together. Each part is easy, but the whole
+  has no shape of its own, so nothing sticks. Round 3 took "Jobbie" as a
+  model and copied its job cue instead of its feel: a single short word that
+  sounds like a name.
+- **Names that read as technical tools.** Rounds 1 and 2 leaned on lines,
+  trails and surveying, and read as infrastructure. The brief's "calm,
+  precise" tone was taken as "technical", and warmth was left to round 3,
+  which then lost it again by adding a job word.
+
+Round 4 drops both. Every name is **one word, not a compound**, and a name
+need not say "job": the maintainer did not ask for that. The list is sorted by
+style so the maintainer can react to a style, not only to a word:
+
+- **(a) Invented words:** short, pronounceable, no meaning to learn.
+- **(b) Real words as metaphor:** a thing that finds, guides, keeps, waits or
+  opens.
+- **(c) Verbs:** something you would say to a friend ("I'll mosey").
+- **(d) English and Spanish:** words that mean something in both languages, or
+  a Spanish word that an English speaker can say.
+- **(e) Very short:** 4 to 6 letters (`oru` is 3).
+- **(f) Mascot or mark:** a small animal or a plain object with an easy mark.
+
+The hard filters are unchanged: no hunting or weapon imagery, no purple,
+LinkedIn-blue or Claude-orange associations, no auto-apply or "AI magic" tone,
+no implication that the tool applies for the user, npm and GitHub slug free,
+lowercase and CLI-friendly, and the name must read well as `/<name>:sweep`.
+Nothing already in rounds 1 to 3 is proposed again. The animals are plain
+generic ones, never a copy of a real person's or brand's character.
+
+Scoring changes for this round. **Sound** now means "memorable and easy to say
+aloud". **Findability** is scored honestly: a name with no job cue scores low
+there, which is expected and accepted by the maintainer. That cost is paid by
+the slogan and README, not the name.
+
+### Long list by style
+
+134 new candidates in 6 styles, each with one line on the idea. Real short
+words are mostly taken on npm, so the list is wide on purpose: 57 fell at the
+first check.
+
+#### Invented words (20)
+
+| Name   | Why it fits                               |
+| ------ | ----------------------------------------- |
+| zindle | A small bright sound, like a tinkle       |
+| fenli  | Soft and open, two easy syllables         |
+| sorli  | Warm and round, a pet-name feel           |
+| plono  | Plain, calm, a little comic               |
+| solva  | Hints at solving, said in two beats       |
+| tandel | A tidy, made-up word with a steady rhythm |
+| wickle | A small, soft thing, easy to say          |
+| nuvio  | Light and open, a new view                |
+| orlin  | A friendly invented first name            |
+| minto  | Fresh and short, a mint-clean feel        |
+| sivan  | A calm name with an even rhythm           |
+| trelli | Trellis-like, something that holds a line |
+| vessi  | A small vessel, softly said               |
+| lorio  | Rolling, friendly vowels                  |
+| pamio  | Warm, open vowels, a pal-like sound       |
+| kivo   | Crisp and quick, two letters of motion    |
+| tavi   | A friendly short name                     |
+| orbo   | Round, a single loop                      |
+| brio   | Liveliness, from music                    |
+| mavi   | Soft, a small bright word                 |
+
+#### Real words as metaphor (21)
+
+| Name       | Why it fits                                      |
+| ---------- | ------------------------------------------------ |
+| fanlight   | The window over a door that lets light in        |
+| lychgate   | The roofed gate where you wait before you go in  |
+| doorsill   | The step you cross to go in                      |
+| hearthside | Where you sit and wait for news                  |
+| sedge      | A plain marsh grass that grows along a line      |
+| tansy      | A small yellow wayside flower                    |
+| teasel     | A spiky seed head used to raise a nap, for cloth |
+| lantern    | A light you carry to see the next step           |
+| beacon     | A light that marks where to go                   |
+| harbor     | A safe place to come back to                     |
+| porch      | Where you wait before you are let in             |
+| latch      | Small, simple, opens with a lift                 |
+| hinge      | What lets a door open and close                  |
+| kettle     | Something you put on and wait for                |
+| hearth     | The warm centre of a home                        |
+| usher      | One who shows you to your seat                   |
+| nook       | A snug small place                               |
+| pebble     | A small smooth stone                             |
+| moss       | Soft, slow and steady                            |
+| acorn      | A small thing that grows                         |
+| lamp       | Light on a desk                                  |
+
+#### Verbs (18)
+
+| Name    | Why it fits                                     |
+| ------- | ----------------------------------------------- |
+| unlatch | What you do to a gate you leave open            |
+| mosey   | Walk slowly with no hurry                       |
+| pootle  | Potter along at an easy pace                    |
+| tarry   | Stay a while, no pressure                       |
+| tend    | Look after a small thing                        |
+| mend    | Fix a little, keep going                        |
+| sift    | Sort the useful from the rest                   |
+| glean   | Gather what is left in the field                |
+| linger  | Stay a while longer                             |
+| amble   | Walk at an easy pace                            |
+| wander  | Move without a fixed path                       |
+| jot     | Write a quick note                              |
+| mull    | Think something over, no rush                   |
+| hallar  | Spanish "to find", pronounced easily in English |
+| fetch   | Bring something back for a friend               |
+| ask     | The plainest verb to a friend                   |
+| tidy    | Put things in order                             |
+| tinker  | Fiddle with a thing until it works              |
+
+#### English and spanish (22)
+
+| Name    | Why it fits                                  |
+| ------- | -------------------------------------------- |
+| alma    | Spanish "soul", easy in English too          |
+| hogar   | Spanish "home", the hearth                   |
+| huella  | Spanish "a trace", "footprint"               |
+| trazo   | Spanish "a stroke or line", near "trace"     |
+| atajo   | Spanish "a shortcut"                         |
+| abrigo  | Spanish "a shelter, a coat"                  |
+| amparo  | Spanish "protection, shelter"                |
+| linde   | Spanish "a boundary", near "line"            |
+| etapa   | Spanish "a stage", near "step"               |
+| quieto  | "Quiet" in both languages                    |
+| vigia   | Spanish "a lookout", someone who keeps watch |
+| cobijo  | Spanish "a shelter"                          |
+| remanso | Spanish "a still pool"                       |
+| vereda  | Spanish "a path"                             |
+| sosiego | Spanish "calm"                               |
+| fiel    | Spanish "faithful, true"                     |
+| leal    | Spanish "loyal"                              |
+| humilde | "Humble" in both languages                   |
+| sincero | "Sincere" in both languages                  |
+| sereno  | "Serene" in both languages                   |
+| brujula | Spanish "compass"                            |
+| cuidado | Spanish "care", "take care"                  |
+
+#### Very short (22)
+
+| Name | Why it fits                          |
+| ---- | ------------------------------------ |
+| moxa | Four letters, a pluck word           |
+| noru | Four letters, a calm "nor" sound     |
+| kemi | Short, a friendly first name         |
+| tepi | Short and light, a tent sound        |
+| sunu | Short, a sun-like echo               |
+| wevi | Short, a weave sound                 |
+| dexo | Short, brisk and dexterous           |
+| bimi | Short, a baby-talk "bimi"            |
+| wiru | Short, a thread-like "wire"          |
+| zuri | Short, "beautiful" in Swahili        |
+| tuli | Short, easy to say                   |
+| piku | Short, a pick sound                  |
+| fenn | Four letters, a fen, a wet low place |
+| kuno | Short, a plain first name            |
+| tavo | Short, a friendly first name         |
+| oru  | Three letters, a vowel-led sound     |
+| hapo | Short, a "happy" echo                |
+| wimo | Short, a small bright sound          |
+| ravo | Short, a cheer-like sound            |
+| rilo | Short, a smooth flow                 |
+| tolu | Short, a soft call                   |
+| nyla | Short, a soft, rounded name          |
+
+#### Mascot or mark (31)
+
+| Name     | Why it fits                                   |
+| -------- | --------------------------------------------- |
+| hoopoe   | A crested bird, an easy crest mark            |
+| dunnock  | The hedge sparrow, a quiet small bird         |
+| curlew   | A bird with a curved bill, a line in the mark |
+| smew     | A small duck, a clean black and white mark    |
+| twite    | A small finch, an easy small mark             |
+| dunlin   | A small shorebird, a calm mark                |
+| wheatear | A small bird of open ground                   |
+| whinchat | A small bird that perches on a post           |
+| potoo    | A bird that stays very still                  |
+| bushbaby | A small night animal with big eyes            |
+| nuthatch | A small bird that walks down a trunk          |
+| puffin   | A friendly seabird, an easy mark              |
+| quokka   | A small, smiling marsupial                    |
+| wombat   | A calm burrower                               |
+| newt     | A small, quiet amphibian                      |
+| gecko    | A small, clinging lizard                      |
+| pika     | A small mountain hare cousin that stores hay  |
+| marmot   | A mountain burrower that keeps watch          |
+| quoll    | A small spotted marsupial                     |
+| kakapo   | A round, gentle, flightless parrot            |
+| numbat   | A striped marsupial, an easy stripe mark      |
+| okapi    | A forest animal, a striped mark               |
+| dormouse | A small sleepy mouse                          |
+| vole     | A small field mouse                           |
+| shrew    | A small, busy insectivore                     |
+| lemur    | A ring-tailed primate, a clear mark           |
+| tapir    | A calm forest animal                          |
+| coati    | A long-nosed, curious animal                  |
+| dugong   | A gentle sea mammal                           |
+| bilby    | A long-eared marsupial                        |
+| axolotl  | A smiling salamander                          |
+
+### Availability filter
+
+Checked 2026-11-10 with the same method as earlier rounds: `npm view <name>
+name`, `gh api repos/andryorelabs/<name>`, `gh api users/<name>`, RDAP for
+`.dev` (`https://pubapi.registry.google/rdap/domain/<name>.dev`) and `.com`
+(`https://rdap.verisign.com/com/v1/domain/<name>.com`); `rdap.org` was not
+used. Lookups ran one name at a time with a pause between calls, and a 429 was
+retried after a longer pause. The `.dev` and `.com` lookups and the account
+check ran only on names free on npm. Web collision is `gh search repos <name>
+--match name` on every name free on npm (top result and its stars), plus a web
+search on the finalists. `no record` is not a registrar quote, and `none` in
+the account column means no GitHub account of that name.
+
+| Name       | npm   | slug | account      | .dev      | .com  | Web collision                                                 | Verdict                                                                                |
+| ---------- | ----- | ---- | ------------ | --------- | ----- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| zindle     | free  | free | Organization | no record | taken | `xiaopenggithub/zindle` 207 stars                             | survivor, not shortlisted: account held, well-used repo of the same name               |
+| fenli      | free  | free | User         | no record | taken | `fenli/HashTagEditText` 20 stars                              | survivor, not shortlisted: account held                                                |
+| sorli      | free  | free | User         | no record | taken | `gpender/sorlingas` 1 stars                                   | survivor, not shortlisted: account held                                                |
+| plono      | free  | free | User         | no record | taken | `p3mxz9ght/plono` 0 stars                                     | **finalist**                                                                           |
+| solva      | free  | free | User         | taken     | taken | `StreakingMan/solvable-sheep-game` 409 stars                  | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| tandel     | free  | free | User         | no record | taken | `vishalaxi-tandel/serverless-sagemaker-orchestration` 4 stars | survivor, not shortlisted: account held                                                |
+| wickle     | free  | free | User         | no record | taken | `jeffgeiser/Wicklee` 2 stars                                  | survivor, not shortlisted: account held                                                |
+| nuvio      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| orlin      | free  | free | User         | taken     | taken | `orlin/statica` 15 stars                                      | survivor, not shortlisted: `.dev` taken, account held                                  |
+| minto      | free  | free | User         | taken     | taken | `susam/mintotp` 1402 stars                                    | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| sivan      | free  | free | User         | taken     | taken | `sivan/heti` 6752 stars                                       | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| trelli     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| vessi      | free  | free | User         | no record | taken | `dos-group/vessim` 102 stars                                  | survivor, not shortlisted: account held, well-used repo of the same name               |
+| lorio      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| pamio      | free  | free | User         | no record | taken | `pamio/lob-templates` 0 stars                                 | survivor, not shortlisted: account held                                                |
+| kivo       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| tavi       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| orbo       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| brio       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| mavi       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| moxa       | free  | free | User         | taken     | taken | `reidmefirst/MoxaPass` 38 stars                               | survivor, not shortlisted: `.dev` taken, account held                                  |
+| noru       | free  | free | User         | taken     | taken | `ajax-lives/NoRussian` 356 stars                              | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| kemi       | free  | free | User         | taken     | taken | `kemitchell/writing.kemitchell.com` 48 stars                  | survivor, not shortlisted: `.dev` taken, account held                                  |
+| tepi       | free  | free | User         | taken     | taken | `tepi/FilteringTable` 46 stars                                | survivor, not shortlisted: `.dev` taken, account held                                  |
+| sunu       | free  | free | User         | taken     | taken | `Sunnshino/sunui-upimg` 157 stars                             | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| wevi       | free  | free | none         | no record | taken | `Tencent/WeVisOne-VL` 1136 stars                              | survivor, not shortlisted: well-used repo of the same name                             |
+| dexo       | free  | free | User         | taken     | taken | `dexonline/dexonline` 248 stars                               | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| bimi       | free  | free | Organization | taken     | taken | `NiWeiNi/BIMiconToolbar` 61 stars                             | survivor, not shortlisted: `.dev` taken, account held                                  |
+| wiru       | free  | free | User         | no record | taken | `suissa/wiru` 14 stars                                        | **finalist**                                                                           |
+| zuri       | free  | free | Organization | taken     | taken | `adrische/quant-jobs-zurich` 289 stars                        | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| tuli       | free  | free | User         | taken     | taken | `shorepine/tulipcc` 981 stars                                 | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| piku       | free  | free | Organization | taken     | taken | `piku/piku` 6607 stars                                        | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| fenn       | free  | free | User         | taken     | taken | `bakpakin/Fennel` 2765 stars                                  | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| kuno       | free  | free | User         | taken     | taken | `kuno/GeoIP` 416 stars                                        | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| tavo       | free  | free | User         | taken     | taken | `Tavotto/Tavotto` 693 stars                                   | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| oru        | free  | free | User         | no record | taken | `oruga-ui/oruga` 1163 stars                                   | survivor, not shortlisted: account held, well-used repo of the same name               |
+| hapo       | free  | free | User         | taken     | taken | `danarashed73kk-coder/hapora-enhancement` 149 stars           | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| wimo       | free  | free | User         | taken     | taken | `wimoor-erp/wimoor` 1391 stars                                | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| ravo       | free  | free | User         | taken     | taken | `ravenprotocol/ravop` 9 stars                                 | survivor, not shortlisted: `.dev` taken, account held                                  |
+| rilo       | free  | free | User         | taken     | taken | `tubalmartin/riloadr` 642 stars                               | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| tolu       | free  | free | User         | taken     | taken | `topameng/tolua` 3066 stars                                   | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| nyla       | free  | free | User         | taken     | taken | `nylas/nylas-mail` 24727 stars                                | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| unlatch    | free  | free | User         | taken     | taken | `Narden91/unlatched` 3 stars                                  | survivor, not shortlisted: `.dev` taken, account held                                  |
+| mosey      | free  | free | User         | taken     | taken | `thelok1s/mosey-extended` 153 stars                           | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| pootle     | free  | free | User         | no record | taken | `translate/pootle` 1502 stars                                 | **finalist**                                                                           |
+| tarry      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| tend       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| mend       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| sift       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| glean      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| linger     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| amble      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| wander     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| jot        | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| mull       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| hallar     | free  | free | User         | no record | taken | `edannas/HALLaR` 3 stars                                      | survivor, not shortlisted: account held                                                |
+| fetch      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| ask        | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| tidy       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| tinker     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| fanlight   | free  | free | User         | no record | taken | `Hanbyori/Unity_Fanlight` 39 stars                            | **finalist**                                                                           |
+| lychgate   | free  | free | User         | no record | taken | `Richmond-Grey/lychgate` 0 stars                              | **finalist**                                                                           |
+| doorsill   | free  | free | User         | no record | taken | none found                                                    | survivor, not shortlisted: account held                                                |
+| hearthside | free  | free | Organization | taken     | taken | `naomiHauret/hearthside-hangouts` 2 stars                     | survivor, not shortlisted: `.dev` taken, account held                                  |
+| sedge      | free  | free | User         | taken     | taken | `aistrate/AlgorithmsSedgewick` 2748 stars                     | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| tansy      | free  | free | User         | taken     | taken | `QTqingtan/tansyqinyrproj` 11 stars                           | survivor, not shortlisted: `.dev` taken, account held                                  |
+| teasel     | free  | free | User         | taken     | taken | `tjdevWorks/TEASEL` 26 stars                                  | survivor, not shortlisted: `.dev` taken, account held                                  |
+| lantern    | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| beacon     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| harbor     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| porch      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| latch      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| hinge      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| kettle     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| hearth     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| usher      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| nook       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| pebble     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| moss       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| acorn      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| lamp       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| alma       | free  | free | Organization | taken     | taken | `marchof/java-almanac` 1149 stars                             | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| hogar      | free  | free | User         | no record | taken | `leonjza/hogar` 52 stars                                      | survivor, not shortlisted: account held                                                |
+| huella     | free  | free | User         | taken     | taken | `ayudadigital/huelladigital-backend` 8 stars                  | survivor, not shortlisted: `.dev` taken, account held                                  |
+| trazo      | free  | free | User         | taken     | taken | `PhenX/Trazor` 76 stars                                       | survivor, not shortlisted: `.dev` taken, account held                                  |
+| atajo      | free  | free | Organization | taken     | taken | `ulymay/atajosEclipse.textile` 7 stars                        | survivor, not shortlisted: `.dev` taken, account held                                  |
+| abrigo     | free  | free | User         | taken     | taken | `luisparravicini/abrigo-pinos` 6 stars                        | survivor, not shortlisted: `.dev` taken, account held                                  |
+| amparo     | free  | free | User         | taken     | taken | `mayerstrk/amparo-fastify-deprecated-` 7 stars                | survivor, not shortlisted: `.dev` taken, account held                                  |
+| linde      | free  | free | User         | taken     | taken | `lindera/lindera` 707 stars                                   | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| etapa      | free  | free | User         | no record | taken | `CristiannGuerra/Informatorio-Etapa-1` 14 stars               | survivor, not shortlisted: account held                                                |
+| quieto     | free  | free | User         | taken     | taken | `sachaservan/QuietOT` 7 stars                                 | survivor, not shortlisted: `.dev` taken, account held                                  |
+| vigia      | free  | free | User         | taken     | taken | `nogates/vigia` 95 stars                                      | survivor, not shortlisted: `.dev` taken, account held                                  |
+| cobijo     | free  | free | none         | no record | taken | `abelSotillos/oca-cobijo` 1 stars                             | **finalist**                                                                           |
+| remanso    | free  | free | User         | no record | taken | `remansolution/remansolution` 4 stars                         | survivor, not shortlisted: account held                                                |
+| vereda     | free  | free | User         | taken     | taken | `BielVereda/BielVereda` 7 stars                               | survivor, not shortlisted: `.dev` taken, account held                                  |
+| sosiego    | free  | free | User         | no record | taken | `sosiego1/sosiego` 0 stars                                    | survivor, not shortlisted: account held                                                |
+| fiel       | free  | free | User         | taken     | taken | `halfrost/Halfrost-Field` 13253 stars                         | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| leal       | free  | free | User         | taken     | taken | `lealone/Lealone` 2591 stars                                  | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| humilde    | free  | free | User         | no record | taken | `ricardorifli/humilde` 1 stars                                | survivor, not shortlisted: account held                                                |
+| sincero    | free  | free | User         | no record | taken | `PedroSincero/PedroSincero` 3 stars                           | survivor, not shortlisted: account held                                                |
+| sereno     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| brujula    | free  | free | User         | no record | taken | `nogates/brujula` 6 stars                                     | survivor, not shortlisted: account held                                                |
+| cuidado    | free  | free | User         | no record | taken | `Thyale/CuidadoPet` 7 stars                                   | survivor, not shortlisted: account held                                                |
+| hoopoe     | free  | free | User         | taken     | taken | `axol8002/hoopoe-player` 11 stars                             | survivor, not shortlisted: `.dev` taken, account held                                  |
+| dunnock    | free  | free | User         | no record | taken | `dunnock/react-sigma` 265 stars                               | **finalist**                                                                           |
+| curlew     | free  | free | User         | taken     | taken | `chamfay/Curlew` 64 stars                                     | survivor, not shortlisted: `.dev` taken, account held                                  |
+| smew       | free  | free | Organization | taken     | taken | `smew-tech/public-apis` 280 stars                             | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| twite      | free  | free | none         | no record | taken | `Robert-Stackflow/Twitee` 45 stars                            | **finalist**                                                                           |
+| dunlin     | free  | free | Organization | taken     | taken | `fluidself/dunlin` 19 stars                                   | survivor, not shortlisted: `.dev` taken, account held                                  |
+| wheatear   | free  | free | User         | taken     | taken | `akshay-eng/Wheatear` 3 stars                                 | survivor, not shortlisted: `.dev` taken, account held                                  |
+| whinchat   | free  | free | User         | no record | taken | `ehdrjs0110/Whinchat` 0 stars                                 | survivor, not shortlisted: account held                                                |
+| potoo      | free  | free | User         | taken     | taken | `MichaelChirico/potools` 63 stars                             | survivor, not shortlisted: `.dev` taken, account held                                  |
+| bushbaby   | free  | free | Organization | taken     | taken | `bushbaby/BsbFlysystem` 37 stars                              | survivor, not shortlisted: `.dev` taken, account held                                  |
+| nuthatch   | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| puffin     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| quokka     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| wombat     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| newt       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| gecko      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| pika       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| marmot     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| quoll      | free  | free | User         | taken     | taken | `quoll/asami` 360 stars                                       | survivor, not shortlisted: `.dev` taken, account held, well-used repo of the same name |
+| kakapo     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| numbat     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| okapi      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| dormouse   | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| vole       | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| shrew      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| lemur      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| tapir      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| coati      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| dugong     | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| bilby      | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+| axolotl    | taken | -    | -            | -         | -     | not searched                                                  | drop: npm taken                                                                        |
+
+What the filter shows:
+
+- **npm removes 57 of 134, so 77 survive.** Short everyday words (`lantern`,
+  `beacon`, `porch`, `pika`, `newt`, `puffin`) are almost all gone; rare
+  words, Spanish words and invented words mostly survive. Every one of the 77
+  has a free `andryorelabs/<name>` slug.
+- **`.com` is gone for all 77.** No survivor has a `.com` without a record. As
+  in earlier rounds, `.com` does not separate the names.
+- **`.dev` has no record for 28 of the 77.** Short invented names lose it
+  most often.
+- **A held GitHub account is the norm.** Only 3 of the 77 (`wevi`, `cobijo`,
+  `twite`) have no account of that name. Earlier rounds used an unheld account
+  as a shortlist condition; with single words that would leave almost nothing.
+  Round 4 keeps the hard filter (npm and slug free) and treats a held account
+  as a cost on the Registry axis, lower when the account is idle and higher
+  when it is a real project.
+- **Collision is a near-name problem.** `wevi` sits next to `WeVisOne` and the
+  We-Vibe brand, `pootle` is a 1502-star translation tool, `zindle` has a
+  207-star repo, and `oru` sits next to the Oruga UI library.
+- **The shortlist** picks 8 names with a free npm name and slug, mostly a free
+  `.dev`, a calm reading, no brand owning the word, and at least one per
+  style. Names with a well-known owner or a hard-to-say shape were set aside.
+
+### Round 4 finalists: scored /80
+
+Eight finalists, at least one per style: `plono` (a), `fanlight` and
+`lychgate` (b), `pootle` (c), `cobijo` (d), `wiru` (e), `twite` and `dunnock`
+(f). Axes are the round 2 definitions (sound, registry collision, brand
+collision, brief fit, headroom, warmth, overpromise risk, findability, each 0
+to 10), except Sound is "memorable and easy to say aloud". This is directional
+judgment, not a formula.
+
+Web search on the finalists found no software product of the same name for
+`plono`, `lychgate`, `twite`, `cobijo`, `dunnock` or `wiru` (the nearest hits
+were `Plano`, `LitiGate`, Twitter clients, `Cobiro`, `Wayru`). `fanlight`
+belongs to Fanlight Sync and Fanlight Link, two ceiling-fan control apps.
+`pootle` is the open-source translation system Pootle (2004, on PyPI). A UK
+trademark application for `remanso` in class 9 (software) is why it was not
+shortlisted.
+
+| Axis               | plono                                | fanlight                              | lychgate                                 | pootle                                  | cobijo                                         | wiru                                 | twite                                      | dunnock                                   |
+| ------------------ | ------------------------------------ | ------------------------------------- | ---------------------------------------- | --------------------------------------- | ---------------------------------------------- | ------------------------------------ | ------------------------------------------ | ----------------------------------------- |
+| Sound              | 6: easy, but flat and hard to recall | 8: two clear beats, a real word       | 5: "lych" is an odd start                | 9: bouncy, hard to forget               | 7: three soft syllables, stress needs learning | 7: two easy syllables                | 6: reads as "twit" or a Twitter typo       | 8: two firm syllables, a real bird        |
+| Registry collision | 8: npm, slug, `.dev` free, idle user | 8: npm, slug, `.dev` free, idle user  | 8: npm, slug, `.dev` free, idle user     | 8: npm, slug, `.dev` free, idle user    | 9: npm, slug, `.dev` free, no account held     | 8: npm, slug, `.dev` free, idle user | 9: npm, slug, `.dev` free, no account held | 6: free, but the account has active repos |
+| Brand collision    | 8: 0-star repos, no product found    | 6: two fan-control apps with the word | 9: no product, only a 0-star repo        | 3: a 1502-star translation tool owns it | 8: small repos, no product found               | 7: 14-star API repos, `Wayru` nearby | 5: Twitter-adjacent, no product            | 6: a 265-star repo under the account      |
+| Brief fit          | 6: neutral, neither calm nor loud    | 7: a window that lets light in, calm  | 8: a gate where you wait, calm and exact | 4: silly, against "precise"             | 8: a shelter, calm and trustworthy             | 5: neutral                           | 6: small and plain                         | 8: a quiet, plain bird, unassuming        |
+| Headroom           | 9: means nothing, can grow anywhere  | 8: not job-bound                      | 9: not job-bound                         | 9: not job-bound                        | 9: not job-bound                               | 10: means nothing                    | 9: not job-bound                           | 9: not job-bound                          |
+| Warmth             | 6: friendly sound, no image          | 7: light and a door                   | 5: old and formal                        | 10: the friendliest word in the list    | 9: a shelter, the most human meaning           | 5: neutral                           | 8: a small finch, an easy mark             | 8: a small brown bird, an easy mark       |
+| Overpromise risk   | 10: nothing promised                 | 10: nothing promised                  | 10: nothing promised                     | 10: nothing promised                    | 9: shelter hints at safety, not at acting      | 10: nothing promised                 | 10: nothing promised                       | 10: nothing promised                      |
+| Findability        | 2: no cue                            | 2: no cue, and fan hardware           | 2: no cue                                | 2: no cue                               | 2: no cue, Spanish only                        | 1: no cue, not a word                | 2: no cue                                  | 2: no cue                                 |
+| **Total /80**      | **55**                               | **56**                                | **56**                                   | **55**                                  | **61**                                         | **53**                               | **55**                                     | **57**                                    |
+
+Each total is the sum of its eight scores: plono 6+8+8+6+9+6+10+2 = 55,
+fanlight 8+8+6+7+8+7+10+2 = 56, lychgate 5+8+9+8+9+5+10+2 = 56, pootle
+9+8+3+4+9+10+10+2 = 55, cobijo 7+9+8+8+9+9+9+2 = 61, wiru 7+8+7+5+10+5+10+1 =
+53, twite 6+9+5+6+9+8+10+2 = 55, dunnock 8+6+6+8+9+8+10+2 = 57.
+
+Findability is 1 or 2 for every finalist, as expected: none says "job". It is
+the cost of leaving compounds behind, and the totals above are comparable
+with the earlier rounds only with that in mind. The top 3 of earlier rounds
+averaged 7.3 on Findability against 1.9 here.
+
+### Rounds 1 to 4 compared
+
+The round 4 finalists next to the top 3 of rounds 1 to 3, on the same /80
+scale. The Sound axis is scored differently in round 4 (memorable and easy to
+say, not only easy to say).
+
+| Rank | Name     | Round | Total /80 | Brief fit | Warmth | Findability |
+| ---- | -------- | ----- | --------- | --------- | ------ | ----------- |
+| 1    | cobijo   | 4     | 61        | 8         | 9      | 2           |
+| 2    | jobwren  | 3     | 59        | 6         | 8      | 7           |
+| 2    | tallypal | 3     | 59        | 6         | 9      | 6           |
+| 4    | jobtally | 2     | 58        | 7         | 6      | 9           |
+| 5    | dunnock  | 4     | 57        | 8         | 8      | 2           |
+| 6    | fanlight | 4     | 56        | 7         | 7      | 2           |
+| 6    | lychgate | 4     | 56        | 8         | 5      | 2           |
+| 8    | plono    | 4     | 55        | 6         | 6      | 2           |
+| 8    | pootle   | 4     | 55        | 4         | 10     | 2           |
+| 8    | twite    | 4     | 55        | 6         | 8      | 2           |
+| 11   | wiru     | 4     | 53        | 5         | 5      | 1           |
+
+Reading it straight:
+
+- **The spread is narrow again.** Eleven names sit within 8 points, inside the
+  noise of a judgment score. Treat the table as a group, not a ladder.
+- **Round 4 wins on Brief fit and loses on Findability.** `cobijo`, `dunnock`
+  and `lychgate` match the calm, plain brief better than any round 3 name,
+  because real words about shelter, gates and quiet birds are calm by default.
+  They give up the job cue entirely.
+- **cobijo** is the best balance: Spanish for "shelter", so a plain, warm
+  image of a place to keep things safe, which matches a local-first tool that
+  keeps the user's data in a directory they own. English speakers get a
+  pleasant sound and no meaning, and a Spanish speaker gets the meaning at
+  once. It reads well as `/cobijo:sweep`.
+- **dunnock** is the best mascot option: a quiet, plain, common bird. Its
+  cost is a GitHub account that holds real projects.
+- **pootle** is the warmest and the most memorable, and the nearest in feel to
+  "Jobbie". A well-used translation tool already owns the word, and it is the
+  least calm.
+- **lychgate** has the best metaphor (a place you wait before you go in, which
+  fits "you press Submit") and the weakest sound.
+- **plono and wiru** are the invented-word and short-name picks. Neither has
+  an image, and they score no better than the real words.
+
+### Round 4 recommendation
+
+This is input for the maintainer, who decides.
+
+1. **If the maintainer wants a single, warm word with a calm meaning, take
+   `cobijo`.** It leads the round on total and on collision profile (no
+   account held, `.dev` free, no product found). Its weakness is that the
+   meaning is Spanish only. A 2-point lead is noise, so react to the style,
+   not the number.
+2. **If a mascot matters most, `dunnock`.** It is the best of the mascot
+   names on brief fit. Check the existing `dunnock` GitHub account before
+   relying on it.
+3. **If a metaphor for the "you press Submit" position matters most,
+   `lychgate`**, at the cost of an awkward first syllable.
+4. **Avoid `pootle` for the public name.** It has the best feel, but an
+   established tool owns the word.
+5. **Say which styles appeal, then iterate.** The useful reaction is "more
+   like `cobijo`" or "more like `dunnock`": a round 5 can stay inside one or
+   two styles (Spanish words, or small birds) and go deeper, with a wider list
+   of rare words, which survive npm far more often than common ones.
+6. **Findability is the open cost.** Every round 4 name needs the slogan or
+   README to say what it is. The maintainer has accepted that trade, and it is
+   named here so it is not a surprise later.
+7. **Confirm before acting.** RDAP "no record" is a signal, not a quote, and
+   registrations change. Re-run the table and ask a registrar before any
+   rename, and search for trademarks, which this research did not do beyond
+   what the web search surfaced.
+
+Nothing was bought or registered for this research.

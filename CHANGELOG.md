@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Type-aware lint, formatter, dead-code check, commit hooks and docs link check.
 - `AGENTS.md`, contributing guide, security policy and issue and PR templates.
+- `PRODUCT.md`, `GOVERNANCE.md`, a labels sync workflow and a bun cache in CI.
 
 ## [0.1.1] - 2026-11-10
 

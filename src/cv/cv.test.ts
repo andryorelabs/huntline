@@ -1,8 +1,17 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
+import { isObject } from "../core/narrow.ts";
 import { resolveTypst } from "../core/tools.ts";
 import type { DataDir } from "../core/types.ts";
 import { buildCv, systemRunner, type TypstRunner } from "./build.ts";
@@ -10,10 +19,22 @@ import { runWith } from "./command.ts";
 import { loadBullets, loadFactBank, loadNeverClaim, loadVariants } from "./facts.ts";
 import { lintCv } from "./lint.ts";
 import { requirementCoverage, selectBullets } from "./select.ts";
+import type { FactBank } from "./types.ts";
 
 const examples = path.join(import.meta.dir, "../../examples/cv");
 let root = "";
 let dir: DataDir = { path: "" };
+
+function payloadOf(runner: { compiled: string[] }): Record<string, unknown> {
+  const parsed: unknown = JSON.parse(runner.compiled[0] ?? "{}");
+  if (!isObject(parsed)) throw new Error("compiled payload is not an object");
+  return parsed;
+}
+
+function idsOf(list: unknown): unknown[] {
+  if (!Array.isArray(list)) throw new Error("expected a list");
+  return list.map((item: unknown) => (isObject(item) ? item["id"] : undefined));
+}
 
 function fakeRunner(text: string): TypstRunner & { compiled: string[] } {
   const compiled: string[] = [];
@@ -193,9 +214,9 @@ describe("cv coverage command", () => {
 });
 
 describe("requirementCoverage significant words", () => {
-  const bank = {
+  const bank: FactBank = {
     facts: [{ id: "f-react", text: "Built dashboards at Acme", tags: ["react"] }],
-  } as unknown as Parameters<typeof requirementCoverage>[1];
+  };
 
   test("matches a phrase on a significant word equal to a tag", () => {
     expect(requirementCoverage(["3+ years React"], bank).covered).toEqual([
@@ -204,12 +225,12 @@ describe("requirementCoverage significant words", () => {
   });
 
   test("a stop-word or two-letter tag never covers a phrase", () => {
-    const tagged = {
+    const tagged: FactBank = {
       facts: [
         { id: "f-go", text: "Wrote tooling at Globex", tags: ["go"] },
         { id: "f-experience", text: "Shipped features at Initech", tags: ["experience", "years"] },
       ],
-    } as unknown as Parameters<typeof requirementCoverage>[1];
+    };
     expect(requirementCoverage(["3+ years experience with Go"], tagged).missing).toEqual([
       "3+ years experience with Go",
     ]);
@@ -255,7 +276,9 @@ variants:
   test("loadVariants reads rules and defaults to none", () => {
     writeBullets(tagged);
     const variants = loadVariants(dir);
-    expect(variants.ok && variants.value).toEqual([{ name: "startup", all: ["en"], none: ["enterprise"] }]);
+    expect(variants.ok && variants.value).toEqual([
+      { name: "startup", all: ["en"], none: ["enterprise"] },
+    ]);
     writeBullets("bullets: []\n");
     const empty = loadVariants(dir);
     expect(empty.ok && empty.value).toEqual([]);
@@ -277,8 +300,7 @@ variants:
     const runner = fakeRunner("x");
     const envelope = await runWith(["build", "--variant", "startup"], context(), runner);
     expect(envelope.ok).toBe(true);
-    const payload = JSON.parse(runner.compiled[0] ?? "{}") as { bullets: { id: string }[] };
-    expect(payload.bullets.map((bullet) => bullet.id)).toEqual(["b-en"]);
+    expect(idsOf(payloadOf(runner)["bullets"])).toEqual(["b-en"]);
   });
 
   test("an undefined variant is rejected when variants exist and no tag is given", async () => {
@@ -303,7 +325,7 @@ describe("CV structure", () => {
     const runner = fakeRunner("x");
     const result = await buildCv(dir, { runner });
     expect(result.ok).toBe(true);
-    const payload = JSON.parse(runner.compiled[0] ?? "{}") as Record<string, unknown>;
+    const payload = payloadOf(runner);
     expect(payload["experience"]).toEqual([]);
     expect(payload["skills"]).toEqual([]);
   });
@@ -312,19 +334,23 @@ describe("CV structure", () => {
     const runner = fakeRunner("x");
     const result = await buildCv(dir, { name: "backend", runner });
     expect(result.ok).toBe(true);
-    const payload = JSON.parse(runner.compiled[0] ?? "{}") as {
-      header: { name: string };
-      bullets: { id: string }[];
-      experience: { id: string; dates: string; bullets: { id: string }[] }[];
-    };
-    expect(payload.header.name).toBe("Jane Example");
-    expect(payload.experience[0]?.dates).toBe("Spring to Autumn");
-    expect(payload.experience[0]?.bullets.map((bullet) => bullet.id)).toEqual(["b-ci", "b-latency"]);
-    expect(payload.bullets.map((bullet) => bullet.id)).toEqual(["b-latency", "b-ci"]);
+    const payload = payloadOf(runner);
+    const header = payload["header"];
+    expect(isObject(header) ? header["name"] : undefined).toBe("Jane Example");
+    const experience: unknown = payload["experience"];
+    const firstEntry: unknown = Array.isArray(experience) ? experience[0] : undefined;
+    expect(isObject(firstEntry) ? firstEntry["dates"] : undefined).toBe("Spring to Autumn");
+    expect(idsOf(isObject(firstEntry) ? firstEntry["bullets"] : undefined)).toEqual([
+      "b-ci",
+      "b-latency",
+    ]);
+    expect(idsOf(payload["bullets"])).toEqual(["b-latency", "b-ci"]);
   });
 
   test("fails naming a Bullet whose entry is missing", async () => {
-    writeBullets("bullets:\n  - id: b-x\n    text: Did.\n    tags: []\n    facts: [f-api-latency]\n    entry: e-ghost\n");
+    writeBullets(
+      "bullets:\n  - id: b-x\n    text: Did.\n    tags: []\n    facts: [f-api-latency]\n    entry: e-ghost\n",
+    );
     const result = await buildCv(dir, { runner: fakeRunner("") });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.message).toContain("e-ghost");

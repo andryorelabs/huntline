@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
+import { isObject } from "../core/narrow.ts";
 import type { HuntEvent, Posting, SourceAdapter } from "../core/types.ts";
 import { dedupKey, readLedger } from "../ledger/dedup.ts";
 import { readEvents } from "../ledger/events.ts";
@@ -19,7 +20,10 @@ function makeContext(): CommandContext {
   return { dataDir: { path: root }, env: {}, cwd: root };
 }
 
-function writeProfile(sources: string[], tracker: Record<string, unknown> = { kind: "local" }): void {
+function writeProfile(
+  sources: string[],
+  tracker: Record<string, unknown> = { kind: "local" },
+): void {
   writeFileSync(path.join(root, "huntline.json"), '{"version":1}\n');
   writeFileSync(
     path.join(root, "profile.yaml"),
@@ -73,6 +77,14 @@ function rateLimitedAdapter(name: string): SourceAdapter {
   };
 }
 
+function queryOf(init: RequestInit): string {
+  if (typeof init.body !== "string") throw new Error("expected a string request body");
+  const parsed: unknown = JSON.parse(init.body);
+  const query = isObject(parsed) ? parsed["query"] : undefined;
+  if (typeof query !== "string") throw new Error("request body has no query");
+  return query;
+}
+
 describe("runSweep", () => {
   test("a rate limited Source is reported failed while the others still produce Leads", async () => {
     writeProfile(["himalayas", "remoteok", "hn"]);
@@ -95,7 +107,12 @@ describe("runSweep", () => {
 
   test("a second sweep sees everything as known and records no new Events", async () => {
     writeProfile(["himalayas"]);
-    const adapters = { himalayas: staticAdapter("himalayas", [posting(), posting({ id: "2", title: "Data Engineer" })]) };
+    const adapters = {
+      himalayas: staticAdapter("himalayas", [
+        posting(),
+        posting({ id: "2", title: "Data Engineer" }),
+      ]),
+    };
     await runSweep(makeContext(), { adapters });
     const second = await runSweep(makeContext(), { adapters });
     if (!second.ok) throw new Error(second.error.message);
@@ -108,12 +125,17 @@ describe("runSweep", () => {
     const operations: string[] = [];
     const responses: Record<string, unknown> = linearFixture;
     const fetchImpl: FetchLike = (_input, init) => {
-      const body = JSON.parse(String(init.body)) as { query: string };
-      const operation = /(?:query|mutation) (\w+)/.exec(body.query)?.[1] ?? "";
+      const operation = /(?:query|mutation) (\w+)/.exec(queryOf(init))?.[1] ?? "";
       operations.push(operation);
-      return Promise.resolve(Response.json(responses[operation] ?? { errors: [{ message: "unrecorded" }] }));
+      return Promise.resolve(
+        Response.json(responses[operation] ?? { errors: [{ message: "unrecorded" }] }),
+      );
     };
-    const tracker = createTracker({ kind: "linear", team: "HNT" }, { path: root }, { apiKey: "lin_api_synthetic", fetch: fetchImpl });
+    const tracker = createTracker(
+      { kind: "linear", team: "HNT" },
+      { path: root },
+      { apiKey: "lin_api_synthetic", fetch: fetchImpl },
+    );
     const adapters = { himalayas: staticAdapter("himalayas", [posting()]) };
     const first = await runSweep(makeContext(), { adapters, tracker });
     const second = await runSweep(makeContext(), { adapters, tracker });
@@ -129,13 +151,16 @@ describe("runSweep", () => {
     const responses: Record<string, unknown> = linearFixture;
     let healthy = false;
     const fetchImpl: FetchLike = (_input, init) => {
-      const body = JSON.parse(String(init.body)) as { query: string };
-      const operation = /(?:query|mutation) (\w+)/.exec(body.query)?.[1] ?? "";
+      const operation = /(?:query|mutation) (\w+)/.exec(queryOf(init))?.[1] ?? "";
       if (healthy) operations.push(operation);
       const payload = healthy ? responses[operation] : { errors: [{ message: "down" }] };
       return Promise.resolve(Response.json(payload ?? { errors: [{ message: "unrecorded" }] }));
     };
-    const tracker = createTracker({ kind: "linear", team: "HNT" }, { path: root }, { apiKey: "lin_api_synthetic", fetch: fetchImpl });
+    const tracker = createTracker(
+      { kind: "linear", team: "HNT" },
+      { path: root },
+      { apiKey: "lin_api_synthetic", fetch: fetchImpl },
+    );
     const adapters = { himalayas: staticAdapter("himalayas", [posting()]) };
     const first = await runSweep(makeContext(), { adapters, tracker });
     expect(first.ok).toBe(false);
@@ -169,7 +194,10 @@ describe("runSweep", () => {
       greenhouse: staticAdapter("greenhouse", [posting({ source: "greenhouse", id: "g1" })]),
       himalayas: staticAdapter("himalayas", [posting({ source: "himalayas", id: "h1" })]),
     };
-    writeFileSync(path.join(root, "companies.json"), JSON.stringify({ companies: [{ ats: "greenhouse", slug: "acme" }] }));
+    writeFileSync(
+      path.join(root, "companies.json"),
+      JSON.stringify({ companies: [{ ats: "greenhouse", slug: "acme" }] }),
+    );
     const result = await runSweep(makeContext(), { adapters });
     if (!result.ok) throw new Error(result.error.message);
     expect(result.value.totals).toMatchObject({ new: 1, known: 1 });
@@ -180,7 +208,10 @@ describe("runSweep", () => {
   test("an unknown Source and a throwing adapter are reported failed", async () => {
     writeProfile(["nope", "himalayas"]);
     const adapters = {
-      himalayas: { name: "himalayas", fetch: () => Promise.reject(new Error("boom")) } satisfies SourceAdapter,
+      himalayas: {
+        name: "himalayas",
+        fetch: () => Promise.reject(new Error("boom")),
+      } satisfies SourceAdapter,
     };
     const result = await runSweep(makeContext(), { adapters });
     if (!result.ok) throw new Error(result.error.message);
@@ -193,7 +224,9 @@ describe("runSweep", () => {
       Array.from({ length: 4 }, () => ingestPostings(makeContext(), [posting()], "himalayas")),
     );
     expect(results.every((result) => result.ok)).toBe(true);
-    const leads = (await readEvents({ path: root })).filter((event) => event.kind === "lead.created");
+    const leads = (await readEvents({ path: root })).filter(
+      (event) => event.kind === "lead.created",
+    );
     expect(leads).toHaveLength(1);
   });
 
@@ -206,13 +239,19 @@ describe("runSweep", () => {
 describe("ingestPostings", () => {
   test("a Posting already seen creates no new Lead", async () => {
     writeProfile([]);
-    const wellfound = posting({ source: "wellfound", id: "wf-1", url: "https://example.test/wf/1" });
+    const wellfound = posting({
+      source: "wellfound",
+      id: "wf-1",
+      url: "https://example.test/wf/1",
+    });
     const first = await ingestPostings(makeContext(), [wellfound], "wellfound");
     const second = await ingestPostings(makeContext(), [wellfound], "wellfound");
     if (!first.ok || !second.ok) throw new Error("ingest failed");
     expect(first.value).toMatchObject({ seen: 1, new: 1 });
     expect(second.value).toMatchObject({ seen: 1, known: 1, new: 0, leads: [] });
-    expect((await readEvents({ path: root })).filter((event) => event.kind === "lead.created")).toHaveLength(1);
+    expect(
+      (await readEvents({ path: root })).filter((event) => event.kind === "lead.created"),
+    ).toHaveLength(1);
   });
 
   test("fills a blank source from the label", async () => {
@@ -239,14 +278,28 @@ describe("ingest payload validation", () => {
   test("null optional fields are dropped and mistyped ones are rejected", async () => {
     writeProfile([]);
     const accepted = await run(
-      ["ingest", "--source", "wellfound", "--json", JSON.stringify([{ ...posting(), remote: null, location: null, contract: null }])],
+      [
+        "ingest",
+        "--source",
+        "wellfound",
+        "--json",
+        JSON.stringify([{ ...posting(), remote: null, location: null, contract: null }]),
+      ],
       makeContext(),
     );
     expect(accepted).toMatchObject({ ok: true, data: { new: 1 } });
     const events = await readEvents({ path: root });
-    expect(events.find((event) => event.kind === "lead.created")).toMatchObject({ eligibility: "unknown" });
+    expect(events.find((event) => event.kind === "lead.created")).toMatchObject({
+      eligibility: "unknown",
+    });
     const rejected = await run(
-      ["ingest", "--source", "wellfound", "--json", JSON.stringify([{ ...posting({ id: "2" }), remote: "no" }])],
+      [
+        "ingest",
+        "--source",
+        "wellfound",
+        "--json",
+        JSON.stringify([{ ...posting({ id: "2" }), remote: "no" }]),
+      ],
       makeContext(),
     );
     expect(rejected).toMatchObject({ ok: false });
@@ -256,7 +309,11 @@ describe("ingest payload validation", () => {
 describe("recordScore", () => {
   test("records score, reasons and liveness as an Event", async () => {
     const key = await seedLead();
-    const result = await recordScore(makeContext(), key, { score: 82, reasons: ["stack match"], liveness: "live" });
+    const result = await recordScore(makeContext(), key, {
+      score: 82,
+      reasons: ["stack match"],
+      liveness: "live",
+    });
     expect(result.ok).toBe(true);
     expect(lastScore(await readEvents({ path: root }))).toMatchObject({
       score: 82,
@@ -267,7 +324,12 @@ describe("recordScore", () => {
 
   test("a liveness check that errored records unknown, never closed", async () => {
     const key = await seedLead();
-    await recordScore(makeContext(), key, { score: 50, reasons: [], livenessError: "HTTP 503", liveness: "closed" });
+    await recordScore(makeContext(), key, {
+      score: 50,
+      reasons: [],
+      livenessError: "HTTP 503",
+      liveness: "closed",
+    });
     expect(lastScore(await readEvents({ path: root }))).toMatchObject({ liveness: "unknown" });
   });
 
@@ -279,7 +341,9 @@ describe("recordScore", () => {
 
   test("rejects out of range scores and unknown keys", async () => {
     const key = await seedLead();
-    expect(await recordScore(makeContext(), key, { score: 101, reasons: [] })).toMatchObject({ ok: false });
+    expect(await recordScore(makeContext(), key, { score: 101, reasons: [] })).toMatchObject({
+      ok: false,
+    });
     expect(await recordScore(makeContext(), "missing", { score: 10, reasons: [] })).toMatchObject({
       ok: false,
       error: { code: "not-found" },
@@ -295,25 +359,40 @@ describe("command", () => {
     const ingested = await run(["ingest", "--source", "wellfound", "--file", file], makeContext());
     expect(ingested).toMatchObject({ ok: true, data: { new: 1 } });
     const key = dedupKey(posting());
-    const scored = await run(["score", key, "--score", "70", "--reason", "good fit", "--liveness-error", "timeout"], makeContext());
+    const scored = await run(
+      ["score", key, "--score", "70", "--reason", "good fit", "--liveness-error", "timeout"],
+      makeContext(),
+    );
     expect(scored).toMatchObject({ ok: true, data: { liveness: "unknown", score: 70 } });
     expect(readFileSync(file, "utf8")).toContain("Backend");
   });
 
   test("usage errors", async () => {
     writeProfile([]);
-    expect(await run(["ingest"], makeContext())).toMatchObject({ ok: false, error: { code: "usage" } });
+    expect(await run(["ingest"], makeContext())).toMatchObject({
+      ok: false,
+      error: { code: "usage" },
+    });
     expect(await run(["ingest", "--source", "x", "--json", "{}"], makeContext())).toMatchObject({
       ok: false,
       error: { code: "usage" },
     });
-    expect(await run(["score"], makeContext())).toMatchObject({ ok: false, error: { code: "usage" } });
-    expect(await run(["sweep", "extra"], makeContext())).toMatchObject({ ok: false, error: { code: "usage" } });
+    expect(await run(["score"], makeContext())).toMatchObject({
+      ok: false,
+      error: { code: "usage" },
+    });
+    expect(await run(["sweep", "extra"], makeContext())).toMatchObject({
+      ok: false,
+      error: { code: "usage" },
+    });
   });
 
   test("sweep with no configured sources reports an empty run", async () => {
     writeProfile([]);
-    expect(await run(["sweep"], makeContext())).toMatchObject({ ok: true, data: { failed: [], empty: [] } });
+    expect(await run(["sweep"], makeContext())).toMatchObject({
+      ok: true,
+      data: { failed: [], empty: [] },
+    });
   });
 });
 
@@ -332,6 +411,7 @@ describe("skills", () => {
 
   test("browser-source documents Wellfound GraphQL, LinkedIn and X", () => {
     const body = readFileSync(path.join(skillsRoot, "browser-source", "SKILL.md"), "utf8");
-    for (const heading of ["## Wellfound (GraphQL)", "## LinkedIn", "## X"]) expect(body).toContain(heading);
+    for (const heading of ["## Wellfound (GraphQL)", "## LinkedIn", "## X"])
+      expect(body).toContain(heading);
   });
 });

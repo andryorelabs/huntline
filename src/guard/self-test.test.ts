@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { exitCodeFor } from "../core/envelope.ts";
+import { isObject } from "../core/narrow.ts";
 import { run, selfTestEnvelope } from "./command.ts";
 import { decideGuard, type GuardDecision } from "./decide.ts";
 import { runGuardSelfTest, SELF_TEST_HOOKS } from "./self-test.ts";
@@ -40,7 +41,9 @@ describe("runGuardSelfTest", () => {
     expect(result.pass).toBe(false);
     const failed = result.cases.filter((entry) => !entry.pass);
     expect(failed.length).toBeGreaterThan(0);
-    expect(failed.every((entry) => entry.expected === "deny" && entry.actual === "allow")).toBe(true);
+    expect(failed.every((entry) => entry.expected === "deny" && entry.actual === "allow")).toBe(
+      true,
+    );
   });
 
   test("a hook matcher that does not cover a denied tool fails that case", () => {
@@ -57,7 +60,15 @@ describe("runGuardSelfTest", () => {
   });
 
   test("fails closed on malformed hooks input without throwing", () => {
-    for (const bad of [null, undefined, 42, "x", {}, { hooks: {} }, { hooks: { PreToolUse: [{ matcher: "(" }] } }]) {
+    for (const bad of [
+      null,
+      undefined,
+      42,
+      "x",
+      {},
+      { hooks: {} },
+      { hooks: { PreToolUse: [{ matcher: "(" }] } },
+    ]) {
       const result = runGuardSelfTest(bad);
       expect(result.pass).toBe(false);
     }
@@ -96,9 +107,11 @@ describe("guard --self-test", () => {
       { env: { PATH: process.env["PATH"] ?? "" } },
     );
     expect(spawned.exitCode).toBe(0);
-    const envelope = JSON.parse(spawned.stdout.toString()) as { ok: boolean; data: { cases: unknown[] } };
-    expect(envelope.ok).toBe(true);
-    expect(envelope.data.cases.length).toBeGreaterThanOrEqual(5);
+    const envelope: unknown = JSON.parse(spawned.stdout.toString());
+    if (!isObject(envelope)) throw new Error("envelope is not an object");
+    expect(envelope["ok"]).toBe(true);
+    const cases = isObject(envelope["data"]) ? envelope["data"]["cases"] : undefined;
+    expect(Array.isArray(cases) ? cases.length : 0).toBeGreaterThanOrEqual(5);
   });
 
   test("run returns ok on current code", async () => {

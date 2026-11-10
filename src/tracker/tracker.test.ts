@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node
 import os from "node:os";
 import path from "node:path";
 import { IdempotencyMap } from "../core/approval.ts";
+import { isObject } from "../core/narrow.ts";
 import type { HuntEvent, Posting } from "../core/types.ts";
 import { appendEvent, readEvents } from "../ledger/events.ts";
 import { createTracker, projectEvents } from "./index.ts";
@@ -29,35 +30,64 @@ const posting: Posting = {
   title: "Senior Backend Engineer",
 };
 
-function event(kind: HuntEvent["kind"], id: string, extra: Record<string, unknown> = {}): HuntEvent {
-  return { kind, id, at: "2026-01-01T00:00:00Z", key: "acme|senior-backend", ...extra } as HuntEvent;
-}
+const STAMP = { at: "2026-01-01T00:00:00Z", key: "acme|senior-backend" } as const;
+
+const noteEvent: HuntEvent = { ...STAMP, id: "e4", kind: "note", text: "referred by a friend" };
 
 const events: HuntEvent[] = [
-  event("lead.created", "e1", { posting, eligibility: "eligible" }),
-  event("score.recorded", "e2", { score: 82, reasons: ["stack match"], liveness: "live" }),
-  event("status.changed", "e3", { from: "lead", to: "applied" }),
-  event("note", "e4", { text: "referred by a friend" }),
+  { ...STAMP, id: "e1", kind: "lead.created", posting, eligibility: "eligible" },
+  {
+    ...STAMP,
+    id: "e2",
+    kind: "score.recorded",
+    score: 82,
+    reasons: ["stack match"],
+    liveness: "live",
+  },
+  { ...STAMP, id: "e3", kind: "status.changed", from: "lead", to: "applied" },
+  noteEvent,
 ];
 
 type Call = { operation: string; variables: Record<string, unknown>; authorization: string };
+
+function requestOf(init: RequestInit): { query: string; variables: Record<string, unknown> } {
+  if (typeof init.body !== "string") throw new Error("expected a string request body");
+  const parsed: unknown = JSON.parse(init.body);
+  if (!isObject(parsed)) throw new Error("request body is not an object");
+  const { query, variables } = parsed;
+  if (typeof query !== "string") throw new Error("request body has no query");
+  return { query, variables: isObject(variables) ? variables : {} };
+}
+
+function createInputOf(calls: Call[]): Record<string, unknown> {
+  const input = calls.find((call) => call.operation === "CreateIssue")?.variables["input"];
+  if (!isObject(input)) throw new Error("no CreateIssue input was recorded");
+  return input;
+}
 
 function recordedFetch(): { fetch: FetchLike; calls: Call[] } {
   const calls: Call[] = [];
   const responses: Record<string, unknown> = fixture;
   const fetchImpl: FetchLike = (_input, init) => {
-    const body = JSON.parse(String(init.body)) as { query: string; variables: Record<string, unknown> };
+    const body = requestOf(init);
     const operation = /(?:query|mutation) (\w+)/.exec(body.query)?.[1] ?? "";
-    const headers = init.headers as Record<string, string>;
-    calls.push({ operation, variables: body.variables, authorization: headers["authorization"] ?? "" });
-    return Promise.resolve(Response.json(responses[operation] ?? { errors: [{ message: "unrecorded" }] }));
+    calls.push({
+      operation,
+      variables: body.variables,
+      authorization: new Headers(init.headers).get("authorization") ?? "",
+    });
+    return Promise.resolve(
+      Response.json(responses[operation] ?? { errors: [{ message: "unrecorded" }] }),
+    );
   };
   return { fetch: fetchImpl, calls };
 }
 
 const erroring: FetchLike = () => Promise.resolve(Response.json({ errors: [{ message: "boom" }] }));
 
-async function titleFor(titleFormat: "role-at-company" | "company-role" | undefined): Promise<string> {
+async function titleFor(
+  titleFormat: "role-at-company" | "company-role" | undefined,
+): Promise<string> {
   const { fetch: fetchImpl, calls } = recordedFetch();
   const tracker = createTracker(
     { kind: "linear", team: "HNT", ...(titleFormat === undefined ? {} : { titleFormat }) },
@@ -69,8 +99,7 @@ async function titleFor(titleFormat: "role-at-company" | "company-role" | undefi
     posting: { ...posting, company: "Acme", title: "Backend Engineer" },
     eligibility: "eligible",
   });
-  const input = calls.find((call) => call.operation === "CreateIssue")?.variables["input"] as Record<string, unknown>;
-  return String(input["title"]);
+  return String(createInputOf(calls)["title"]);
 }
 
 describe("local tracker", () => {
@@ -113,7 +142,11 @@ describe("local tracker", () => {
     const tracker = createTracker({ kind: "local", directory: "tracker-files" }, dir);
     await projectEvents(tracker, dir, events);
     const content = readFileSync(
-      path.join(dir.path, "tracker-files", readdirSync(path.join(dir.path, "tracker-files"))[0] ?? ""),
+      path.join(
+        dir.path,
+        "tracker-files",
+        readdirSync(path.join(dir.path, "tracker-files"))[0] ?? "",
+      ),
       "utf8",
     );
     expect(content).toContain('rejection_reason: "salary"');
@@ -132,7 +165,10 @@ describe("local tracker", () => {
   test("a new Event after projection counts as an update", async () => {
     const tracker = createTracker({ kind: "local" }, dir);
     await projectEvents(tracker, dir, events);
-    const next = [...events, event("status.changed", "e5", { from: "applied", to: "screening" })];
+    const next: HuntEvent[] = [
+      ...events,
+      { ...STAMP, id: "e5", kind: "status.changed", from: "applied", to: "screening" },
+    ];
     expect(await projectEvents(tracker, dir, next)).toEqual({
       ok: true,
       value: { created: 0, updated: 1 },
@@ -141,7 +177,7 @@ describe("local tracker", () => {
 
   test("ignores events without a lead", async () => {
     const tracker = createTracker({ kind: "local" }, dir);
-    const result = await projectEvents(tracker, dir, [events[3] as HuntEvent]);
+    const result = await projectEvents(tracker, dir, [noteEvent]);
     expect(result).toEqual({ ok: true, value: { created: 0, updated: 0 } });
     expect(existsSync(path.join(dir.path, "applications"))).toBe(false);
   });
@@ -164,7 +200,10 @@ describe("linear tracker", () => {
 
   test("the lookup marker is delimited so one key never matches a longer key", async () => {
     const { fetch: fetchImpl, calls } = recordedFetch();
-    const tracker = createTracker({ kind: "linear", team: "HNT" }, dir, { apiKey: API_KEY, fetch: fetchImpl });
+    const tracker = createTracker({ kind: "linear", team: "HNT" }, dir, {
+      apiKey: API_KEY,
+      fetch: fetchImpl,
+    });
     await tracker.find("greenhouse:1001");
     const lookup = calls.find((call) => call.operation === "FindIssue");
     const marker = String(lookup?.variables["marker"]);
@@ -175,7 +214,11 @@ describe("linear tracker", () => {
   test("a fresh adapter reuses the idempotency map", async () => {
     const { fetch: fetchImpl, calls } = recordedFetch();
     const config = { kind: "linear", team: "HNT" } as const;
-    await projectEvents(createTracker(config, dir, { apiKey: API_KEY, fetch: fetchImpl }), dir, events);
+    await projectEvents(
+      createTracker(config, dir, { apiKey: API_KEY, fetch: fetchImpl }),
+      dir,
+      events,
+    );
     const again = createTracker(config, dir, { apiKey: API_KEY, fetch: fetchImpl });
     const found = await again.find("acme|senior-backend");
     expect(found).toEqual({ ok: true, value: "issue-1" });
@@ -189,8 +232,7 @@ describe("linear tracker", () => {
       fetch: fetchImpl,
     });
     await projectEvents(tracker, dir, events);
-    const create = calls.find((call) => call.operation === "CreateIssue");
-    const input = create?.variables["input"] as Record<string, unknown>;
+    const input = createInputOf(calls);
     expect(input["stateId"]).toBe("st-backlog");
     expect(input["labelIds"]).toEqual(["lb-new"]);
     expect(calls.find((call) => call.operation === "CreateLabel")?.variables["name"]).toBe(
@@ -208,7 +250,7 @@ describe("linear tracker", () => {
       { apiKey: API_KEY, fetch: fetchImpl },
     );
     await tracker.upsertLead({ key: "k", posting, eligibility: "eligible" });
-    const input = calls.find((call) => call.operation === "CreateIssue")?.variables["input"] as Record<string, unknown>;
+    const input = createInputOf(calls);
     expect(input["stateId"]).toBe("st-lead");
     const unmapped = await tracker.setStatus("k", "hired");
     expect(unmapped.ok).toBe(true);
@@ -223,27 +265,43 @@ describe("linear tracker", () => {
       dir,
       { apiKey: API_KEY, fetch: fetchImpl },
     );
-    await tracker.upsertLead({ key: "k", posting: { ...posting, source: "linkedin" }, eligibility: "eligible" });
-    const input = calls.find((call) => call.operation === "CreateIssue")?.variables["input"] as Record<string, unknown>;
+    await tracker.upsertLead({
+      key: "k",
+      posting: { ...posting, source: "linkedin" },
+      eligibility: "eligible",
+    });
+    const input = createInputOf(calls);
     expect(input["labelIds"]).toEqual(["lb-existing"]);
     expect(calls.some((call) => call.operation === "CreateLabel")).toBe(false);
   });
 
   test("channelLabelPrefix applies to sources without an entry", async () => {
     const { fetch: fetchImpl, calls } = recordedFetch();
-    const tracker = createTracker({ kind: "linear", team: "HNT", channelLabelPrefix: "via:" }, dir, {
-      apiKey: API_KEY,
-      fetch: fetchImpl,
-    });
+    const tracker = createTracker(
+      { kind: "linear", team: "HNT", channelLabelPrefix: "via:" },
+      dir,
+      {
+        apiKey: API_KEY,
+        fetch: fetchImpl,
+      },
+    );
     await tracker.upsertLead({ key: "k", posting, eligibility: "eligible" });
-    expect(calls.find((call) => call.operation === "CreateLabel")?.variables["name"]).toBe("via:greenhouse");
+    expect(calls.find((call) => call.operation === "CreateLabel")?.variables["name"]).toBe(
+      "via:greenhouse",
+    );
   });
 
   test("titleFormat selects the issue title shape", async () => {
-    const titles = await Promise.all([undefined, "role-at-company", "company-role"].map((format) =>
-      titleFor(format as "role-at-company" | "company-role" | undefined),
-    ));
-    expect(titles).toEqual(["Backend Engineer at Acme", "Backend Engineer at Acme", "Acme - Backend Engineer"]);
+    const titles = await Promise.all([
+      titleFor(undefined),
+      titleFor("role-at-company"),
+      titleFor("company-role"),
+    ]);
+    expect(titles).toEqual([
+      "Backend Engineer at Acme",
+      "Backend Engineer at Acme",
+      "Acme - Backend Engineer",
+    ]);
   });
 
   test("reuses an existing channel label", async () => {
@@ -303,6 +361,9 @@ describe("linear tracker", () => {
       fetch: erroring,
     });
     const result = await tracker.find("k");
-    expect(result).toEqual({ ok: false, error: { code: "tracker-linear-graphql", message: "boom" } });
+    expect(result).toEqual({
+      ok: false,
+      error: { code: "tracker-linear-graphql", message: "boom" },
+    });
   });
 });

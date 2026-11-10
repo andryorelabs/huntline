@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isObject } from "../core/narrow.ts";
 import { lookupAnswer, saveAnswer } from "./answers.ts";
 import { listNeeds, recordBlocker } from "./blockers.ts";
 import { verifyFields } from "./verify.ts";
@@ -23,16 +24,23 @@ function cli(args: string[]): { code: number; envelope: Record<string, unknown> 
     cwd: workDir,
     env: { PATH: process.env["PATH"] ?? "", HOME: workDir },
   });
-  const lines = result.stdout.toString().split("\n").filter((line) => line !== "");
+  const lines = result.stdout
+    .toString()
+    .split("\n")
+    .filter((line) => line !== "");
   expect(lines).toHaveLength(1);
-  return { code: result.exitCode, envelope: JSON.parse(lines[0] ?? "") as Record<string, unknown> };
+  const parsed: unknown = JSON.parse(lines[0] ?? "");
+  if (!isObject(parsed)) throw new Error("envelope is not an object");
+  return { code: result.exitCode, envelope: parsed };
 }
 
 describe("answer bank", () => {
   test("abstains with no answer and returns saved answer with provenance", async () => {
     const dir = { path: workDir };
     expect(lookupAnswer(dir, "Expected salary?", "acme").status).toBe("abstain");
-    expect((await saveAnswer(dir, "Expected salary?", "acme", "90k", "human 2026-11-09")).ok).toBe(true);
+    expect((await saveAnswer(dir, "Expected salary?", "acme", "90k", "human 2026-11-09")).ok).toBe(
+      true,
+    );
     expect(lookupAnswer(dir, "expected  salary", "acme")).toEqual({
       status: "answer",
       text: "90k",
@@ -57,10 +65,15 @@ describe("answer list and blocker closing", () => {
     cli(["apply", "answer", "Notice period?", "--save", "2 weeks", "--provenance", "human"]);
     cli(["apply", "answer", "Visa?", "--scope", "acme", "--save", "no", "--provenance", "profile"]);
     const listed = cli(["apply", "answer", "--list"]);
-    const data = listed.envelope["data"] as { answers: Record<string, string>[] };
-    expect(data.answers).toHaveLength(2);
-    expect(data.answers).toContainEqual(expect.objectContaining({ scope: "acme", provenance: "profile" }));
-    expect(data.answers).toContainEqual(expect.objectContaining({ scope: "global", provenance: "human" }));
+    const data = listed.envelope["data"];
+    const answers = isObject(data) ? data["answers"] : undefined;
+    expect(answers).toHaveLength(2);
+    expect(answers).toContainEqual(
+      expect.objectContaining({ scope: "acme", provenance: "profile" }),
+    );
+    expect(answers).toContainEqual(
+      expect.objectContaining({ scope: "global", provenance: "human" }),
+    );
   });
 
   test("saving closes matching open field blockers only", async () => {
@@ -71,16 +84,20 @@ describe("answer list and blocker closing", () => {
     const saved = await saveAnswer(dir, "how soon can you start", "global", "now", "human");
     expect(saved.ok).toBe(true);
     const groups = await listNeeds(dir);
-    expect(groups.flatMap((group) => group.items.map((item) => `${group.scope}:${item.detail}`)).toSorted()).toEqual([
-      "field:no answer for: Visa?",
-      "section:no answer for: How soon can you start?",
-    ]);
+    expect(
+      groups
+        .flatMap((group) => group.items.map((item) => `${group.scope}:${item.detail}`))
+        .toSorted(),
+    ).toEqual(["field:no answer for: Visa?", "section:no answer for: How soon can you start?"]);
   });
 });
 
 describe("lever reference", () => {
   test("orders text fields, CV upload last, then snapshot read-back", () => {
-    const text = readFileSync(path.join(import.meta.dir, "../../skills/apply/references/lever.md"), "utf8");
+    const text = readFileSync(
+      path.join(import.meta.dir, "../../skills/apply/references/lever.md"),
+      "utf8",
+    );
     const textFields = text.indexOf("fill the text fields first");
     const upload = text.indexOf("upload the CV last");
     const snapshot = text.indexOf("snapshot rather than a script");
@@ -114,7 +131,10 @@ describe("verifyFields", () => {
 
   test("passes a file with the same base name", () => {
     expect(
-      verifyFields([{ name: "cv", kind: "file", value: "/a/cv.pdf" }], [{ name: "cv", value: "cv.pdf" }]),
+      verifyFields(
+        [{ name: "cv", kind: "file", value: "/a/cv.pdf" }],
+        [{ name: "cv", value: "cv.pdf" }],
+      ),
     ).toEqual([]);
   });
 });
@@ -135,7 +155,13 @@ describe("blockers and needs", () => {
 
 describe("cli", () => {
   test("answer abstains, records a field blocker, then needs lists it", () => {
-    const abstained = cli(["apply", "answer", "What is your salary expectation?", "--key", "acme-1"]);
+    const abstained = cli([
+      "apply",
+      "answer",
+      "What is your salary expectation?",
+      "--key",
+      "acme-1",
+    ]);
     expect(abstained.code).toBe(0);
     expect(abstained.envelope["data"]).toMatchObject({ status: "abstain" });
     const needs = cli(["needs"]);
@@ -144,18 +170,26 @@ describe("cli", () => {
 
   test("answer saved by the human is returned next time", () => {
     const question = "Salary expectation?";
-    expect(cli(["apply", "answer", question, "--save", "90k", "--provenance", "human"]).code).toBe(0);
+    expect(cli(["apply", "answer", question, "--save", "90k", "--provenance", "human"]).code).toBe(
+      0,
+    );
     const found = cli(["apply", "answer", question, "--key", "acme-1"]);
-    expect(found.envelope["data"]).toMatchObject({ status: "answer", text: "90k", provenance: "human" });
+    expect(found.envelope["data"]).toMatchObject({
+      status: "answer",
+      text: "90k",
+      provenance: "human",
+    });
   });
 
   test("block records and needs groups two fields", () => {
     cli(["apply", "block", "acme-1", "--scope", "field", "--detail", "salary"]);
     cli(["apply", "block", "acme-1", "--scope", "field", "--detail", "visa"]);
     const needs = cli(["needs"]);
-    const data = needs.envelope["data"] as { groups: { items: unknown[] }[] };
-    expect(data.groups).toHaveLength(1);
-    expect(data.groups[0]?.items).toHaveLength(2);
+    const data = needs.envelope["data"];
+    const groups: unknown = isObject(data) ? data["groups"] : undefined;
+    expect(groups).toHaveLength(1);
+    const firstGroup: unknown = Array.isArray(groups) ? groups[0] : undefined;
+    expect(isObject(firstGroup) ? firstGroup["items"] : undefined).toHaveLength(2);
   });
 
   test("verify exits 1 when the uploaded file name differs", () => {

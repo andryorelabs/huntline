@@ -35,7 +35,7 @@ describe("prep pack", () => {
   test("refuses to overwrite and unsafe keys", () => {
     scaffoldPrepPack({ path: root }, "acme-dev", facts);
     const again = scaffoldPrepPack({ path: root }, "acme-dev", facts);
-    expect(again.ok === false && again.error.code).toBe("already-exists");
+    expect(!again.ok && again.error.code).toBe("already-exists");
     expect(scaffoldPrepPack({ path: root }, "   ", facts).ok).toBe(false);
   });
 
@@ -53,21 +53,24 @@ describe("prep pack", () => {
     const created = scaffoldPrepPack({ path: root }, "k", facts);
     if (!created.ok) throw new Error("scaffold failed");
     const broken = readFileSync(created.value, "utf8").replace("- Facts: f-api", "- Facts: f-nope");
-    expect(validatePrepPack(broken, facts).map((finding) => finding.rule)).toEqual(["unknown-fact"]);
+    expect(validatePrepPack(broken, facts).map((finding) => finding.rule)).toEqual([
+      "unknown-fact",
+    ]);
   });
 });
 
 describe("interview command", () => {
-
-
   test("pack then check passes; edited pack fails", async () => {
-    writeFileSync(path.join(root, "facts.yaml"), "facts:\n  - id: f-api\n    text: Built a billing API\n");
+    writeFileSync(
+      path.join(root, "facts.yaml"),
+      "facts:\n  - id: f-api\n    text: Built a billing API\n",
+    );
     expect((await run(["pack", "acme"], context(root))).ok).toBe(true);
     expect((await run(["check", "acme"], context(root))).ok).toBe(true);
     const file = path.join(root, "prep", "acme.md");
     writeFileSync(file, readFileSync(file, "utf8").replace("- Facts: f-api", "- Facts: ghost"));
     const checked = await run(["check", "acme"], context(root));
-    expect(checked.ok === false && checked.error.code).toBe("pack-invalid");
+    expect(!checked.ok && checked.error.code).toBe("pack-invalid");
   });
 
   test("usage errors", async () => {

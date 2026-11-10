@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isObject } from "../core/narrow.ts";
 
 const REPO_ROOT = path.resolve(import.meta.dir, "../..");
 const CLI_ENTRY = path.join(REPO_ROOT, "src/cli.ts");
@@ -71,12 +72,15 @@ function runCli(
   extraEnv: Record<string, string> = {},
   runtimeArgs: string[] = [],
 ): CliResult {
-  const result = Bun.spawnSync([process.execPath, ...runtimeArgs, CLI_ENTRY, ...args, "--data", dataDir], {
-    cwd: workDir,
-    env: { PATH: `${binDir}:${process.env["PATH"] ?? ""}`, HOME: workDir, ...extraEnv },
-    stdout: "pipe",
-    stderr: "pipe",
-  });
+  const result = Bun.spawnSync(
+    [process.execPath, ...runtimeArgs, CLI_ENTRY, ...args, "--data", dataDir],
+    {
+      cwd: workDir,
+      env: { PATH: `${binDir}:${process.env["PATH"] ?? ""}`, HOME: workDir, ...extraEnv },
+      stdout: "pipe",
+      stderr: "pipe",
+    },
+  );
   const stdout = result.stdout.toString();
   const lines = stdout.split("\n").filter((line) => line !== "");
   expect(lines).toHaveLength(1);
@@ -95,8 +99,8 @@ function dataOf(result: CliResult): Record<string, unknown> {
 function errorCodeOf(result: CliResult): string {
   expect(result.envelope["ok"]).toBe(false);
   const error = result.envelope["error"];
-  if (typeof error !== "object" || error === null) throw new Error("envelope has no error");
-  return String((error as Record<string, unknown>)["code"]);
+  if (!isObject(error)) throw new Error("envelope has no error");
+  return String(error["code"]);
 }
 
 function ok(args: string[]): Record<string, unknown> {
@@ -196,8 +200,12 @@ afterEach(() => {
 describe("end-to-end sweep over a fixture Source", () => {
   test("a configured Source produces a Lead and a second sweep finds nothing new", () => {
     const profilePath = path.join(dataDir, "profile.yaml");
-    const profile: Record<string, unknown> = JSON.parse(readFileSync(profilePath, "utf8"));
-    writeFileSync(profilePath, JSON.stringify({ ...profile, sources: ["remoteok"], remote: "any" }));
+    const profile: unknown = JSON.parse(readFileSync(profilePath, "utf8"));
+    if (!isObject(profile)) throw new Error("profile is not an object");
+    writeFileSync(
+      profilePath,
+      JSON.stringify({ ...profile, sources: ["remoteok"], remote: "any" }),
+    );
     const first = runCli(["sweep"], {}, ["--preload", FETCH_STUB]);
     expect(first.code).toBe(0);
     const firstData = dataOf(first);
@@ -219,20 +227,28 @@ describe("end-to-end flow with the local tracker", () => {
     expect(sweep["failed"]).toEqual([]);
     expect(sweep["leads"]).toEqual([]);
 
-    const ingest = ok(["ingest", "--source", "fixture", "--json", JSON.stringify(FIXTURE_POSTINGS)]);
+    const ingest = ok([
+      "ingest",
+      "--source",
+      "fixture",
+      "--json",
+      JSON.stringify(FIXTURE_POSTINGS),
+    ]);
     expect(ingest["leads"]).toEqual([LEAD_KEY, SECOND_LEAD_KEY]);
     expect(ingest["dismissed"]).toBe(1);
 
     const ledger = ok(["ledger", "list"]);
+    const entries: unknown = ledger["entries"];
+    if (!Array.isArray(entries)) throw new Error("ledger entries is not a list");
     const outcomes = new Map(
-      (ledger["entries"] as { key: string; outcome: string; reason?: string }[]).map((entry) => [
-        entry.key,
-        entry,
-      ]),
+      entries.map((entry: unknown) => {
+        if (!isObject(entry)) throw new Error("ledger entry is not an object");
+        return [String(entry["key"]), entry] as const;
+      }),
     );
-    expect(outcomes.get(DUPLICATE_KEY)?.outcome).toBe("duplicate");
-    expect(outcomes.get(DISMISSED_KEY)?.outcome).toBe("dismissed");
-    expect(outcomes.get(DISMISSED_KEY)?.reason).toBe("region");
+    expect(outcomes.get(DUPLICATE_KEY)?.["outcome"]).toBe("duplicate");
+    expect(outcomes.get(DISMISSED_KEY)?.["outcome"]).toBe("dismissed");
+    expect(outcomes.get(DISMISSED_KEY)?.["reason"]).toBe("region");
 
     const rerun = ok(["ingest", "--source", "fixture", "--json", JSON.stringify(FIXTURE_POSTINGS)]);
     expect(rerun["new"]).toBe(0);
@@ -278,12 +294,23 @@ describe("end-to-end flow with the local tracker", () => {
     expect(mismatch.code).toBe(1);
     expect(errorCodeOf(mismatch)).toBe("verify-mismatch");
 
-    const abstained = ok(["apply", "answer", "What is your salary expectation?", "--key", LEAD_KEY]);
+    const abstained = ok([
+      "apply",
+      "answer",
+      "What is your salary expectation?",
+      "--key",
+      LEAD_KEY,
+    ]);
     expect(abstained["status"]).toBe("abstain");
     const needs = ok(["needs"]);
     expect(needs["groups"]).toHaveLength(1);
 
-    ok(["events", "append", "--json", JSON.stringify({ kind: "status.changed", key: LEAD_KEY, to: "applied" })]);
+    ok([
+      "events",
+      "append",
+      "--json",
+      JSON.stringify({ kind: "status.changed", key: LEAD_KEY, to: "applied" }),
+    ]);
     expect(ok(["status", LEAD_KEY])["state"]).toBe("applied");
 
     const emails = writeJson("emails.json", [
@@ -310,7 +337,12 @@ describe("end-to-end flow with the local tracker", () => {
 
   test("a batch edited after proposal is refused", () => {
     ok(["ingest", "--source", "fixture", "--json", JSON.stringify(FIXTURE_POSTINGS)]);
-    ok(["events", "append", "--json", JSON.stringify({ kind: "status.changed", key: LEAD_KEY, to: "applied" })]);
+    ok([
+      "events",
+      "append",
+      "--json",
+      JSON.stringify({ kind: "status.changed", key: LEAD_KEY, to: "applied" }),
+    ]);
     const emails = writeJson("emails.json", [
       {
         messageId: "msg-2",

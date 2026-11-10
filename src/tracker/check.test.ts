@@ -22,7 +22,12 @@ function teamResponse(stateNames: readonly string[], key = "JOB"): Response {
 }
 
 function stub(respond: () => Response): FetchLike {
-  return async () => respond();
+  return () => Promise.resolve(respond());
+}
+
+function bodyText(init: RequestInit): string {
+  if (typeof init.body !== "string") throw new Error("expected a string request body");
+  return init.body;
 }
 
 const ALL_STATES = ["Backlog", "Todo", "In Progress", "Done", "Canceled"];
@@ -58,7 +63,10 @@ describe("checkLinearConnection", () => {
       mapping: DEFAULT_LINEAR_MAPPING,
       fetch: fetchStub,
     });
-    expect(result).toEqual({ ok: false, error: { problems: ['state "In Progress" not found in team JOB'] } });
+    expect(result).toEqual({
+      ok: false,
+      error: { problems: ['state "In Progress" not found in team JOB'] },
+    });
   });
 
   test("reports every missing state once per unique name", async () => {
@@ -84,9 +92,9 @@ describe("checkLinearConnection", () => {
 
   test("reports the missing key without calling the network", async () => {
     let calls = 0;
-    const fetchStub: FetchLike = async () => {
+    const fetchStub: FetchLike = () => {
       calls += 1;
-      return teamResponse(ALL_STATES);
+      return Promise.resolve(teamResponse(ALL_STATES));
     };
     const result = await checkLinearConnection({
       apiKey: undefined,
@@ -132,7 +140,10 @@ describe("checkLinearConnection", () => {
 
   test("reports GraphQL errors as a rejected request", async () => {
     const fetchStub = stub(
-      () => new Response(JSON.stringify({ errors: [{ message: "Authentication required" }] }), { status: 200 }),
+      () =>
+        new Response(JSON.stringify({ errors: [{ message: "Authentication required" }] }), {
+          status: 200,
+        }),
     );
     const result = await checkLinearConnection({
       apiKey: API_KEY,
@@ -173,9 +184,9 @@ describe("checkLinearConnection", () => {
 
   test("sends a single read-only query", async () => {
     const bodies: string[] = [];
-    const fetchStub: FetchLike = async (_input, init) => {
-      bodies.push(String(init.body));
-      return teamResponse(ALL_STATES);
+    const fetchStub: FetchLike = (_input, init) => {
+      bodies.push(bodyText(init));
+      return Promise.resolve(teamResponse(ALL_STATES));
     };
     await checkLinearConnection({
       apiKey: API_KEY,

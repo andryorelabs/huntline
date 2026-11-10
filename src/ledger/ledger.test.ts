@@ -30,9 +30,7 @@ function posting(overrides: Partial<Posting> = {}): Posting {
   };
 }
 
-function event(kind: HuntEvent["kind"], extra: Record<string, unknown> = {}, id = "e"): HuntEvent {
-  return { kind, id, at: "2026-01-01T00:00:00Z", key: "k", ...extra } as HuntEvent;
-}
+const STAMP = { id: "e", at: "2026-01-01T00:00:00Z", key: "k" } as const;
 
 describe("foldState", () => {
   test("returns null without events", () => {
@@ -40,16 +38,18 @@ describe("foldState", () => {
   });
 
   test("lead.created yields lead and the last status.changed wins", () => {
-    const events = [
-      event("lead.created", { posting: posting(), eligibility: "unknown" }),
-      event("status.changed", { to: "to-apply" }),
-      event("status.changed", { from: "to-apply", to: "applied" }),
+    const events: HuntEvent[] = [
+      { ...STAMP, kind: "lead.created", posting: posting(), eligibility: "unknown" },
+      { ...STAMP, kind: "status.changed", to: "to-apply" },
+      { ...STAMP, kind: "status.changed", from: "to-apply", to: "applied" },
     ];
     expect(foldState(events)).toBe("applied");
   });
 
   test("dismissal alone yields discarded and is pure", () => {
-    const events = [event("posting.dismissed", { posting: posting(), reason: "region" })];
+    const events: HuntEvent[] = [
+      { ...STAMP, kind: "posting.dismissed", posting: posting(), reason: "region" },
+    ];
     const snapshot = JSON.stringify(events);
     expect(foldState(events)).toBe("discarded");
     expect(JSON.stringify(events)).toBe(snapshot);
@@ -58,7 +58,12 @@ describe("foldState", () => {
 
 describe("event log", () => {
   test("concurrent appends both land and status reflects the later one", async () => {
-    await appendEvent(dir, { kind: "lead.created", key: "k", posting: posting(), eligibility: "unknown" });
+    await appendEvent(dir, {
+      kind: "lead.created",
+      key: "k",
+      posting: posting(),
+      eligibility: "unknown",
+    });
     await Promise.all([
       appendEvent(dir, { kind: "status.changed", key: "k", to: "to-apply" }),
       appendEvent(dir, { kind: "status.changed", key: "k", from: "to-apply", to: "applied" }),
@@ -91,7 +96,9 @@ describe("event log", () => {
 describe("dedup", () => {
   test("canonical id for ATS sources, normalized key otherwise", () => {
     expect(dedupKey(posting())).toBe("greenhouse:1001");
-    expect(dedupKey(posting({ source: "himalayas", id: "h1" }))).toBe("acme|senior backend engineer|latam");
+    expect(dedupKey(posting({ source: "himalayas", id: "h1" }))).toBe(
+      "acme|senior backend engineer|latam",
+    );
   });
 
   test("same role from Greenhouse then Himalayas is a duplicate", async () => {
@@ -130,7 +137,9 @@ describe("dedup", () => {
 
   test("same title at a different company is not merged", async () => {
     await ledgerRecord(dir, posting(), "seen");
-    expect(await findDuplicate(dir, posting({ source: "himalayas", id: "z", company: "Globex" }))).toBeNull();
+    expect(
+      await findDuplicate(dir, posting({ source: "himalayas", id: "z", company: "Globex" })),
+    ).toBeNull();
   });
 
   test("fuzzy match respects the window", async () => {
@@ -148,7 +157,12 @@ describe("dedup", () => {
   });
 
   test("leads from the event log count as known postings", async () => {
-    await appendEvent(dir, { kind: "lead.created", key: "k", posting: posting(), eligibility: "unknown" });
+    await appendEvent(dir, {
+      kind: "lead.created",
+      key: "k",
+      posting: posting(),
+      eligibility: "unknown",
+    });
     const match = await findDuplicate(dir, posting({ source: "himalayas", id: "h" }));
     expect(match?.source).toBe("events");
     expect(match?.key).toBe("k");
@@ -161,9 +175,22 @@ function ctx(): { dataDir: { path: string }; env: Record<string, string>; cwd: s
 
 describe("command", () => {
   test("events append, list and status", async () => {
-    const lead = JSON.stringify({ kind: "lead.created", key: "k", posting: posting(), eligibility: "unknown" });
+    const lead = JSON.stringify({
+      kind: "lead.created",
+      key: "k",
+      posting: posting(),
+      eligibility: "unknown",
+    });
     expect((await run(["events", "append", "--json", lead], ctx())).ok).toBe(true);
-    await run(["events", "append", "--json", JSON.stringify({ kind: "status.changed", key: "k", to: "applied" })], ctx());
+    await run(
+      [
+        "events",
+        "append",
+        "--json",
+        JSON.stringify({ kind: "status.changed", key: "k", to: "applied" }),
+      ],
+      ctx(),
+    );
     const listed = await run(["events", "list", "--key", "k"], ctx());
     expect(listed.ok && listed.data).toMatchObject({ count: 2 });
     const status = await run(["status", "k"], ctx());
@@ -198,7 +225,11 @@ describe("review regressions", () => {
 
   test("parenthesised title qualifiers keep different roles apart", async () => {
     const backend = posting({ source: "himalayas", id: "a", title: "Software Engineer (Backend)" });
-    const frontend = posting({ source: "remoteok", id: "b", title: "Software Engineer (Frontend)" });
+    const frontend = posting({
+      source: "remoteok",
+      id: "b",
+      title: "Software Engineer (Frontend)",
+    });
     expect(dedupKey(backend)).not.toBe(dedupKey(frontend));
     await ledgerRecord(dir, backend, "seen");
     expect(await findDuplicate(dir, frontend)).toBeNull();
@@ -218,7 +249,12 @@ describe("review regressions", () => {
     );
     expect(result.ok).toBe(false);
     const bogus = await run(
-      ["events", "append", "--json", JSON.stringify({ kind: "status.changed", key: "k", to: "bogus" })],
+      [
+        "events",
+        "append",
+        "--json",
+        JSON.stringify({ kind: "status.changed", key: "k", to: "bogus" }),
+      ],
       { dataDir: dir, env: {}, cwd: dir.path },
     );
     expect(bogus.ok).toBe(false);
@@ -236,8 +272,16 @@ describe("review regressions", () => {
   test("a torn trailing ledger line is discarded on the next record", async () => {
     await ledgerRecord(dir, posting(), "seen");
     appendFileSync(path.join(dir.path, "ledger.jsonl"), '{"at":"x","key"');
-    await ledgerRecord(dir, posting({ source: "himalayas", id: "h9", title: "Data Engineer" }), "seen");
-    await ledgerRecord(dir, posting({ source: "remoteok", id: "r9", title: "QA Engineer" }), "seen");
+    await ledgerRecord(
+      dir,
+      posting({ source: "himalayas", id: "h9", title: "Data Engineer" }),
+      "seen",
+    );
+    await ledgerRecord(
+      dir,
+      posting({ source: "remoteok", id: "r9", title: "QA Engineer" }),
+      "seen",
+    );
     expect(await readLedger(dir)).toHaveLength(3);
   });
 
@@ -245,14 +289,25 @@ describe("review regressions", () => {
     await appendEvent(dir, { kind: "note", key: "k", text: "one" });
     appendFileSync(eventsPath(dir), "not json\n");
     await appendEvent(dir, { kind: "note", key: "k", text: "two" });
-    await expect(readEvents(dir, "k")).rejects.toThrow(/line 2/);
+    const failure = await readEvents(dir, "k").catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(Error);
+    expect(String(failure)).toMatch(/line 2/);
   });
 
   test("two separate processes appending concurrently both land", async () => {
     writeFileSync(path.join(dir.path, "huntline.json"), '{"version":1}\n');
     const spawn = (text: string) =>
       Bun.spawn(
-        [process.execPath, cliPath, "events", "append", "--data", dir.path, "--json", JSON.stringify({ kind: "note", key: "k", text })],
+        [
+          process.execPath,
+          cliPath,
+          "events",
+          "append",
+          "--data",
+          dir.path,
+          "--json",
+          JSON.stringify({ kind: "note", key: "k", text }),
+        ],
         { env: { PATH: process.env["PATH"] ?? "", HOME: dir.path }, stdout: "pipe" },
       );
     const children = Array.from({ length: 6 }, (_, index) => spawn(`n${index}`));

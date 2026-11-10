@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { MODULE_FILES } from "../cli.ts";
 import { COMMANDS } from "./commands.ts";
+import { isObject } from "./narrow.ts";
 
 const cliPath = path.join(import.meta.dir, "../cli.ts");
 
@@ -11,7 +12,10 @@ let workDir = "";
 
 type CliResult = { code: number; stdout: string; envelope: Record<string, unknown> };
 
-function runCli(args: string[], options: { cwd?: string; env?: Record<string, string> } = {}): CliResult {
+function runCli(
+  args: string[],
+  options: { cwd?: string; env?: Record<string, string> } = {},
+): CliResult {
   const result = Bun.spawnSync([process.execPath, cliPath, ...args], {
     cwd: options.cwd ?? workDir,
     env: { PATH: process.env["PATH"] ?? "", HOME: workDir, ...options.env },
@@ -26,8 +30,8 @@ function runCli(args: string[], options: { cwd?: string; env?: Record<string, st
 
 function errorOf(result: CliResult): { code: string; message: string } {
   const error = result.envelope["error"];
-  if (typeof error !== "object" || error === null) throw new Error("no error in envelope");
-  const { code, message } = error as Record<string, unknown>;
+  if (!isObject(error)) throw new Error("no error in envelope");
+  const { code, message } = error;
   return { code: String(code), message: String(message) };
 }
 
@@ -126,7 +130,10 @@ describe("doctor", () => {
   test("a Bullet citing a missing fact id exits 1 with cv-data-invalid", () => {
     const fixture = path.join(workDir, "fixture");
     writeValidDataDir(fixture);
-    writeFileSync(path.join(fixture, "facts.yaml"), "facts:\n  - id: f1\n    text: Built a thing\n");
+    writeFileSync(
+      path.join(fixture, "facts.yaml"),
+      "facts:\n  - id: f1\n    text: Built a thing\n",
+    );
     writeFileSync(
       path.join(fixture, "bullets.yaml"),
       "bullets:\n  - id: b1\n    text: Built a thing\n    facts: [f9]\n",
@@ -140,7 +147,10 @@ describe("doctor", () => {
   test("valid CV data files still pass", () => {
     const fixture = path.join(workDir, "fixture");
     writeValidDataDir(fixture);
-    writeFileSync(path.join(fixture, "facts.yaml"), "facts:\n  - id: f1\n    text: Built a thing\n");
+    writeFileSync(
+      path.join(fixture, "facts.yaml"),
+      "facts:\n  - id: f1\n    text: Built a thing\n",
+    );
     writeFileSync(
       path.join(fixture, "bullets.yaml"),
       "bullets:\n  - id: b1\n    text: Built a thing\n    facts: [f1]\n",

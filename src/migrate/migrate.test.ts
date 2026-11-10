@@ -69,7 +69,11 @@ afterEach(() => {
 describe("table parser", () => {
   test("normalizes headers and extracts link targets", () => {
     const [rows] = parseTables(SWEEP.split("## Leads")[1] ?? "");
-    expect(rows?.[1]).toMatchObject({ company: "Globex", role: "Platform Engineer", url: "https://example.test/jobs/2" });
+    expect(rows?.[1]).toMatchObject({
+      company: "Globex",
+      role: "Platform Engineer",
+      url: "https://example.test/jobs/2",
+    });
   });
 });
 
@@ -79,26 +83,29 @@ describe("importLegacy", () => {
     expect(result.ok).toBe(true);
     const events = await readEvents(ctx.dataDir ?? { path: "" });
     const leads = events.filter((event) => event.kind === "lead.created");
-    expect(leads.map((event) => event.kind === "lead.created" && event.posting.company).toSorted()).toEqual([
-      "Acme Corp",
-      "Globex",
-      "Hooli",
-      "Initech",
-      "Pied Piper",
-      "Umbrella",
-    ]);
+    expect(
+      leads
+        .map((event) => event.kind === "lead.created" && event.posting.company)
+        .toSorted((left, right) => String(left).localeCompare(String(right))),
+    ).toEqual(["Acme Corp", "Globex", "Hooli", "Initech", "Pied Piper", "Umbrella"]);
     const acme = events.filter((event) => event.key?.startsWith("acme|"));
     expect(foldState(acme)).toBe("interviewing");
     const acmeLead = acme.find((event) => event.kind === "lead.created");
-    expect(acmeLead?.kind === "lead.created" && acmeLead.posting.url).toBe("https://example.test/jobs/1");
+    expect(acmeLead?.kind === "lead.created" && acmeLead.posting.url).toBe(
+      "https://example.test/jobs/1",
+    );
     expect(acmeLead?.kind === "lead.created" && acmeLead.posting.source).toBe("greenhouse");
     const score = events.find((event) => event.kind === "score.recorded" && event.score === 82);
     expect(score).toBeDefined();
     const initech = events.filter((event) => event.key?.startsWith("initech|"));
     expect(foldState(initech)).toBe("discarded");
-    const dated = events.some((event) => event.kind === "note" && event.text.includes("date 2026-02-10"));
+    const dated = events.some(
+      (event) => event.kind === "note" && event.text.includes("date 2026-02-10"),
+    );
     expect(dated).toBe(true);
-    const coverage = events.some((event) => event.kind === "note" && event.text.includes("legacy coverage"));
+    const coverage = events.some(
+      (event) => event.kind === "note" && event.text.includes("legacy coverage"),
+    );
     expect(coverage).toBe(true);
   });
 
@@ -126,11 +133,16 @@ describe("importLegacy", () => {
   });
 
   test("keeps coverage cards and units in the note", async () => {
-    write("sweeps/2026-02-02/cover.md", "| Company | Portal | Cards | Units |\n| --- | --- | --- | --- |\n| Zeta Corp | board | 3 | 7 |\n");
+    write(
+      "sweeps/2026-02-02/cover.md",
+      "| Company | Portal | Cards | Units |\n| --- | --- | --- | --- |\n| Zeta Corp | board | 3 | 7 |\n",
+    );
     await importLegacy(ctx, legacyDir);
     const events = await readEvents(ctx.dataDir ?? { path: "" });
     const note = events.find((event) => event.kind === "note" && event.text.includes("Zeta Corp"));
-    expect(note?.kind === "note" && note.text.includes("cards 3") && note.text.includes("units 7")).toBe(true);
+    expect(
+      note?.kind === "note" && note.text.includes("cards 3") && note.text.includes("units 7"),
+    ).toBe(true);
   });
 
   test("does not follow symbolic links", async () => {
@@ -145,7 +157,12 @@ describe("importLegacy", () => {
   });
 });
 
-function issue(id: string, title: string, state: string, extra: Record<string, unknown> = {}): unknown {
+function issue(
+  id: string,
+  title: string,
+  state: string,
+  extra: Record<string, unknown> = {},
+): unknown {
   return {
     id,
     identifier: `HNT-${id}`,
@@ -168,7 +185,12 @@ function linearFetch(pages: unknown[][]): { fetch: FetchLike; calls: () => numbe
     return Promise.resolve(
       new Response(
         JSON.stringify({
-          data: { issues: { nodes, pageInfo: { hasNextPage, endCursor: hasNextPage ? `c${call}` : null } } },
+          data: {
+            issues: {
+              nodes,
+              pageInfo: { hasNextPage, endCursor: hasNextPage ? `c${call}` : null },
+            },
+          },
         }),
       ),
     );
@@ -180,7 +202,10 @@ const failingFetch: FetchLike = () => Promise.resolve(new Response("nope", { sta
 
 describe("importLinear", () => {
   const pages = [
-    [issue("1", "Backend Engineer at Acme Corp", "Backlog"), issue("2", "SRE at Globex", "In Progress")],
+    [
+      issue("1", "Backend Engineer at Acme Corp", "Backlog"),
+      issue("2", "SRE at Globex", "In Progress"),
+    ],
     [
       issue("3", "Data Engineer at Initech", "Canceled"),
       issue("4", "Developer at Hooli", "Waiting On Vendor"),
@@ -196,7 +221,11 @@ describe("importLinear", () => {
     expect(result.value.unknownStates).toEqual(['Linear state "Waiting On Vendor" on HNT-4']);
     expect(result.value.warnings).toHaveLength(1);
     const events = await readEvents(ctx.dataDir ?? { path: "" });
-    expect(foldState(events.filter((event) => event.key?.startsWith("lever:") || event.key?.includes("sre")))).not.toBeNull();
+    expect(
+      foldState(
+        events.filter((event) => event.key?.startsWith("lever:") || event.key?.includes("sre")),
+      ),
+    ).not.toBeNull();
     const states = events.flatMap((event) => (event.kind === "status.changed" ? [event.to] : []));
     expect(states.toSorted()).toEqual(["applied", "discarded"]);
   });
@@ -245,19 +274,35 @@ describe("importLinear", () => {
 
 describe("importLinear title shapes", () => {
   test("accepts Company - Role and Role at Company", async () => {
-    const pages = [[issue("21", "Acme - Backend Engineer", "Todo"), issue("22", "Backend Engineer at Acme", "Todo")]];
+    const pages = [
+      [
+        issue("21", "Acme - Backend Engineer", "Todo"),
+        issue("22", "Backend Engineer at Acme", "Todo"),
+      ],
+    ];
     const result = await importLinear(ctx, { team: "HNT", fetch: linearFetch(pages).fetch });
     if (!result.ok) throw new Error(result.error.message);
     expect(result.value.warnings).toEqual([]);
-    const leads = (await readEvents(ctx.dataDir ?? { path: "" })).filter((event) => event.kind === "lead.created");
+    const leads = (await readEvents(ctx.dataDir ?? { path: "" })).filter(
+      (event) => event.kind === "lead.created",
+    );
     expect(leads).toHaveLength(1);
     const lead = leads[0];
-    expect(lead?.kind === "lead.created" && [lead.posting.company, lead.posting.title]).toEqual(["Acme", "Backend Engineer"]);
+    expect(lead?.kind === "lead.created" && [lead.posting.company, lead.posting.title]).toEqual([
+      "Acme",
+      "Backend Engineer",
+    ]);
   });
 
   test("splitTitle handles both shapes", () => {
-    expect(splitTitle("Acme - Backend Engineer")).toEqual({ company: "Acme", role: "Backend Engineer" });
-    expect(splitTitle("Backend Engineer at Acme")).toEqual({ company: "Acme", role: "Backend Engineer" });
+    expect(splitTitle("Acme - Backend Engineer")).toEqual({
+      company: "Acme",
+      role: "Backend Engineer",
+    });
+    expect(splitTitle("Backend Engineer at Acme")).toEqual({
+      company: "Acme",
+      role: "Backend Engineer",
+    });
     expect(splitTitle("Untitled")).toEqual({ company: "", role: "Untitled" });
     expect(splitTitle("Backend Engineer - Payments at Acme")).toEqual({
       company: "Acme",
@@ -308,11 +353,6 @@ describe("legacy id linking", () => {
 | Acme Corp - Backend Engineer | AO-7 | applied | sent by email |
 `;
 
-
-
-
-
-
   const acme = issue("12", "Backend Engineer at Acme Corp", "Todo", { identifier: "JOB-12" });
 
   test("links legacy then linear with exactly one note and one Lead", async () => {
@@ -322,7 +362,9 @@ describe("legacy id linking", () => {
     if (!result.ok) throw new Error(result.error.message);
     expect(result.value.warnings).toEqual([]);
     expect(await leadCount()).toBe(1);
-    expect((await notes()).filter((text) => text === "legacy AO-7 = linear JOB-12")).toHaveLength(1);
+    expect((await notes()).filter((text) => text === "legacy AO-7 = linear JOB-12")).toHaveLength(
+      1,
+    );
     const before = (await allEvents()).length;
     await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
     await importLegacy(ctx, writeLeads(LEADS));
@@ -335,7 +377,9 @@ describe("legacy id linking", () => {
     expect(linear.value.warnings).toEqual([]);
     await importLegacy(ctx, writeLeads(LEADS));
     expect(await leadCount()).toBe(1);
-    expect((await notes()).filter((text) => text === "legacy AO-7 = linear JOB-12")).toHaveLength(1);
+    expect((await notes()).filter((text) => text === "legacy AO-7 = linear JOB-12")).toHaveLength(
+      1,
+    );
     const before = (await allEvents()).length;
     await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme) });
     expect((await allEvents()).length).toBe(before);
@@ -355,7 +399,9 @@ describe("legacy id linking", () => {
     const other = issue("13", "Acme Corp - Backend Engineer", "Todo", { identifier: "JOB-13" });
     const result = await importLinear(ctx, { team: "JOB", fetch: jobFetch(acme, other) });
     if (!result.ok) throw new Error(result.error.message);
-    expect(result.value.warnings.some((warning) => warning.includes("several Linear issues"))).toBe(true);
+    expect(result.value.warnings.some((warning) => warning.includes("several Linear issues"))).toBe(
+      true,
+    );
     expect((await notes()).some((text) => text.includes(" = linear "))).toBe(false);
   });
 

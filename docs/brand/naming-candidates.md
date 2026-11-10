@@ -1373,3 +1373,566 @@ This is input for the maintainer, who decides.
    what the web search surfaced.
 
 Nothing was bought or registered for this research.
+
+## Round 5
+
+Run 5 research, 2026-11-10. Status: options and a recommendation, input for
+the maintainer, who decides. Nothing here is a decision, and no name is
+registered, bought or renamed. Rounds 1 to 4 above are unchanged.
+
+### What round 4 got wrong
+
+Round 4 read the maintainer's "too compound" as "drop the job cue", and left
+it out. That was the wrong half to keep. The maintainer wants both: a single
+word that is not a compound, and a name that a stranger ties to jobs, because
+"if the name has nothing to do with jobs, it is harder to find". Every round 4
+finalist scored 1 or 2 on Findability, and the round 4 text called it an
+accepted cost. It was not accepted, and it should have been asked about first.
+
+The feel to copy is `jobbie`: short, friendly, one word, tied to jobs.
+`jobbie` and its close variants `jobby`, `jobbit`, `jobsy` and `joby` are taken
+(see "What Jobbie is" in round 3), so this round looks for the same feel with
+a free name. The job cue is the main requirement of this round, ahead of
+warmth and calm.
+
+### The rule
+
+A name enters the finalists only if both parts hold:
+
+1. **One word.** Not job + word stuck together (`jobtally`, `jobwren`). A
+   suffix that makes a small friendly form (`jobling`, `jobkin`) counts as one
+   word, because the suffix carries no meaning of its own. Two real words
+   stuck together does not.
+2. **A stranger connects it to jobs.** Someone who reads the name, with no
+   explanation, thinks of jobs, work, hiring, careers or applying.
+   **Findability below 7 is cut before the finalists.**
+
+The hard filters are unchanged: no hunting or weapon imagery, no purple,
+LinkedIn-blue or Claude-orange associations, no auto-apply or "AI magic" tone,
+no implication that the tool applies for the user, npm and GitHub slug free,
+lowercase and CLI-friendly, and the name must read well as `/<name>:sweep`.
+Nothing already in rounds 1 to 4 is proposed again. Scoring uses the same 8
+axes out of 80 as round 4, with Sound as "memorable and easy to say aloud" and
+Findability scored honestly.
+
+### Long list by style
+
+162 new candidates in 6 styles, each with one line on the idea. Job roots used:
+job, work, hire, career, role, gig, shift, craft, post, offer, apply, lead,
+resume, CV, opening, vacancy. Short job words are mostly taken on npm, so the
+list is wide on purpose: 67 fell at the first check. A name is listed once,
+under its main style. The style tags in the finalists are the main style, and
+the tag of a name can overlap with another (`jobling` is also a creature mark,
+`hiret` is also five letters).
+
+#### (a) Diminutives and friendly forms of a job root (32)
+
+| Name     | Why it fits                                       |
+| -------- | ------------------------------------------------- |
+| jobkin   | Job plus the "-kin" of a small thing, like napkin |
+| jobette  | A small, light job word, "-ette" like kitchenette |
+| jobley   | A friendly first-name shape, like Barley          |
+| jobsie   | A pet-name for jobs, in the spirit of Jobbie      |
+| jobbly   | A playful, rolling job word                       |
+| joblet   | A small job, a real word in print shops           |
+| hirey    | Short and chatty, "hire" with a smile             |
+| hirely   | Hire plus "-ly", easy and open                    |
+| hirelet  | A little hire, soft and small                     |
+| hirelin  | Hire plus "-lin", near "hireling" (a poor tone)   |
+| hirelo   | Hire plus a friendly "-lo"                        |
+| workette | A small, light work word                          |
+| careery  | Career with a soft tail                           |
+| careerie | Career as a pet name                              |
+| resumey  | Resume with a friendly tail                       |
+| gigling  | A small gig, a giggle inside                      |
+| gigsy    | A gig pet name                                    |
+| gigsie   | A gig pet name, softer                            |
+| gigette  | A little gig                                      |
+| giggy    | A playful gig word                                |
+| applie   | Apply as a pet name                               |
+| appley   | Apply with a friendly tail, also reads as apple   |
+| cvee     | CV said aloud, with a tail                        |
+| offerie  | Offer as a pet name                               |
+| vacky    | A vacancy, said in a friendly way                 |
+| postlet  | A small post (job post)                           |
+| shiftie  | A friendly shift word                             |
+| craftie  | Craft as a pet name                               |
+| rolly    | A role, rolling and friendly                      |
+| openie   | An opening, as a pet name                         |
+| jobee    | Job plus bee, a busy worker                       |
+| worklet  | A small piece of work                             |
+
+#### (b) Invented words built from job roots (35)
+
+| Name    | Why it fits                                                   |
+| ------- | ------------------------------------------------------------- |
+| jobiva  | Job plus a soft "-iva", a made-up brand shape                 |
+| careva  | Career, shortened and softened                                |
+| kareer  | Career with a hard K, one syllable shorter                    |
+| resuma  | Resume as a made-up word                                      |
+| resumo  | Resume with an open "-o" (resumo means summary in Portuguese) |
+| hirio   | Hire with an "-io" tail, light and open                       |
+| hireva  | Hire with a soft "-va" tail                                   |
+| hirevo  | Hire with a crisp "-vo" tail                                  |
+| workvia | Work plus "via", a route to work                              |
+| vacanta | Vacancy with a Latin tail                                     |
+| hyre    | Hire spelled the short way                                    |
+| hyrel   | Hyre plus "-el", a small name                                 |
+| hirra   | Hire with a rolled tail                                       |
+| cvio    | CV plus "-io", short and tidy                                 |
+| applio  | Apply with an "-io" tail                                      |
+| applyo  | Apply with an "o", easy to say                                |
+| caree   | Career cut short                                              |
+| empla   | Employ cut short, near the Spanish "emplear"                  |
+| offra   | Offer cut short                                               |
+| roleo   | Role with an "-eo" tail                                       |
+| rolio   | Role with an "-io" tail                                       |
+| postio  | Post with an "-io" tail                                       |
+| shifto  | Shift with an "-o" tail                                       |
+| shiftra | Shift with an "-ra" tail                                      |
+| gigra   | Gig with an "-ra" tail                                        |
+| leado   | Lead (a sales lead) with an "-o" tail                         |
+| worka   | Work with an "-a" tail                                        |
+| workly  | Work plus "-ly"                                               |
+| vaca    | Vacancy cut short                                             |
+| jobi    | Job with an "i", short                                        |
+| joba    | Job with an "a", short                                        |
+| jobly   | Job plus "-ly"                                                |
+| gigo    | Gig with an "o"                                               |
+| craftly | Craft plus "-ly"                                              |
+| openo   | Opening with an "o"                                           |
+
+#### (c) Real words and slang for a job or a search for one, English and Spanish (36)
+
+Includes Mexican, Colombian, Costa Rican, Chilean, Brazilian and Spanish slang
+for a job (`chamba`, `jale`, `brete`, `camello`, `pega`, `curro`, `trampo`,
+`bico`) and words that work in both languages (`empleo`, `vacante`,
+`candidato`, `oferta`, `vocation`).
+
+| Name       | Why it fits                                         |
+| ---------- | --------------------------------------------------- |
+| empleo     | Spanish "employment"; English readers hear "employ" |
+| vacante    | Spanish "vacancy"; English readers hear "vacant"    |
+| vacancy    | A job opening in English, but also a hotel sign     |
+| candidato  | Spanish "candidate", also read as a political one   |
+| postular   | Spanish "to apply for a post"                       |
+| vocation   | A calling, English                                  |
+| chambita   | Mexican diminutive of "chamba", a small job         |
+| contrata   | Spanish "hires" or "contract"                       |
+| oficio     | Spanish trade or craft                              |
+| chambear   | Mexican "to work"                                   |
+| puesto     | Spanish "post" or "position"                        |
+| oferta     | Spanish "offer"                                     |
+| metier     | French "trade", used in English                     |
+| laburo     | Rioplatense slang for a job                         |
+| turno      | Spanish "shift"                                     |
+| bico       | Brazilian Portuguese slang for a side job           |
+| currela    | Spanish slang for a job                             |
+| brete      | Costa Rican slang for a job                         |
+| camello    | Colombian slang for a job, also a camel             |
+| tajo       | Spanish slang for work, also a cut                  |
+| chamba     | Mexican slang for a job                             |
+| talento    | Spanish "talent"                                    |
+| curro      | Spanish slang for a job                             |
+| pega       | Chilean slang for a job                             |
+| jale       | Mexican slang for a job                             |
+| trampo     | Brazilian slang for work                            |
+| plaza      | Spanish "position" in a team                        |
+| trabajo    | Spanish "work"                                      |
+| oficina    | Spanish "office"                                    |
+| rol        | Spanish "role"                                      |
+| curriculum | The CV as a whole word                              |
+| graft      | British slang for hard work                         |
+| billet     | A post or lodging                                   |
+| stint      | A spell of work                                     |
+| berth      | A job, a ship's place                               |
+| calling    | A vocation                                          |
+
+#### (d) Short verbs and nouns about getting hired (25)
+
+| Name       | Why it fits                                      |
+| ---------- | ------------------------------------------------ |
+| hirable    | One who can be hired, from the job seeker's side |
+| hired      | The result, said plainly                         |
+| employable | Fit to be hired, a plain real word               |
+| hiret      | "Hire it", short and active                      |
+| takeon     | To take someone on                               |
+| offered    | What a job seeker hopes to hear                  |
+| hire       | The plain verb                                   |
+| land       | To land a job                                    |
+| snag       | To snag a role                                   |
+| pitch      | To pitch for a role                              |
+| lineup     | To line up interviews                            |
+| onboard    | To start a new job                               |
+| enlist     | To sign up                                       |
+| secure     | To secure a role                                 |
+| nab        | To nab a job                                     |
+| clinch     | To clinch an offer                               |
+| callback   | The call back after an interview                 |
+| referral   | A way in through a person                        |
+| vouch      | Someone speaks for you                           |
+| intro      | An introduction to a hirer                       |
+| engage     | To be engaged by a team                          |
+| recruit    | To be recruited                                  |
+| sign       | To sign a contract                               |
+| book       | To book an interview                             |
+| accepted   | An offer accepted                                |
+
+#### (e) Very short, 4 to 6 letters, with a job cue (13)
+
+Many names in other styles are also 4 to 6 letters (`jobkin`, `hirey`,
+`hiret`, `jobu`). This list holds the names whose main idea is the short
+shape.
+
+| Name    | Why it fits                               |
+| ------- | ----------------------------------------- |
+| jobu    | Job in four letters, said "joe-boo"       |
+| hirer   | The employer side of a hire, five letters |
+| careo   | Career in five letters                    |
+| gig     | A short job                               |
+| jobs    | The plain plural                          |
+| wrkr    | Worker without vowels                     |
+| post    | A job post                                |
+| shift   | A work shift                              |
+| craft   | A trade                                   |
+| apply   | To apply                                  |
+| role    | A role                                    |
+| work    | Work                                      |
+| opening | An opening                                |
+
+#### (f) Easy mascot or mark, with a job cue (21)
+
+Plain generic creatures and objects only, never a copy of a real brand's
+character. Names that are two words stuck together (`hirebee`, `jobeaver`,
+`workant`, `gigant`) are listed because they came up, and fail the rule.
+
+| Name      | Why it fits                                              |
+| --------- | -------------------------------------------------------- |
+| jobling   | A little job creature; "-ling" makes it a pet, easy mark |
+| workling  | A small worker, a tidy creature                          |
+| jobin     | Job plus robin, a small bird mark                        |
+| hirin     | "Hirin'", the sign on the door, dropped g                |
+| gigant    | Gig plus ant, a busy worker (a compound, so cut)         |
+| workant   | Worker ant (a compound, so cut)                          |
+| hirebee   | Busy bee that hires (a compound, so cut)                 |
+| jobeaver  | Job plus beaver, the busy builder (a compound, so cut)   |
+| deskie    | A friendly desk, a small square mark                     |
+| badgie    | An ID badge as a mark                                    |
+| briefy    | A briefcase, a plain rectangle mark                      |
+| tieclip   | A tie clip as a mark                                     |
+| rung      | A ladder rung, a career step                             |
+| ladder    | The career ladder as a plain mark                        |
+| hardhat   | A hard hat, a work icon                                  |
+| lunchbox  | A lunchbox, a work icon                                  |
+| nametag   | A name tag, a hello-my-name-is mark                      |
+| stapler   | A desk stapler, a work icon                              |
+| punchcard | A punch card, a clock-in mark                            |
+| timecard  | A timecard, a work-hours mark                            |
+| clocky    | A little clock, clock-in feel                            |
+
+### Availability filter
+
+Checked 2026-11-10 with the same method as earlier rounds: `npm view <name>
+name`, `gh api repos/andryorelabs/<name>`, `gh api users/<name>`, RDAP for
+`.dev` (`https://pubapi.registry.google/rdap/domain/<name>.dev`) and `.com`
+(`https://rdap.verisign.com/com/v1/domain/<name>.com`); `rdap.org` was not
+used. Lookups ran one name at a time with a pause between calls, and no 429
+came back. A "free" npm result was confirmed as a 404 (E404) from the registry,
+not just a failed command. The slug, account, `.dev` and `.com` lookups ran
+only on names free on npm. Web collision is `gh search repos <name> --match
+name` on every name free on npm that also reached Findability 7, plus a web
+search on the finalists. `no record` is not a registrar quote, and `none` in
+the account column means no GitHub account of that name. `gh search` is fuzzy,
+so the top hit shown is the nearest repo, not always an exact match.
+
+**67 of the 162 names are taken on npm and drop at once:** accepted, apply,
+berth, billet, book, callback, calling, chamba, clinch, clocky, craft,
+craftly, curriculum, curro, engage, enlist, gig, gigo, graft, hardhat, hire,
+intro, jale, joba, jobee, jobi, jobly, jobs, ladder, land, lineup, lunchbox,
+nab, nametag, oficina, onboard, openie, opening, openo, pega, pitch, plaza,
+post, punchcard, recruit, referral, rol, role, rolly, rung, secure, shift,
+sign, snag, stapler, stint, talento, timecard, trabajo, trampo, vaca, vouch,
+work, worka, worklet, workly, wrkr. Almost every plain job word is gone,
+including `hire`, `work`, `gig`, `chamba` and `talento`.
+
+The other 95 passed npm and the GitHub slug (all 95 slugs are free). All 95
+`.com` names are taken, so `.com` does not separate them; 62 have no `.dev`
+record and 13 have no GitHub account of that name.
+
+| Name       | npm  | slug | account      | .dev      | .com  | Web collision                             | Findability | Verdict                                                                                                                   |
+| ---------- | ---- | ---- | ------------ | --------- | ----- | ----------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------- |
+| appley     | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| applie     | free | free | User         | taken     | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| applio     | free | free | User         | taken     | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| applyo     | free | free | Organization | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| badgie     | free | free | User         | no record | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| bico       | free | free | Organization | taken     | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| brete      | free | free | User         | no record | taken | not searched                              | 2           | cut: Findability 2                                                                                                        |
+| briefy     | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| camello    | free | free | User         | no record | taken | not searched                              | 2           | cut: Findability 2                                                                                                        |
+| candidato  | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| caree      | free | free | User         | taken     | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| careerie   | free | free | none         | no record | taken | `nassdk/careeriest 0`                     | 8           | **finalist**                                                                                                              |
+| careery    | free | free | none         | no record | taken | `5rodina/Careery 1`                       | 8           | survivor, not shortlisted: an AI career agent called Careery is listed online                                             |
+| careo      | free | free | User         | taken     | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| careva     | free | free | User         | no record | taken | `carevalojesus/carevalojesus 11`          | 7           | survivor, not shortlisted: account held                                                                                   |
+| chambear   | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| chambita   | free | free | User         | no record | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| contrata   | free | free | User         | taken     | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| craftie    | free | free | Organization | no record | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| currela    | free | free | User         | no record | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| cvee       | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| cvio       | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| deskie     | free | free | User         | no record | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| empla      | free | free | Organization | no record | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| empleo     | free | free | Organization | taken     | taken | `developersdo/empleo-dot-net 209`         | 7           | **finalist**                                                                                                              |
+| employable | free | free | Organization | taken     | taken | `jshamley/employable 2`                   | 8           | survivor, not shortlisted: .dev taken, account held                                                                       |
+| gigant     | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| gigette    | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| giggy      | free | free | Organization | taken     | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| gigling    | free | free | none         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| gigra      | free | free | User         | no record | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| gigsie     | free | free | none         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| gigsy      | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| hirable    | free | free | User         | taken     | taken | `SumeetWajpe/XT_Hirable_Jan2022 3`        | 8           | survivor, not shortlisted: several products named Hirable (an AI career assistant, a hospitality hiring app, HR software) |
+| hirebee    | free | free | User         | no record | taken | not searched                              | 8           | cut: compound (hire + bee)                                                                                                |
+| hired      | free | free | User         | taken     | taken | `redis/hiredis 6692`                      | 8           | survivor, not shortlisted: redis/hiredis 6692 stars sits next to it, and "Hired" is a known hiring marketplace            |
+| hirelet    | free | free | none         | no record | taken | `ramyaspov/hireLetter 0`                  | 8           | **finalist**                                                                                                              |
+| hirelin    | free | free | Organization | no record | taken | `Zaphodious/hireling 12`                  | 7           | survivor, not shortlisted: sits next to "hireling", a word with a poor tone                                               |
+| hirelo     | free | free | User         | no record | taken | `sibisiddharth8/HireLogic 13`             | 8           | survivor, not shortlisted: account held                                                                                   |
+| hirely     | free | free | Organization | taken     | taken | `KareemSultanOfficial/Hirely 36`          | 8           | survivor, not shortlisted: .dev taken, account held                                                                       |
+| hirer      | free | free | User         | no record | taken | `edlynjessica/HireReady 11`               | 8           | survivor, not shortlisted: the word means the employer, so it points at the wrong side                                    |
+| hiret      | free | free | User         | no record | taken | `rajayogan/flutterui-hiretalent 81`       | 7           | **finalist**                                                                                                              |
+| hireva     | free | free | User         | no record | taken | `netstaffle-tech/HireVault 1`             | 7           | survivor, not shortlisted: reads as HireVault or a hiring firm name                                                       |
+| hirevo     | free | free | User         | no record | taken | `Hirevo/alexandrie 517`                   | 7           | survivor, not shortlisted: the Hirevo account owns a 517-star repo                                                        |
+| hirey      | free | free | User         | taken     | taken | `MSakibR/HireYourWheels 4`                | 8           | survivor, not shortlisted: .dev taken, account held                                                                       |
+| hirin      | free | free | User         | no record | taken | `poteto/hiring-without-whiteboards 53168` | 7           | survivor, not shortlisted: reads as the employer's "now hiring" sign, the wrong side                                      |
+| hirio      | free | free | User         | no record | taken | `boquita/hirios 1`                        | 7           | survivor, not shortlisted: account held                                                                                   |
+| hirra      | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| hyre       | free | free | Organization | taken     | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| hyrel      | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| jobbly     | free | free | User         | no record | taken | `BrAtUkA/Jobbly 4`                        | 9           | survivor, not shortlisted: account held                                                                                   |
+| jobeaver   | free | free | none         | no record | taken | not searched                              | 8           | cut: compound (job + beaver)                                                                                              |
+| jobette    | free | free | User         | no record | taken | `jobe14-19/programacionJobette 0`         | 9           | survivor, not shortlisted: account held                                                                                   |
+| jobin      | free | free | User         | no record | taken | `jobin-404/debtbomb 79`                   | 8           | survivor, not shortlisted: two products named Jobin (a job-search assistant and a recruiting platform)                    |
+| jobiva     | free | free | none         | no record | taken | `none`                                    | 8           | **finalist**                                                                                                              |
+| jobkin     | free | free | none         | no record | taken | `Gafrilatif/Jobking 1`                    | 9           | **finalist**                                                                                                              |
+| joblet     | free | free | User         | taken     | taken | `ehsaniara/joblet 26`                     | 8           | survivor, not shortlisted: held account, `.dev` taken, and Joblet is a 26-star job runner                                 |
+| jobley     | free | free | none         | taken     | taken | `devesrawat/Jobley.fn 0`                  | 9           | survivor, not shortlisted: .dev taken                                                                                     |
+| jobling    | free | free | User         | no record | taken | `fejao/joblinge_install 2`                | 9           | **finalist**                                                                                                              |
+| jobsie     | free | free | User         | no record | taken | `Faisalnwz01/jobsies-webapp 3`            | 9           | survivor, not shortlisted: account held                                                                                   |
+| jobu       | free | free | User         | no record | taken | `f-secure-foundry/jobun 15`               | 7           | **finalist**                                                                                                              |
+| kareer     | free | free | Organization | taken     | taken | `team-kareer/kareer-client 9`             | 7           | survivor, not shortlisted: .dev taken, account held                                                                       |
+| laburo     | free | free | Organization | no record | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| leado      | free | free | Organization | no record | taken | not searched                              | -           | cut: Findability -                                                                                                        |
+| metier     | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| oferta     | free | free | Organization | no record | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| offered    | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| offerie    | free | free | none         | no record | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| offra      | free | free | User         | no record | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| oficio     | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| postio     | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| postlet    | free | free | User         | no record | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| postular   | free | free | none         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| puesto     | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| resuma     | free | free | User         | taken     | taken | `23/resumable.js 4726`                    | 7           | survivor, not shortlisted: `resumable.js` (4726 stars) sits next to it                                                    |
+| resumey    | free | free | Organization | no record | taken | `resumey-pro/markdown-resume-generator 4` | 8           | survivor, not shortlisted: account held                                                                                   |
+| resumo     | free | free | Organization | taken     | taken | `leic-pt/resumos-leic 72`                 | 7           | survivor, not shortlisted: .dev taken, account held                                                                       |
+| roleo      | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| rolio      | free | free | User         | no record | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| shiftie    | free | free | User         | taken     | taken | not searched                              | 4           | cut: Findability 4                                                                                                        |
+| shifto     | free | free | User         | no record | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| shiftra    | free | free | none         | no record | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| tajo       | free | free | User         | taken     | taken | not searched                              | 2           | cut: Findability 2                                                                                                        |
+| takeon     | free | free | User         | taken     | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| tieclip    | free | free | User         | no record | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| turno      | free | free | User         | taken     | taken | not searched                              | 3           | cut: Findability 3                                                                                                        |
+| vacancy    | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| vacanta    | free | free | User         | no record | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| vacante    | free | free | User         | no record | taken | `404mqs/uade-vacantebot 5`                | 7           | survivor, not shortlisted: account held                                                                                   |
+| vacky      | free | free | User         | no record | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| vocation   | free | free | Organization | taken     | taken | not searched                              | 6           | cut: Findability 6                                                                                                        |
+| workant    | free | free | User         | taken     | taken | not searched                              | 5           | cut: Findability 5                                                                                                        |
+| workette   | free | free | none         | no record | taken | `none`                                    | 8           | survivor, not shortlisted: weaker on sound or fit                                                                         |
+| workling   | free | free | Organization | no record | taken | `ascarter/workling 11`                    | 8           | survivor, not shortlisted: an old Ruby background-jobs gem named Workling                                                 |
+| workvia    | free | free | Organization | no record | taken | `Dime2552/Workvia 1`                      | 7           | survivor, not shortlisted: account held                                                                                   |
+
+#### Survivors per style
+
+A survivor is free on npm and slug, passes the one-word rule, and has
+Findability 7 or more.
+
+| Style                       | Candidates | Free on npm | Survivors |
+| --------------------------- | ---------- | ----------- | --------- |
+| (a) Diminutives             | 32         | 28          | 15        |
+| (b) Invented from job roots | 35         | 26          | 9         |
+| (c) Real words and slang    | 36         | 20          | 2         |
+| (d) Getting hired           | 25         | 6           | 4         |
+| (e) Very short              | 13         | 3           | 2         |
+| (f) Mascot or mark          | 21         | 12          | 4         |
+| **Total**                   | **162**    | **95**      | **36**    |
+
+The 36 survivors are: jobkin, jobette, jobley, jobsie, jobbly, joblet, hirey,
+hirely, hirelet, hirelin, hirelo, workette, careery, careerie, resumey (a);
+jobiva, careva, kareer, resuma, resumo, hirio, hireva, hirevo, workvia (b);
+empleo, vacante (c); hirable, hired, employable, hiret (d); jobu, hirer (e);
+jobling, workling, jobin, hirin (f). 57 names were free on npm but cut on
+Findability, and 2 more (`hirebee`, `jobeaver`) were cut as compounds.
+
+What the numbers say:
+
+- **Style (a) holds up best.** A made-up diminutive of `job` or `hire` is
+  free on npm far more often than a real word, and it carries the cue in the
+  first three letters.
+- **Style (c) nearly collapses.** Of 36 real words and slang, 16 are taken on
+  npm, and most of the rest are Spanish words that an English speaker reads
+  as no cue at all. Only `empleo` and `vacante` reach 7, and only by averaging
+  two audiences.
+- **Style (d) is hollow.** The plain verbs (`hire`, `land`, `snag`, `pitch`,
+  `onboard`) are all taken. What is left is a handful of near-words, and two of
+  them (`hired`, `hirable`) belong to existing hiring products.
+- **Names with a known owner were set aside.** `hired` sits beside the
+  `redis/hiredis` library and a hiring marketplace, `hirable` is a product name
+  four times over, `jobin` is two products, and `workling` is an old Ruby
+  background-jobs gem. `hirer` and `hirin` face the employer, not the job
+  seeker.
+
+### Web collision on the finalists
+
+Web search on the eight finalists found no software product of the same name
+for `jobling`, `jobkin`, `hirelet`, `hiret`, `careerie` or `jobiva`. The
+nearest hits were job apps with similar names (Jobble, Jooble, JobLin AI,
+JobDiva, Jobvite, Jobeezy, Careerify), none of them the same word. A
+`Careery` AI career agent is listed online, one letter off `careerie`.
+`jobiva` sits next to the applicant-tracking systems JobDiva and Jobvite,
+which is a real near-name risk in this exact space. For `empleo`, the nearest
+products are Spanish job sites and apps (Elempleo, Tecnoempleo, Emplea), and a
+209-star `empleo-dot-net` repo. For `jobu`, no product of that name came up,
+only the nearby Jobulus and Jobble apps. Web search is not a trademark search,
+and none was run.
+
+### Round 5 finalists: scored /80
+
+Eight finalists, one or more per style: `jobling` (f), `jobkin` and `hirelet`
+(a), `jobiva` and `careerie` (b), `empleo` (c), `hiret` (d), `jobu` (e).
+Every one has Findability 7 or more, and every style with survivors has at
+least one finalist. Axes are the round 2 definitions (sound, registry
+collision, brand collision, brief fit, headroom, warmth, overpromise risk,
+findability, each 0 to 10), except Sound is "memorable and easy to say
+aloud". This is directional judgment, not a formula.
+
+| Axis               | jobling                               | jobkin                                | hirelet                               | jobiva                                       | careerie                              | empleo                                         | hiret                                 | jobu                                 |
+| ------------------ | ------------------------------------- | ------------------------------------- | ------------------------------------- | -------------------------------------------- | ------------------------------------- | ---------------------------------------------- | ------------------------------------- | ------------------------------------ |
+| Sound              | 8: two clear beats, a friendly ending | 7: easy, "kin" is a little flat       | 5: three beats, a clumsy ending       | 5: made-up, the "iva" ending sounds clinical | 6: "career-ee", the stress is unclear | 7: three easy syllables                        | 6: reads as "hire it" or "hiret"      | 8: four letters, two beats           |
+| Registry collision | 8: npm, slug, `.dev` free, idle user  | 9: npm, slug, `.dev` free, no account | 9: npm, slug, `.dev` free, no account | 9: npm, slug, `.dev` free, no account        | 9: npm, slug, `.dev` free, no account | 5: `.dev` taken, account is an organization    | 8: npm, slug, `.dev` free, idle user  | 8: npm, slug, `.dev` free, idle user |
+| Brand collision    | 8: no product, only a 2-star repo     | 8: no product, 1-star repo            | 8: no product, 0-star repo            | 7: next to JobDiva and Jobvite               | 8: one letter off the Careery agent   | 6: Spanish job sites with the same word inside | 8: no product, 81-star unrelated repo | 6: next to Jobulus and Jobble        |
+| Brief fit          | 6: friendly more than calm            | 6: friendly more than calm            | 5: reads as small and light           | 5: reads as a generic HR brand               | 6: cute, less precise                 | 7: plain and calm, a formal word               | 5: reads as an employer verb          | 6: neutral, no image                 |
+| Headroom           | 5: bound to jobs                      | 5: bound to jobs                      | 5: bound to hiring                    | 5: bound to jobs                             | 6: bound to careers, a little wider   | 6: bound to employment                         | 5: bound to hiring                    | 5: bound to jobs                     |
+| Warmth             | 9: a small creature, a pet name       | 7: a family word, "kin"               | 6: small and light                    | 4: cold, made-up                             | 7: a pet name                         | 7: plain and human in Spanish                  | 5: neutral                            | 6: a short name, slightly odd        |
+| Overpromise risk   | 10: nothing promised                  | 10: nothing promised                  | 10: nothing promised                  | 10: nothing promised                         | 10: nothing promised                  | 10: nothing promised                           | 10: nothing promised                  | 10: nothing promised                 |
+| Findability        | 9: "job" is the first syllable        | 9: "job" is the first syllable        | 8: "hire" is the first syllable       | 8: "job" is the first syllable               | 8: "career" is clear                  | 7: Spanish readers 10, English readers 5       | 7: "hire" is clear, the "t" is odd    | 7: "job" is clear, the "u" is odd    |
+| **Total /80**      | **63**                                | **61**                                | **56**                                | **53**                                       | **60**                                | **55**                                         | **54**                                | **56**                               |
+
+Each total is the sum of its eight scores: jobling 8+8+8+6+5+9+10+9 = 63,
+jobkin 7+9+8+6+5+7+10+9 = 61, hirelet 5+9+8+5+5+6+10+8 = 56, jobiva
+5+9+7+5+5+4+10+8 = 53, careerie 6+9+8+6+6+7+10+8 = 60, empleo
+7+5+6+7+6+7+10+7 = 55, hiret 6+8+8+5+5+5+10+7 = 54, jobu 8+8+6+6+5+6+10+7 = 56.
+
+Headroom is low for every finalist, on purpose: the job cue binds the name to
+jobs, and that was the maintainer's request. It is the price of Findability,
+the way round 4 paid for headroom and warmth with Findability.
+
+### How the Spanish words read
+
+`chamba`, the Mexican slang for a job, was dropped at the first check because
+it is taken on npm, as are `talento`, `jale`, `pega`, `curro` and `trampo`.
+Two Spanish words reached Findability 7, and one more is worth saying
+plainly. Their readings:
+
+- **empleo** ("employment", the formal word for a job). To an **English
+  speaker** it looks like a cousin of "employ" and "employee", so many will
+  guess that it has to do with work, but not all will, and it has no warmth.
+  To a **Latin American Spanish speaker** it is the standard word for a job or
+  employment, the label on every job board, so the cue is clear at once. It is
+  also formal and flat: nobody says "tengo un empleo" with the affection of
+  "tengo una chamba". As `/empleo:sweep` it reads like a job board category.
+- **vacante** ("vacancy", an open post). To an English speaker it reads as
+  "vacant", which suggests empty, not jobs. To a Latin American Spanish speaker
+  it is the plain word for an open job. It was not shortlisted: the empty
+  feeling in English is the wrong signal.
+- **chambita**, the Mexican diminutive of `chamba` ("a small job"), is free on
+  npm and has the warmth the maintainer liked in "Jobbie". An English speaker
+  reads it as no word at all, and a Spanish speaker outside Mexico may not
+  know the slang, so Findability is 5 and the rule cut it. If the maintainer
+  can accept a name that only part of the audience decodes, it is the warmest
+  option in the round.
+
+Neither survivor has the `jobbie` feel. `empleo` is the more usable, at 55.
+
+### Rounds 1 to 5 compared
+
+The round 5 finalists next to the previous best of rounds 1 to 4, on the same
+/80 scale. The Sound axis is scored as "memorable and easy to say" in rounds 4
+and 5.
+
+| Rank | Name     | Round | Total /80 | Brief fit | Warmth | Findability |
+| ---- | -------- | ----- | --------- | --------- | ------ | ----------- |
+| 1    | jobling  | 5     | 63        | 6         | 9      | 9           |
+| 2    | cobijo   | 4     | 61        | 8         | 9      | 2           |
+| 2    | jobkin   | 5     | 61        | 6         | 7      | 9           |
+| 4    | careerie | 5     | 60        | 6         | 7      | 8           |
+| 5    | jobwren  | 3     | 59        | 6         | 8      | 7           |
+| 5    | tallypal | 3     | 59        | 6         | 9      | 6           |
+| 7    | jobtally | 2     | 58        | 7         | 6      | 9           |
+| 8    | hirelet  | 5     | 56        | 5         | 6      | 8           |
+| 8    | jobu     | 5     | 56        | 6         | 6      | 7           |
+| 10   | empleo   | 5     | 55        | 7         | 7      | 7           |
+| 11   | hiret    | 5     | 54        | 5         | 5      | 7           |
+| 12   | jobiva   | 5     | 53        | 5         | 4      | 8           |
+
+Reading it straight:
+
+- **Eight names survived all the filters and the scoring, and the top three
+  are within 2 points of the old best.** `jobling` leads `cobijo` by 2
+  points, which is inside the noise of a judgment score, but it has a
+  Findability of 9 where `cobijo` has 2.
+- **Style (a) wins the round.** Diminutives of `job` are the style that keeps
+  the `jobbie` feel and is free on npm and `.dev`.
+- **The cost moved to Brief fit and Headroom.** The finalists score 5 or 6 on
+  Brief fit where `cobijo` scores 8: small and friendly reads less calm and
+  precise than "shelter". The maintainer put the job cue first, so that trade
+  was expected.
+- **No finalist is a plain real word,** because the plain words are taken.
+  Every job word still free is an invented one, and `empleo` is Spanish.
+
+### Round 5 recommendation
+
+This is input for the maintainer, who decides.
+
+1. **If the job cue is the main requirement, take `jobling`.** It leads the
+   round at 63, has a Findability of 9, keeps the friendly single-word feel of
+   `jobbie`, and has an easy mark (a small creature, a "job-ling"). It is free
+   on npm, as a slug and on `.dev`, has an idle GitHub user account and no
+   product of the same name found. It reads well as `/jobling:sweep`. Check
+   the existing `jobling` account before relying on it.
+2. **The second pick is `jobkin`** at 61, with a cleaner registry profile (no
+   GitHub account, `.dev` free). It is a little flatter to say, and "kin"
+   adds family warmth.
+3. **`careerie`** at 60 is the pick if "career" matters more than "job", with
+   a clean registry profile. It is cuter, its stress is unclear, and a
+   `Careery` AI agent sits one letter away.
+4. **Avoid `jobiva`.** It scores lowest, sounds clinical and sits next to
+   JobDiva and Jobvite in the same space.
+5. **Spanish names did not survive well.** If the maintainer wants Spanish,
+   `empleo` is the only one with a usable reading, and it is formal. `chamba`
+   itself is taken on npm, and `chambita` has the warmth but not the reach.
+6. **Findability is paid for in calm.** A `-ling` or `-kin` name is cute. If
+   that is too cute for "calm, precise, trustworthy", the next round should
+   keep the job cue and the single word but move to a plainer form, such as
+   `hirey`, `jobley` or `resumey` from the survivor list above.
+7. **Confirm before acting.** RDAP "no record" is a signal, not a quote, and
+   registrations change. Re-run the table and ask a registrar before any
+   rename, and search for trademarks, which this research did not do beyond
+   what the web search surfaced.
+
+Nothing was bought or registered for this research.

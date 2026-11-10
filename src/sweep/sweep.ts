@@ -44,6 +44,7 @@ type Fetched = {
   readonly postings: Posting[];
   readonly errors: string[];
   readonly warnings: string[];
+  readonly misconfigured: boolean;
 };
 
 function fail<T>(code: string, message: string): Result<T> {
@@ -142,7 +143,22 @@ async function fetchSource(
   queries: readonly SourceQuery[],
 ): Promise<Fetched> {
   if (adapter === undefined) {
-    return { source, postings: [], errors: [`${source}: unknown source`], warnings: [] };
+    return {
+      source,
+      postings: [],
+      errors: [`${source}: unknown source`],
+      warnings: [],
+      misconfigured: false,
+    };
+  }
+  if (ATS_SOURCES.has(source) && queries.length === 0) {
+    return {
+      source,
+      postings: [],
+      errors: [],
+      warnings: [`${source}: no companies saved; run huntline company add <url>`],
+      misconfigured: true,
+    };
   }
   const results = await Promise.all(queries.map((query) => safeFetch(adapter, query)));
   return {
@@ -150,11 +166,17 @@ async function fetchSource(
     postings: results.flatMap((result) => result.postings),
     errors: results.flatMap((result) => result.errors),
     warnings: results.flatMap((result) => result.warnings),
+    misconfigured: false,
   };
 }
 
-function statusOf(errors: readonly string[], counts: SourceCounts): SourceReport["status"] {
+function statusOf(
+  errors: readonly string[],
+  counts: SourceCounts,
+  misconfigured: boolean,
+): SourceReport["status"] {
   if (errors.length > 0) return "failed";
+  if (misconfigured) return "misconfigured";
   return counts.seen === 0 ? "empty" : "ok";
 }
 
@@ -176,7 +198,7 @@ async function ingestFetched(
   const report: SourceReport = {
     source: current.source,
     ...batch.counts,
-    status: statusOf(current.errors, batch.counts),
+    status: statusOf(current.errors, batch.counts, current.misconfigured),
     errors: current.errors,
     warnings: current.warnings,
   };
@@ -194,17 +216,37 @@ function summarize(collected: Collected, tracker: TrackerSummary): SweepReport {
   const empty = collected.reports
     .filter((report) => report.status === "empty")
     .map((report) => report.source);
+  const misconfigured = collected.reports
+    .filter((report) => report.status === "misconfigured")
+    .map((report) => report.source);
   const totals = collected.reports.reduce<SourceCounts>(
     (sum, report) => addCounts(sum, report),
     EMPTY_COUNTS,
   );
-  return { sources: collected.reports, failed, empty, totals, leads: collected.leads, tracker };
+  return {
+    sources: collected.reports,
+    failed,
+    empty,
+    misconfigured,
+    totals,
+    leads: collected.leads,
+    tracker,
+  };
 }
 
-function selectSources(profile: Profile, options: SweepOptions): string[] {
+function selectSources(profile: Profile, options: SweepOptions): Result<string[]> {
   const configured = [...new Set(profile.sources)];
-  if (options.only === undefined || options.only.length === 0) return configured;
-  return options.only.filter((name) => configured.includes(name));
+  if (options.only === undefined || options.only.length === 0) {
+    return { ok: true, value: configured };
+  }
+  const unknown = options.only.filter((name) => !configured.includes(name));
+  if (unknown.length > 0) {
+    return fail(
+      "usage",
+      `--source ${unknown.join(", ")} not in the Profile sources (${configured.join(", ") || "none"})`,
+    );
+  }
+  return { ok: true, value: [...options.only] };
 }
 
 export async function runSweep(
@@ -216,7 +258,9 @@ export async function runSweep(
   const companies = readCompanies(prepared.value.dir);
   if (!companies.ok) return companies;
   const adapters = options.adapters ?? defaultSources;
-  const names = selectSources(prepared.value.profile, options);
+  const selected = selectSources(prepared.value.profile, options);
+  if (!selected.ok) return selected;
+  const names = selected.value;
   const fetched = await Promise.all(
     names.map((name) =>
       fetchSource(name, adapters[name], queriesFor(name, companies.value, options.keywords)),

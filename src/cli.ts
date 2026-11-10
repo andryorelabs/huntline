@@ -1,5 +1,6 @@
 import {
   COMMANDS,
+  findUnknownFlag,
   resolveCommand,
   type CommandContext,
   type CommandModule,
@@ -39,15 +40,41 @@ function buildVersion(): string {
   return typeof HUNTLINE_BUILD_VERSION === "string" ? HUNTLINE_BUILD_VERSION : "0.0.0-dev";
 }
 
+const USAGE_LINES: readonly string[] = [
+  "usage: huntline <command> [flags]",
+  "global flags: --data <dir>, --version, --help",
+];
+
+function usageEnvelope(): Envelope<unknown> {
+  const commands = ["init", "setup", "doctor", ...Object.keys(COMMANDS)];
+  return success({ usage: USAGE_LINES.join("\n"), commands });
+}
+
+function needsDataDir(path: string, rest: readonly string[]): boolean {
+  if (path === "guard" || path === "inbox eval") return false;
+  if (path === "apply") return rest[0] !== "verify";
+  if (path === "outreach") return rest[0] !== "lint";
+  return true;
+}
+
 export async function dispatch(
   argv: string[],
   env: Record<string, string | undefined>,
   cwd: string,
 ): Promise<Envelope<unknown>> {
   const [first] = argv;
-  if (first === undefined || first === "--version") return success({ version: buildVersion() });
+  if (first === "--version") return success({ version: buildVersion() });
+  if (first === undefined || first === "--help" || first === "help") return usageEnvelope();
   const dataDir = resolveDataDir(argv, env, cwd);
   const ctx: CommandContext = { dataDir: dataDir.ok ? dataDir.value : null, env, cwd };
+  if (first === "init" || first === "setup" || first === "doctor") {
+    const unknownEntryFlag = findUnknownFlag(first, withoutDataFlag(argv.slice(1)));
+    if (unknownEntryFlag !== null) {
+      return failure("usage", `unknown flag ${unknownEntryFlag} for "${first}"`, {
+        recoverable: false,
+      });
+    }
+  }
   if (first === "init") return runInit(argv.slice(1), cwd, env);
   if (first === "setup") return runSetup(env);
   if (first === "doctor") {
@@ -59,11 +86,20 @@ export async function dispatch(
     }
     return await runDoctor(ctx);
   }
-  const command = resolveCommand(argv);
+  const command = resolveCommand(withoutDataFlag(argv));
   if (command === null) {
     return failure("unknown-command", `unknown command "${argv.slice(0, 2).join(" ")}"`, {
       recoveryAction: "run huntline without arguments to see the version, or see the README",
     });
+  }
+  const unknownFlag = findUnknownFlag(command.path, command.rest);
+  if (unknownFlag !== null) {
+    return failure("usage", `unknown flag ${unknownFlag} for "${command.path}"`, {
+      recoverable: false,
+    });
+  }
+  if (!dataDir.ok && needsDataDir(command.path, command.rest)) {
+    return failure(dataDir.error.code, dataDir.error.message);
   }
   const load = MODULE_LOADERS[command.file];
   if (load === undefined) {

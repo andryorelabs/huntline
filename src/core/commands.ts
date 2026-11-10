@@ -30,6 +30,56 @@ export const COMMANDS: Record<string, string> = {
   guard: "src/guard/command.ts",
 };
 
+/** Flags each command accepts besides the global `--data`. */
+export const COMMAND_FLAGS: Record<string, readonly string[]> = {
+  init: ["--force"],
+  setup: [],
+  doctor: [],
+  sweep: ["--source", "--keyword"],
+  ingest: ["--source", "--file", "--json"],
+  score: ["--score", "--reason", "--liveness", "--liveness-error"],
+  ledger: ["--json"],
+  events: ["--json", "--key"],
+  status: ["--set"],
+  company: [],
+  cv: ["--file", "--requirement", "--tag", "--template", "--variant"],
+  apply: [
+    "--detail",
+    "--dump",
+    "--intended",
+    "--key",
+    "--list",
+    "--provenance",
+    "--save",
+    "--scope",
+  ],
+  needs: [],
+  inbox: ["--emails"],
+  "inbox eval": ["--labels"],
+  outreach: [
+    "--addressee",
+    "--channel",
+    "--company",
+    "--draft-company",
+    "--file",
+    "--key",
+    "--recipient",
+  ],
+  interview: [],
+  migrate: ["--project", "--team"],
+  guard: ["--record", "--self-test"],
+};
+
+/** Returns the first undeclared flag in `argv` for `command`, or null. */
+export function findUnknownFlag(command: string, argv: readonly string[]): string | null {
+  const allowed = COMMAND_FLAGS[command] ?? [];
+  for (const token of argv) {
+    if (token === "--data") continue;
+    if (token.startsWith("--") && !allowed.includes(token)) return token;
+  }
+  return null;
+}
+
 export function resolveCommand(
   argv: readonly string[],
 ): { path: string; file: string; rest: string[] } | null {

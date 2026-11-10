@@ -2,15 +2,13 @@ import path from "node:path";
 import { IdempotencyMap } from "../core/approval.ts";
 import { withLock } from "../core/fs.ts";
 import { errorMessage } from "../core/narrow.ts";
-import type {
-  DataDir,
-  HuntEvent,
-  Lead,
-  Profile,
-  Result,
-  TrackerAdapter,
-} from "../core/types.ts";
-import { createLinearTracker, DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "./linear.ts";
+import type { DataDir, HuntEvent, Lead, Profile, Result, TrackerAdapter } from "../core/types.ts";
+import {
+  createLinearTracker,
+  DEFAULT_LINEAR_MAPPING,
+  type FetchLike,
+  type LinearMapping,
+} from "./linear.ts";
 import { createLocalTracker } from "./local.ts";
 
 const LEAD_MAP_FILE = "tracker-leads.json";
@@ -62,9 +60,13 @@ export function describeEvent(event: HuntEvent): string | null {
       return `outreach via ${event.channel} to ${event.recipient}`;
     case "note":
       return `note: ${event.text}`;
-    default:
-      return null;
+    case "lead.created":
+    case "posting.dismissed":
+    case "posting.seen":
+    case "status.changed":
+      break;
   }
+  return null;
 }
 
 function groupByKey(events: readonly HuntEvent[]): Map<string, HuntEvent[]> {
@@ -163,6 +165,9 @@ export async function projectEvents(
       ),
     );
   } catch (error) {
-    return { ok: false, error: { code: "tracker-projection-failed", message: errorMessage(error) } };
+    return {
+      ok: false,
+      error: { code: "tracker-projection-failed", message: errorMessage(error) },
+    };
   }
 }

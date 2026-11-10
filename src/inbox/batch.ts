@@ -5,16 +5,16 @@ import type { CommandContext } from "../core/commands.ts";
 import { loadProfile } from "../core/data-dir.ts";
 import { withLock, writeAtomic } from "../core/fs.ts";
 import { errorMessage, isObject, isOneOf } from "../core/narrow.ts";
-import {
-  APPLICATION_STATES,
-  type DataDir,
-  type HuntEvent,
-  type Result,
-} from "../core/types.ts";
+import { APPLICATION_STATES, type DataDir, type HuntEvent, type Result } from "../core/types.ts";
 import { appendEvent, readEvents } from "../ledger/events.ts";
 import { createTracker, projectEvents } from "../tracker/index.ts";
 import { applicationsFromEvents, matchEmail } from "./match.ts";
-import { EMAIL_CLASSES, type ClassifiedEmail, type ProposedChange } from "./types.ts";
+import {
+  EMAIL_CLASSES,
+  MATCH_REASONS,
+  type ClassifiedEmail,
+  type ProposedChange,
+} from "./types.ts";
 
 export const BATCH_DIRECTORY = "inbox";
 const BATCH_HASHES_FILE = "inbox-batches.json";
@@ -22,7 +22,10 @@ const THREADS_FILE = "inbox-threads.json";
 const LOCK_DIRECTORY = ".inbox";
 const BATCH_VERSION = 1;
 
-type Failure = { readonly ok: false; readonly error: { readonly code: string; readonly message: string } };
+type Failure = {
+  readonly ok: false;
+  readonly error: { readonly code: string; readonly message: string };
+};
 
 function fail(code: string, message: string): Failure {
   return { ok: false, error: { code, message } };
@@ -96,11 +99,23 @@ export async function proposeBatch(
 
 function parseItem(value: unknown): ProposedChange | null {
   if (!isObject(value)) return null;
-  const { messageId, threadId, classification, key, candidates, band, reason, confirmed, targetState } = value;
+  const {
+    messageId,
+    threadId,
+    classification,
+    key,
+    candidates,
+    band,
+    reason,
+    confirmed,
+    targetState,
+  } = value;
   if (typeof messageId !== "string" || typeof threadId !== "string") return null;
   if (!isOneOf(EMAIL_CLASSES, classification)) return null;
   if (key !== null && typeof key !== "string") return null;
-  if (!Array.isArray(candidates) || !candidates.every((entry) => typeof entry === "string")) return null;
+  if (!Array.isArray(candidates) || !candidates.every((entry) => typeof entry === "string"))
+    return null;
+  if (!isOneOf(MATCH_REASONS, reason)) return null;
   if (band !== "high" && band !== "medium" && band !== "none") return null;
   if (typeof reason !== "string" || typeof confirmed !== "boolean") return null;
   if (targetState !== null && !isOneOf(APPLICATION_STATES, targetState)) return null;
@@ -109,9 +124,9 @@ function parseItem(value: unknown): ProposedChange | null {
     threadId,
     classification,
     key,
-    candidates: candidates as string[],
+    candidates,
     band,
-    reason: reason as ProposedChange["reason"],
+    reason,
     confirmed,
     targetState,
   };
@@ -129,7 +144,11 @@ function parseBatch(content: string): ProposedChange[] | null {
   return items;
 }
 
-async function writeItem(dir: DataDir, item: ProposedChange, currentState: string | null): Promise<void> {
+async function writeItem(
+  dir: DataDir,
+  item: ProposedChange,
+  currentState: string | null,
+): Promise<void> {
   if (item.key === null) return;
   await appendEvent(dir, {
     kind: "email.classified",
@@ -195,7 +214,9 @@ async function applyItems(
   const confirmed = items.filter((item) => item.confirmed && item.key !== null);
   const events = await readEvents(dir);
   const processed = processedMessageIds(events);
-  const states = new Map(applicationsFromEvents(events).map((record) => [record.key, record.state]));
+  const states = new Map(
+    applicationsFromEvents(events).map((record) => [record.key, record.state]),
+  );
   const applied = await writeItems(dir, confirmed, processed, states, 0);
   recordThreads(dir, confirmed);
   const keys = [...new Set(confirmed.flatMap((item) => (item.key === null ? [] : [item.key])))];
@@ -216,7 +237,8 @@ export async function applyBatch(
     if (!existsSync(resolved)) return fail("batch-not-found", `no batch file at ${resolved}`);
     const content = readFileSync(resolved, "utf8");
     const expected = new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)).lookup(resolved);
-    if (expected === null) return fail("batch-unknown", `${resolved} was not proposed by this data dir`);
+    if (expected === null)
+      return fail("batch-unknown", `${resolved} was not proposed by this data dir`);
     if (approvalHash(content) !== expected) {
       return fail("batch-changed", `${resolved} changed after it was proposed; propose again`);
     }

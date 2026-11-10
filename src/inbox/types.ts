@@ -11,7 +11,15 @@ export type ClassifiedEmail = {
 };
 
 export type MatchBand = "high" | "medium" | "none";
-export type MatchReason = "thread" | "sender-domain" | "sender-name" | "subject" | "ambiguous" | "none";
+export const MATCH_REASONS = [
+  "thread",
+  "sender-domain",
+  "sender-name",
+  "subject",
+  "ambiguous",
+  "none",
+] as const;
+export type MatchReason = (typeof MATCH_REASONS)[number];
 
 export type ProposedChange = {
   readonly messageId: string;

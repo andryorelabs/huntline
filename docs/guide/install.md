@@ -26,7 +26,7 @@ The binary is cached at `~/.cache/huntline/<version>/huntline` (or under `$XDG_C
 
 ```sh
 mkdir -p ~/.local/bin
-ln -sf "$(ls -d ~/.cache/huntline/*/huntline | tail -n 1)" ~/.local/bin/huntline
+ln -sf "$(ls -d ~/.cache/huntline/*/huntline | sort -V | tail -n 1)" ~/.local/bin/huntline
 huntline --help
 ```
 

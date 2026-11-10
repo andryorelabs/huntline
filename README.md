@@ -28,7 +28,7 @@ Optional: put the cached binary on your PATH to use the CLI from a terminal.
 
 ```sh
 mkdir -p ~/.local/bin
-ln -sf "$(ls -d ~/.cache/huntline/*/huntline | tail -n 1)" ~/.local/bin/huntline
+ln -sf "$(ls -d ~/.cache/huntline/*/huntline | sort -V | tail -n 1)" ~/.local/bin/huntline
 ```
 
 Then drive the CLI directly (`huntline --help` lists every command):

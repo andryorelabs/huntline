@@ -1,10 +1,12 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import answersTemplate from "../../templates/answers.json.tmpl" with { type: "text" };
 import bulletsTemplate from "../../templates/bullets.yaml" with { type: "text" };
 import configTemplate from "../../templates/huntline.json.tmpl" with { type: "text" };
 import factsTemplate from "../../templates/facts.yaml" with { type: "text" };
 import neverClaimTemplate from "../../templates/never-claim.yaml" with { type: "text" };
 import profileTemplate from "../../templates/profile.yaml" with { type: "text" };
+import cvTemplate from "../../templates/cv-template.typ" with { type: "text" };
 import { failure, success, type Envelope } from "./envelope.ts";
 import { withLock, writeAtomic } from "./fs.ts";
 
@@ -19,6 +21,8 @@ const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   "facts.yaml": templateText(factsTemplate),
   "bullets.yaml": templateText(bulletsTemplate),
   "never-claim.yaml": templateText(neverClaimTemplate),
+  "answers.json": templateText(answersTemplate),
+  "cv/template.typ": templateText(cvTemplate),
 };
 
 export const MARKER = "TODO(huntline):";

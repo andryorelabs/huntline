@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { validateProfile } from "./profile.ts";
+import { validateProfile, validateProfileWithWarnings } from "./profile.ts";
 
 const base = {
   regions: ["chile"],
@@ -58,7 +58,10 @@ describe("profile tracker config and salary period", () => {
     expect(bad.ok).toBe(false);
   });
 
-  test("still rejects unknown top-level keys", () => {
-    expect(validateProfile({ ...base, extra: 1 }).ok).toBe(false);
+  test("drops unknown top-level keys and reports them as warnings", () => {
+    expect(validateProfile({ ...base, extra: 1 }).ok).toBe(true);
+    const result = validateProfileWithWarnings({ ...base, extra: 1 });
+    expect(result.ok ? result.value.warnings.join() : "").toContain("extra");
+    expect(result.ok && "extra" in result.value.profile).toBe(false);
   });
 });

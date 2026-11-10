@@ -90,6 +90,24 @@ describe("resolveDataDir", () => {
   });
 });
 
+function versionOf(content: string): string {
+  const dir = path.join(workDir, "versioned");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(path.join(dir, "huntline.json"), content);
+  const result = resolveDataDir(["--data", dir], {}, workDir);
+  return result.ok ? "ok" : result.error.code;
+}
+
+describe("data dir version", () => {
+  test("missing version is 1, newer is unsupported, non-numeric is malformed", () => {
+    expect(versionOf("{}")).toBe("ok");
+    expect(versionOf('{"version":1}')).toBe("ok");
+    expect(versionOf('{"version":2}')).toBe("data-dir-unsupported");
+    expect(versionOf('{"version":"x"}')).toBe("data-dir-malformed");
+    expect(versionOf("not json")).toBe("data-dir-malformed");
+  });
+});
+
 describe("loadProfile", () => {
   test("has three tiers: missing, malformed, ok", () => {
     const dir = { path: workDir };
@@ -115,9 +133,8 @@ describe("validateProfile", () => {
     expect(result.ok ? "" : result.error.message).toContain("contractTypes[1]");
   });
 
-  test("rejects unknown fields, bad enums and bad numbers by name", () => {
+  test("rejects bad enums and bad numbers by name", () => {
     const cases: [Record<string, unknown>, string][] = [
-      [{ ...validProfile, extra: 1 }, "extra"],
       [{ ...validProfile, remote: "sometimes" }, "remote"],
       [{ ...validProfile, outreachDailyCap: -1 }, "outreachDailyCap"],
       [{ ...validProfile, salaryFloor: { amount: 1, currency: "usd" } }, "salaryFloor.currency"],

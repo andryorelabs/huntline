@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
 import type { FetchLike } from "../tracker/linear.ts";
 import type { CommandContext } from "./commands.ts";
+import { listAnswers } from "../apply/answers.ts";
 import { runDoctor } from "./doctor.ts";
+import { runInit } from "./init.ts";
 import { exitCodeFor } from "./envelope.ts";
 import { isObject } from "./narrow.ts";
 
@@ -201,5 +203,73 @@ describe("doctor linear readiness", () => {
     const ctx = withEnv(writeDataDir(linearTracker), { LINEAR_API_KEY: "lin_api_synthetic" });
     const envelope = await runDoctor(ctx, { fetch: fetchStub });
     expect(envelope.ok).toBe(true);
+  });
+});
+
+function dataFile(ctx: CommandContext, name: string): string {
+  return path.join(ctx.dataDir?.path ?? "", name);
+}
+
+function rewriteProfile(ctx: CommandContext, patch: Record<string, unknown>): void {
+  const file = dataFile(ctx, "profile.yaml");
+  const profile: unknown = JSON.parse(readFileSync(file, "utf8"));
+  writeFileSync(file, JSON.stringify({ ...(isObject(profile) ? profile : {}), ...patch }));
+}
+
+describe("doctor data checks", () => {
+  test("warns about unknown profile keys and passes", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    rewriteProfile(ctx, { foo: 1 });
+    const result = await runDoctor(ctx);
+    expect(result.ok).toBe(true);
+    const data = result.ok && isObject(result.data) ? result.data : {};
+    expect(JSON.stringify(data["warnings"])).toContain("foo");
+  });
+
+  test("fails naming the events.jsonl line that is not JSON", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    writeFileSync(dataFile(ctx, "events.jsonl"), '{"a":1}\n{"b":2}\nnope\n');
+    const result = await runDoctor(ctx);
+    expect(result.ok ? "" : result.error.message).toContain("line 3");
+  });
+
+  test("fails on malformed companies.json and answers.json", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    writeFileSync(dataFile(ctx, "companies.json"), "{");
+    writeFileSync(dataFile(ctx, "answers.json"), "[");
+    const result = await runDoctor(ctx);
+    const message = result.ok ? "" : result.error.message;
+    expect(message).toContain("companies.json");
+    expect(message).toContain("answers.json");
+  });
+
+  test("fails on an unknown Source name", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    rewriteProfile(ctx, { sources: ["linkedn"] });
+    const result = await runDoctor(ctx);
+    expect(result.ok ? "" : result.error.message).toContain("linkedn");
+  });
+
+  test("warns when an ATS Source has no saved company", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    rewriteProfile(ctx, { sources: ["greenhouse", "remoteok"] });
+    const result = await runDoctor(ctx);
+    expect(warningsOf(result).map((warning) => warning.code)).toContain("ats-without-companies");
+    writeFileSync(
+      dataFile(ctx, "companies.json"),
+      JSON.stringify({ companies: [{ ats: "greenhouse", slug: "acme" }] }),
+    );
+    const after = await runDoctor(ctx);
+    expect(warningsOf(after).map((warning) => warning.code)).not.toContain("ats-without-companies");
+  });
+});
+
+describe("init scaffold", () => {
+  test("writes cv/template.typ and an empty answers.json", async () => {
+    const fresh = path.join(workDir, "fresh");
+    const result = await runInit(["--data", fresh], workDir);
+    expect(result.ok).toBe(true);
+    expect(existsSync(path.join(fresh, "cv", "template.typ"))).toBe(true);
+    expect(listAnswers({ path: fresh })).toEqual([]);
   });
 });

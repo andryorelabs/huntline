@@ -67,6 +67,14 @@ export async function dispatch(
   if (first === undefined || first === "--help" || first === "help") return usageEnvelope();
   const dataDir = resolveDataDir(argv, env, cwd);
   const ctx: CommandContext = { dataDir: dataDir.ok ? dataDir.value : null, env, cwd };
+  if (first === "init" || first === "setup" || first === "doctor") {
+    const unknownEntryFlag = findUnknownFlag(first, withoutDataFlag(argv.slice(1)));
+    if (unknownEntryFlag !== null) {
+      return failure("usage", `unknown flag ${unknownEntryFlag} for "${first}"`, {
+        recoverable: false,
+      });
+    }
+  }
   if (first === "init") return runInit(argv.slice(1), cwd, env);
   if (first === "setup") return runSetup(env);
   if (first === "doctor") {

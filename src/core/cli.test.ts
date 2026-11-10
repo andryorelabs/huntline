@@ -246,6 +246,15 @@ describe("flag registry", () => {
     expect(errorOf(result).message).toContain("--keywords");
   });
 
+  test("init, setup and doctor reject undeclared flags", () => {
+    for (const command of ["init", "setup", "doctor"]) {
+      const result = runCli([command, "--bogus"]);
+      expect(result.code).toBe(2);
+      expect(errorOf(result).code).toBe("usage");
+      expect(errorOf(result).message).toContain("--bogus");
+    }
+  });
+
   test("status accepts --set", () => {
     expect(COMMAND_FLAGS["status"]).toContain("--set");
   });

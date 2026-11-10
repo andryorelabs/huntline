@@ -75,10 +75,43 @@ const STOP_WORDS: ReadonlySet<string> = new Set([
   "plus",
 ]);
 
+const SHORT_SIGNIFICANT_WORDS: ReadonlySet<string> = new Set([
+  "go",
+  "c",
+  "c#",
+  "c++",
+  "r",
+  "ai",
+  "ml",
+  "ui",
+  "ux",
+  "qa",
+  "js",
+  "ts",
+  "db",
+  "ci",
+  "cd",
+  "k8s",
+  "ios",
+  "aws",
+  "gcp",
+  "sql",
+  "php",
+]);
+
+const WORD_PATTERN = /[\p{L}\p{N}]+(?:\+\+|#)?/gu;
+
+function isSignificant(word: string, followedByHyphen: boolean): boolean {
+  if (STOP_WORDS.has(word)) return false;
+  if (word === "c" && followedByHyphen) return false;
+  return word.length >= 3 || SHORT_SIGNIFICANT_WORDS.has(word);
+}
+
 function significantWords(phrase: string): string[] {
-  return normalize(phrase)
-    .split(/[^\p{L}\p{N}]+/u)
-    .filter((word) => word.length >= 3 && !STOP_WORDS.has(word));
+  const text = normalize(phrase);
+  return [...text.matchAll(WORD_PATTERN)]
+    .filter((match) => isSignificant(match[0], text[match.index + match[0].length] === "-"))
+    .map((match) => match[0]);
 }
 
 export function requirementCoverage(requirements: string[], facts: FactBank): Coverage {

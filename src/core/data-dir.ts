@@ -1,8 +1,10 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { errorMessage } from "./narrow.ts";
-import { validateProfile } from "./profile.ts";
+import { errorMessage, isObject } from "./narrow.ts";
+import { validateProfileWithWarnings } from "./profile.ts";
 import type { DataDir, Profile, Result } from "./types.ts";
+
+const SUPPORTED_DATA_DIR_VERSION = 1;
 
 const CONFIG_FILE = "huntline.json";
 const PROFILE_FILE = "profile.yaml";
@@ -25,6 +27,44 @@ function isDirectory(candidate: string): boolean {
   }
 }
 
+function checkVersion(dir: DataDir): Result<DataDir> {
+  const file = path.join(dir.path, CONFIG_FILE);
+  if (!existsSync(file)) return { ok: true, value: dir };
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        code: "data-dir-malformed",
+        message: `${CONFIG_FILE} in ${dir.path} is not valid JSON: ${errorMessage(error)}`,
+      },
+    };
+  }
+  const version = isObject(parsed) ? parsed["version"] : undefined;
+  if (version === undefined) return { ok: true, value: dir };
+  if (typeof version !== "number" || !Number.isFinite(version)) {
+    return {
+      ok: false,
+      error: {
+        code: "data-dir-malformed",
+        message: `${CONFIG_FILE} in ${dir.path} has a non-numeric version`,
+      },
+    };
+  }
+  if (version > SUPPORTED_DATA_DIR_VERSION) {
+    return {
+      ok: false,
+      error: {
+        code: "data-dir-unsupported",
+        message: `${CONFIG_FILE} in ${dir.path} is version ${version} but this huntline supports up to ${SUPPORTED_DATA_DIR_VERSION}; upgrade huntline`,
+      },
+    };
+  }
+  return { ok: true, value: dir };
+}
+
 function explicitDir(source: string, value: string, cwd: string): Result<DataDir> {
   const resolved = path.resolve(cwd, value);
   if (!isDirectory(resolved)) {
@@ -36,7 +76,7 @@ function explicitDir(source: string, value: string, cwd: string): Result<DataDir
       },
     };
   }
-  return { ok: true, value: { path: resolved } };
+  return checkVersion({ path: resolved });
 }
 
 function findUpward(cwd: string): string | null {
@@ -69,10 +109,17 @@ export function resolveDataDir(
       },
     };
   }
-  return { ok: true, value: { path: found } };
+  return checkVersion({ path: found });
 }
 
+export type LoadedProfile = { readonly profile: Profile; readonly warnings: string[] };
+
 export function loadProfile(dir: DataDir): Result<Profile> {
+  const loaded = loadProfileWithWarnings(dir);
+  return loaded.ok ? { ok: true, value: loaded.value.profile } : loaded;
+}
+
+export function loadProfileWithWarnings(dir: DataDir): Result<LoadedProfile> {
   const profilePath = path.join(dir.path, PROFILE_FILE);
   if (!existsSync(profilePath)) {
     return {
@@ -92,5 +139,5 @@ export function loadProfile(dir: DataDir): Result<Profile> {
       },
     };
   }
-  return validateProfile(parsed);
+  return validateProfileWithWarnings(parsed);
 }

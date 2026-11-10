@@ -139,14 +139,24 @@ function checkTracker(value: unknown): Checked<TrackerConfig> {
   };
 }
 
-function failed(message: string): Result<Profile> {
+type ProfileFailure = { readonly ok: false; readonly error: { code: string; message: string } };
+
+function failed(message: string): ProfileFailure {
   return { ok: false, error: { code: "profile-malformed", message } };
 }
 
 export function validateProfile(raw: unknown): Result<Profile> {
+  const result = validateProfileWithWarnings(raw);
+  return result.ok ? { ok: true, value: result.value.profile } : result;
+}
+
+export function validateProfileWithWarnings(
+  raw: unknown,
+): Result<{ readonly profile: Profile; readonly warnings: string[] }> {
   if (!isObject(raw)) return failed("profile: must be a mapping at the top level");
-  const unknownKey = Object.keys(raw).find((key) => !isOneOf(PROFILE_KEYS, key));
-  if (unknownKey !== undefined) return failed(`${unknownKey}: unknown field`);
+  const warnings = Object.keys(raw)
+    .filter((key) => !isOneOf(PROFILE_KEYS, key))
+    .map((key) => `${key}: unknown field, ignored`);
 
   const regions = checkStringList(raw["regions"], "regions");
   if ("problem" in regions) return failed(regions.problem);
@@ -178,15 +188,18 @@ export function validateProfile(raw: unknown): Result<Profile> {
   return {
     ok: true,
     value: {
-      regions: regions.value,
-      contractTypes: contractTypes.value,
-      remote,
-      stack: stack.value,
-      salaryFloor: salaryFloor.value,
-      excludedCompanies: excludedCompanies.value,
-      outreachDailyCap,
-      sources: sources.value,
-      tracker: tracker.value,
+      profile: {
+        regions: regions.value,
+        contractTypes: contractTypes.value,
+        remote,
+        stack: stack.value,
+        salaryFloor: salaryFloor.value,
+        excludedCompanies: excludedCompanies.value,
+        outreachDailyCap,
+        sources: sources.value,
+        tracker: tracker.value,
+      },
+      warnings,
     },
   };
 }

@@ -15,6 +15,11 @@
 - [CLI reference](reference/cli.md)
 - [Profile reference](reference/profile.md)
 
+## Project
+
+- [Product](../PRODUCT.md)
+- [Governance](../GOVERNANCE.md)
+
 ## Decisions
 
 - [Architecture decision records](adr/README.md)

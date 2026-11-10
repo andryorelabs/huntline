@@ -65,6 +65,8 @@ Details: [safety model](docs/guide/safety.md). After a release, follow the [dogf
 - [Profile reference](docs/reference/profile.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Architecture decisions](docs/adr/README.md)
+- [Product](PRODUCT.md)
+- [Governance](GOVERNANCE.md)
 - [Glossary](GLOSSARY.md)
 - [Changelog](CHANGELOG.md)
 

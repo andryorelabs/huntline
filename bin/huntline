@@ -94,7 +94,7 @@ if [ ! -x "$cached_binary" ]; then
   trap - EXIT
 fi
 
-if [ "${HUNTLINE_PREFETCH:-}" = "1" ]; then
+if [ "$guard_mode" = "0" ] && [ "${HUNTLINE_PREFETCH:-}" = "1" ]; then
   exit 0
 fi
 

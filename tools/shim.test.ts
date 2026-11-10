@@ -209,6 +209,19 @@ describe("bin/huntline shim", () => {
 describe("bin/huntline as the PreToolUse guard", () => {
   const unreachable = { HUNTLINE_RELEASE_BASE_URL: "file:///nonexistent/releases" };
 
+  test("HUNTLINE_PREFETCH in the environment never skips the guard", () => {
+    mkdirSync(path.join(cacheDir, version), { recursive: true });
+    const cached = path.join(cacheDir, version, "huntline");
+    writeFileSync(
+      cached,
+      `#!/bin/sh\nprintf '%s\\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"cached deny"}}'\n`,
+    );
+    chmodSync(cached, 0o755);
+    const result = runShim(["guard"], { ...unreachable, HUNTLINE_PREFETCH: "1" }, clickPayload);
+    expect(result.code).toBe(0);
+    expect(denyReasonOf(result.stdout)).toBe("cached deny");
+  });
+
   test("a download failure prints a deny and exits 0", () => {
     const result = runShim(["guard"], unreachable, clickPayload);
     expect(result.code).toBe(0);

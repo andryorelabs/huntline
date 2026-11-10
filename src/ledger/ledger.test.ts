@@ -206,6 +206,40 @@ describe("command", () => {
     expect(!missing.ok && missing.error.code).toBe("not-found");
   });
 
+  test("status --set on a key without events is not-found and appends nothing", async () => {
+    const result = await run(["status", "ghost", "--set", "applied"], ctx());
+    expect(!result.ok && result.error.code).toBe("not-found");
+    expect(await readEvents(dir, "ghost")).toEqual([]);
+  });
+
+  test("status --set surfaces a tracker projection failure", async () => {
+    writeFileSync(path.join(dir.path, "tracker"), "a file where the tracker directory should be\n");
+    writeFileSync(
+      path.join(dir.path, "profile.yaml"),
+      JSON.stringify({
+        regions: ["LATAM"],
+        contractTypes: ["full-time"],
+        remote: "remote-only",
+        stack: { include: [], exclude: [] },
+        salaryFloor: null,
+        excludedCompanies: [],
+        outreachDailyCap: 5,
+        sources: [],
+        tracker: { kind: "local", directory: "tracker" },
+      }),
+    );
+    const lead = JSON.stringify({
+      kind: "lead.created",
+      key: "k",
+      posting: posting(),
+      eligibility: "unknown",
+    });
+    await run(["events", "append", "--json", lead], ctx());
+    const result = await run(["status", "k", "--set", "applied"], ctx());
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error.code).toBe("tracker-local-failed");
+  });
+
   test("ledger check reports a duplicate", async () => {
     await ledgerRecord(dir, posting(), "dismissed", "region");
     const checked = await run(["ledger", "check", "--json", JSON.stringify(posting())], ctx());

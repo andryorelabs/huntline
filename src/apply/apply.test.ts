@@ -74,6 +74,16 @@ describe("answer bank", () => {
     expect(await remaining()).toEqual([]);
   });
 
+  test("a scope containing spaces still closes its blockers and dedupes", async () => {
+    const dir = { path: workDir };
+    const detail = unansweredDetail("Why us?", "company:Acme Corp");
+    const first = await recordBlocker(dir, "acme-1", "field", detail);
+    expect(await recordBlocker(dir, "acme-1", "field", detail)).toEqual(first);
+    expect(await listNeeds(dir)).toHaveLength(1);
+    await saveAnswer(dir, "Why us?", "company:Acme Corp", "great", "human");
+    expect(await listNeeds(dir)).toEqual([]);
+  });
+
   test("blocking the same question twice for one key is a no-op", async () => {
     const dir = { path: workDir };
     const first = await recordBlocker(dir, "acme-1", "field", unansweredDetail("Visa?", "global"));

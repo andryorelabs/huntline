@@ -62,11 +62,19 @@ const REGION_ALIAS_GROUPS: Readonly<Record<string, readonly string[]>> = {
   india: ["india"],
 };
 
-type AliasEntry = { readonly alias: string; readonly group: string };
+const COMPOSITE_REGION_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  "north america": ["us", "canada", "latam"],
+  "central america": ["latam"],
+};
 
-const ALIAS_ENTRIES: readonly AliasEntry[] = Object.entries(REGION_ALIAS_GROUPS)
-  .flatMap(([group, aliases]) => aliases.map((alias) => ({ alias, group })))
-  .toSorted((left, right) => right.alias.length - left.alias.length);
+type AliasEntry = { readonly alias: string; readonly groups: readonly string[] };
+
+const ALIAS_ENTRIES: readonly AliasEntry[] = [
+  ...Object.entries(REGION_ALIAS_GROUPS).flatMap(([group, aliases]) =>
+    aliases.map((alias) => ({ alias, groups: [group] })),
+  ),
+  ...Object.entries(COMPOSITE_REGION_ALIASES).map(([alias, groups]) => ({ alias, groups })),
+].toSorted((left, right) => right.alias.length - left.alias.length);
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -79,10 +87,10 @@ function wholeWordPattern(term: string): RegExp {
 function groupsNamedIn(text: string): Set<string> {
   const groups = new Set<string>();
   let remaining = text;
-  for (const { alias, group } of ALIAS_ENTRIES) {
+  for (const { alias, groups: aliasGroups } of ALIAS_ENTRIES) {
     const pattern = wholeWordPattern(alias);
     if (pattern.test(remaining)) {
-      groups.add(group);
+      for (const group of aliasGroups) groups.add(group);
       remaining = remaining.replace(new RegExp(pattern.source, "gu"), " ");
     }
   }
@@ -91,9 +99,9 @@ function groupsNamedIn(text: string): Set<string> {
 
 function groupsOfRegion(region: string): Set<string> {
   const groups = new Set<string>();
-  for (const { alias, group } of ALIAS_ENTRIES) {
+  for (const { alias, groups: aliasGroups } of ALIAS_ENTRIES) {
     if (alias === region) {
-      groups.add(group);
+      for (const group of aliasGroups) groups.add(group);
     }
   }
   return groups;

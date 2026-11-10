@@ -8,7 +8,7 @@ type BlockerScope = "field" | "section" | "application";
 const SCOPE_ORDER: readonly BlockerScope[] = ["application", "section", "field"];
 
 const GLOBAL_ANSWER_SCOPE = "global";
-const UNANSWERED_PATTERN = /^no answer for(?: \(([^)\s]+)\))?: ([\s\S]*)$/u;
+const UNANSWERED_PATTERN = /^no answer for(?: \((.+?)\))?: ([\s\S]*)$/u;
 
 export function normalizeQuestion(question: string): string {
   return question

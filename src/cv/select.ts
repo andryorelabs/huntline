@@ -8,7 +8,7 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function mentions(haystack: string, needle: string): boolean {
+function mentions(haystack: string, needle: string): boolean {
   const term = normalize(needle);
   if (term === "") return false;
   const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(term)}(?![\\p{L}\\p{N}])`, "u");
@@ -54,8 +54,25 @@ export function selectBullets(
 }
 
 const STOP_WORDS: ReadonlySet<string> = new Set([
-  "the", "and", "with", "for", "years", "year", "experience", "experienced", "strong",
-  "knowledge", "working", "work", "using", "ability", "skills", "skill", "good", "great", "plus",
+  "the",
+  "and",
+  "with",
+  "for",
+  "years",
+  "year",
+  "experience",
+  "experienced",
+  "strong",
+  "knowledge",
+  "working",
+  "work",
+  "using",
+  "ability",
+  "skills",
+  "skill",
+  "good",
+  "great",
+  "plus",
 ]);
 
 function significantWords(phrase: string): string[] {

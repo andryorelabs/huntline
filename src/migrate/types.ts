@@ -1,6 +1,6 @@
 import type { Result } from "../core/types.ts";
 
-export type ImportReport = {
+type ImportReport = {
   readonly source: string;
   readonly created: number;
   readonly skipped: number;

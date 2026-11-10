@@ -35,7 +35,8 @@ function toLabelled(value: unknown): LabelledEmail | null {
   const { messageId, language, from, subject, body, label } = value;
   if (typeof messageId !== "string" || messageId === "") return null;
   if (language !== "en" && language !== "es") return null;
-  if (typeof from !== "string" || typeof subject !== "string" || typeof body !== "string") return null;
+  if (typeof from !== "string" || typeof subject !== "string" || typeof body !== "string")
+    return null;
   if (!isOneOf(EMAIL_CLASSES, label)) return null;
   return { messageId, language, from, subject, body, label };
 }
@@ -96,9 +97,11 @@ function loadLabels(directory: string): LabelledEmail[] | null {
 
 export function run(argv: string[], ctx: CommandContext): Promise<Envelope<unknown>> {
   const file = positional(argv);
-  if (file === undefined) return Promise.resolve(usage("inbox eval needs a classifications file path"));
+  if (file === undefined)
+    return Promise.resolve(usage("inbox eval needs a classifications file path"));
   const labelsOverride = flagValue(argv, "--labels");
-  const directory = labelsOverride === undefined ? "embedded fixtures" : path.resolve(ctx.cwd, labelsOverride);
+  const directory =
+    labelsOverride === undefined ? "embedded fixtures" : path.resolve(ctx.cwd, labelsOverride);
   try {
     const labels = labelsOverride === undefined ? loadEmbeddedLabels() : loadLabels(directory);
     if (labels === null || labels.length === 0) {
@@ -106,7 +109,9 @@ export function run(argv: string[], ctx: CommandContext): Promise<Envelope<unkno
     }
     const predictions = parseRows(readFileSync(path.resolve(ctx.cwd, file), "utf8"), toPrediction);
     if (predictions === null) {
-      return Promise.resolve(usage("classifications must be a JSON array of {messageId, classification}"));
+      return Promise.resolve(
+        usage("classifications must be a JSON array of {messageId, classification}"),
+      );
     }
     return Promise.resolve(success(scoreClassifications(labels, predictions)));
   } catch (error) {

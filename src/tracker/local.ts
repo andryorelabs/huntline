@@ -6,7 +6,7 @@ import { errorMessage } from "../core/narrow.ts";
 import type { ApplicationState, DataDir, Lead, Result, TrackerAdapter } from "../core/types.ts";
 import { readEvents } from "../ledger/events.ts";
 
-export const DEFAULT_LOCAL_DIRECTORY = "applications";
+const DEFAULT_LOCAL_DIRECTORY = "applications";
 
 const EVENTS_HEADING = "## Events";
 
@@ -18,7 +18,7 @@ function fail<T>(code: string, message: string): Result<T> {
   return { ok: false, error: { code, message } };
 }
 
-export function slugForKey(key: string): string {
+function slugForKey(key: string): string {
   const cleaned = key.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
   if (cleaned === key && cleaned !== "") return cleaned;
   const digest = createHash("sha256").update(key).digest("hex").slice(0, 8);
@@ -52,7 +52,8 @@ function parseFile(content: string): ParsedFile {
     while (cursor < lines.length && lines[cursor] !== "---") {
       const line = lines[cursor] ?? "";
       const separator = line.indexOf(": ");
-      if (separator > 0) frontmatter[line.slice(0, separator)] = parseScalar(line.slice(separator + 2));
+      if (separator > 0)
+        frontmatter[line.slice(0, separator)] = parseScalar(line.slice(separator + 2));
       cursor += 1;
     }
     cursor += 1;
@@ -109,7 +110,10 @@ export function createLocalTracker(directory: string | undefined, dir: DataDir):
       score: derived.score ?? parsed.frontmatter["score"] ?? null,
       rejection_reason: derived.rejection ?? parsed.frontmatter["rejection_reason"] ?? null,
     };
-    writeAtomic(fileFor(key), renderFile({ frontmatter, events: parsed.events }, titleOf(parsed, key)));
+    writeAtomic(
+      fileFor(key),
+      renderFile({ frontmatter, events: parsed.events }, titleOf(parsed, key)),
+    );
   }
 
   return {

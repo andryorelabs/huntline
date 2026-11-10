@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Readable } from "node:stream";
 
+import { isObject } from "../core/narrow.ts";
 import { formatHookOutput, guardDecisionFor, MAX_STDIN_BYTES } from "./command.ts";
 import { decideGuard, snapshotScope, type LabelLookup } from "./decide.ts";
 import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
@@ -13,10 +14,33 @@ const LABELS: Readonly<Record<string, string>> = {
   "1_2": "Next",
   "1_3": "Send",
 };
-const lookup: LabelLookup = (scope, uid) => (scope.endsWith("__chrome-devtools") ? (LABELS[uid] ?? null) : null);
+const lookup: LabelLookup = (scope, uid) =>
+  scope.endsWith("__chrome-devtools") ? (LABELS[uid] ?? null) : null;
 
-function call(tool: string, toolInput: unknown): unknown {
-  return { hook_event_name: "PreToolUse", session_id: "s1", tool_name: tool, tool_input: toolInput };
+function permissionDecisionOf(stdout: string): string {
+  const parsed: unknown = JSON.parse(stdout);
+  const output = isObject(parsed) ? parsed["hookSpecificOutput"] : undefined;
+  const decision = isObject(output) ? output["permissionDecision"] : undefined;
+  if (typeof decision !== "string") throw new Error("hook output has no permissionDecision");
+  return decision;
+}
+
+function runGuard(stdin: string): { code: number; decision: string } {
+  const result = Bun.spawnSync(["bun", "src/cli.ts", "guard"], {
+    stdin: Buffer.from(stdin),
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  return { code: result.exitCode, decision: permissionDecisionOf(result.stdout.toString()) };
+}
+
+function call(tool: string, toolInput: unknown): Record<string, unknown> {
+  return {
+    hook_event_name: "PreToolUse",
+    session_id: "s1",
+    tool_name: tool,
+    tool_input: toolInput,
+  };
 }
 
 function verdict(input: unknown): string {
@@ -38,14 +62,27 @@ describe("decideGuard", () => {
   });
 
   test("denies every keyboard path that can submit", () => {
-    for (const key of ["Enter", "NumpadEnter", "Return", "Space", " ", "Control+Enter", "Shift+ ", "\n", "\r", "Shift+\n"]) {
+    for (const key of [
+      "Enter",
+      "NumpadEnter",
+      "Return",
+      "Space",
+      " ",
+      "Control+Enter",
+      "Shift+ ",
+      "\n",
+      "\r",
+      "Shift+\n",
+    ]) {
       expect(verdict(call(`${CHROME}press_key`, { key }))).toBe("deny");
     }
     expect(verdict(call(`${CHROME}press_key`, { key: "Tab" }))).toBe("allow");
     expect(verdict(call(`${CHROME}type_text`, { text: "hi", submitKey: "Enter" }))).toBe("deny");
     expect(verdict(call(`${CHROME}type_text`, { text: "x\n" }))).toBe("deny");
     expect(verdict(call(`${CHROME}fill`, { uid: "1_2", value: "a\r\nb" }))).toBe("deny");
-    expect(verdict(call(`${CHROME}fill_form`, { elements: [{ uid: "1_2", value: "x\n" }] }))).toBe("deny");
+    expect(verdict(call(`${CHROME}fill_form`, { elements: [{ uid: "1_2", value: "x\n" }] }))).toBe(
+      "deny",
+    );
     expect(verdict(call(`${CHROME}type_text`, { text: " " }))).toBe("deny");
     expect(verdict(call(`${CHROME}type_text`, { text: "hello" }))).toBe("allow");
   });
@@ -146,59 +183,70 @@ describe("guardDecisionFor", () => {
 });
 
 describe("huntline guard process", () => {
-  type Parsed = { hookSpecificOutput: { permissionDecision: string } };
-
-  function runGuard(stdin: string): { code: number; parsed: Parsed } {
-    const result = Bun.spawnSync(["bun", "src/cli.ts", "guard"], {
-      stdin: Buffer.from(stdin),
-      stdout: "pipe",
-      stderr: "pipe",
-    });
-    return { code: result.exitCode, parsed: JSON.parse(result.stdout.toString()) as Parsed };
-  }
-
   test("prints exactly one deny object for invalid JSON", () => {
-    const { code, parsed } = runGuard("nope");
+    const { code, decision } = runGuard("nope");
     expect(code).toBe(0);
-    expect(parsed.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(decision).toBe("deny");
   });
 
   test("allows a navigation end to end and denies an unrecorded click", () => {
-    const nav = runGuard(JSON.stringify(call(`${CHROME}navigate_page`, { url: "https://example.test" })));
-    expect(nav.parsed.hookSpecificOutput.permissionDecision).toBe("allow");
+    const nav = runGuard(
+      JSON.stringify(call(`${CHROME}navigate_page`, { url: "https://example.test" })),
+    );
+    expect(nav.decision).toBe("allow");
     const click = runGuard(JSON.stringify(call(`${CHROME}click`, { uid: "1_2" })));
-    expect(click.parsed.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(click.decision).toBe("deny");
   });
 });
 
 describe("snapshot labels", () => {
   test("parses uid lines from text and nested content", () => {
-    const response = { content: [{ type: "text", text: 'uid=1_1 button "Submit application"\n  uid=1_2 button "Next"' }] };
-    expect(parseSnapshotLabels(response)).toEqual({ "1_1": 'button "Submit application"', "1_2": 'button "Next"' });
+    const response = {
+      content: [
+        { type: "text", text: 'uid=1_1 button "Submit application"\n  uid=1_2 button "Next"' },
+      ],
+    };
+    expect(parseSnapshotLabels(response)).toEqual({
+      "1_1": 'button "Submit application"',
+      "1_2": 'button "Next"',
+    });
   });
 
   test("records a snapshot and resolves a label by session", () => {
     const session = `test-${process.pid}-${Date.now()}`;
     const scope = snapshotScope(session, "chrome-devtools");
-    recordSnapshot(scope, parseSnapshotLabels('uid=2_1 button "Submit application"\nuid=2_2 link "Next"'));
+    recordSnapshot(
+      scope,
+      parseSnapshotLabels('uid=2_1 button "Submit application"\nuid=2_2 link "Next"'),
+    );
     expect(lookupLabel(scope, "2_1")).toContain("Submit application");
     expect(lookupLabel(scope, "9_9")).toBeNull();
     expect(lookupLabel("other-session", "2_1")).toBeNull();
-    const payload = { ...(call(`${CHROME}click`, { uid: "2_1" }) as object), session_id: session };
+    const payload = { ...call(`${CHROME}click`, { uid: "2_1" }), session_id: session };
     expect(decideGuard(payload, lookupLabel).decision).toBe("deny");
-    const otherServer = { ...(call("mcp__user-chrome__click", { uid: "2_2" }) as object), session_id: session };
+    const otherServer = { ...call("mcp__user-chrome__click", { uid: "2_2" }), session_id: session };
     expect(decideGuard(otherServer, lookupLabel).decision).toBe("deny");
   });
 
   test("the recorder hook then the guard deny a submit click end to end", () => {
     const session = `e2e-${process.pid}-${Date.now()}`;
-    const snapshot = { session_id: session, tool_name: `${CHROME}take_snapshot`, tool_response: 'uid=3_1 button "Submit application"\nuid=3_2 button "Next"' };
-    const recorded = Bun.spawnSync(["bun", "src/cli.ts", "guard", "--record"], { stdin: Buffer.from(JSON.stringify(snapshot)), stdout: "pipe" });
+    const snapshot = {
+      session_id: session,
+      tool_name: `${CHROME}take_snapshot`,
+      tool_response: 'uid=3_1 button "Submit application"\nuid=3_2 button "Next"',
+    };
+    const recorded = Bun.spawnSync(["bun", "src/cli.ts", "guard", "--record"], {
+      stdin: Buffer.from(JSON.stringify(snapshot)),
+      stdout: "pipe",
+    });
     expect(recorded.exitCode).toBe(0);
     const ask = (uid: string): string => {
-      const payload = { ...(call(`${CHROME}click`, { uid }) as object), session_id: session };
-      const result = Bun.spawnSync(["bun", "src/cli.ts", "guard"], { stdin: Buffer.from(JSON.stringify(payload)), stdout: "pipe" });
-      return (JSON.parse(result.stdout.toString()) as { hookSpecificOutput: { permissionDecision: string } }).hookSpecificOutput.permissionDecision;
+      const payload = { ...call(`${CHROME}click`, { uid }), session_id: session };
+      const result = Bun.spawnSync(["bun", "src/cli.ts", "guard"], {
+        stdin: Buffer.from(JSON.stringify(payload)),
+        stdout: "pipe",
+      });
+      return permissionDecisionOf(result.stdout.toString());
     };
     expect(ask("3_1")).toBe("deny");
     expect(ask("3_2")).toBe("allow");

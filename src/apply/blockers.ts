@@ -43,7 +43,9 @@ export async function closeFieldBlockers(
   );
   await toClose.reduce(
     (previous, blockerId) =>
-      previous.then(() => appendEvent(dir, { kind: "blocker.resolved", blockerId })).then(() => undefined),
+      previous
+        .then(() => appendEvent(dir, { kind: "blocker.resolved", blockerId }))
+        .then(() => undefined),
     Promise.resolve(),
   );
   return toClose.length;
@@ -64,9 +66,12 @@ export async function listNeeds(dir: DataDir): Promise<NeedsGroup[]> {
     group.items.push({ blockerId: event.blockerId, detail: event.detail, at: event.at });
     groups.set(groupId, group);
   }
-  return groups.values().toArray().toSorted(
-    (left, right) =>
-      left.key.localeCompare(right.key) ||
-      SCOPE_ORDER.indexOf(left.scope) - SCOPE_ORDER.indexOf(right.scope),
-  );
+  return groups
+    .values()
+    .toArray()
+    .toSorted(
+      (left, right) =>
+        left.key.localeCompare(right.key) ||
+        SCOPE_ORDER.indexOf(left.scope) - SCOPE_ORDER.indexOf(right.scope),
+    );
 }

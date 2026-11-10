@@ -67,7 +67,8 @@ function containsLineBreak(value: unknown, depth = 0): boolean {
   if (depth > 6) return true;
   if (typeof value === "string") return LINE_BREAK.test(value);
   if (Array.isArray(value)) return value.some((entry) => containsLineBreak(entry, depth + 1));
-  if (isRecord(value)) return Object.values(value).some((entry) => containsLineBreak(entry, depth + 1));
+  if (isRecord(value))
+    return Object.values(value).some((entry) => containsLineBreak(entry, depth + 1));
   return false;
 }
 
@@ -108,11 +109,22 @@ function decideBrowser(
     return deny("typing with a submit key can submit a form; the human presses Submit");
   }
   if (action === "press_key") return decideKey(toolInput);
-  if (action === "click") return decideClick(toolInput, sessionId === null ? null : snapshotScope(sessionId, server), lookup);
+  if (action === "click")
+    return decideClick(
+      toolInput,
+      sessionId === null ? null : snapshotScope(sessionId, server),
+      lookup,
+    );
   if (action === "evaluate_script") {
-    return deny("evaluate_script is blocked: scripts can submit or send; use snapshots to read the page");
+    return deny(
+      "evaluate_script is blocked: scripts can submit or send; use snapshots to read the page",
+    );
   }
-  if (action === "type_text" && typeof toolInput["text"] === "string" && toolInput["text"].trim() === "") {
+  if (
+    action === "type_text" &&
+    typeof toolInput["text"] === "string" &&
+    toolInput["text"].trim() === ""
+  ) {
     return deny("type_text with only whitespace can press a focused button");
   }
   if (action === "type_text" || action === "fill" || action === "fill_form") {
@@ -140,7 +152,10 @@ function decideUnchecked(input: unknown, lookup: LabelLookup): GuardDecision {
   if (!BROWSER_SERVER.test(server) && !INTERACTIVE_ACTIONS.has(action)) return ALLOW;
   const toolInput = input["tool_input"];
   if (!isRecord(toolInput)) return deny("browser tool call has no readable tool_input");
-  const sessionId = typeof input["session_id"] === "string" && input["session_id"] !== "" ? input["session_id"] : null;
+  const sessionId =
+    typeof input["session_id"] === "string" && input["session_id"] !== ""
+      ? input["session_id"]
+      : null;
   return decideBrowser(action, server, toolInput, sessionId, lookup);
 }
 

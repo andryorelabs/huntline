@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { runSetup } from "./setup.ts";
@@ -22,23 +30,22 @@ const LINUX = { os: "linux", arch: "x64" };
 const ARCHIVE_BYTES = new TextEncoder().encode("synthetic archive");
 const ARCHIVE_SHA = new Bun.CryptoHasher("sha256").update(ARCHIVE_BYTES).digest("hex");
 
-const fakeExtract: Extractor = async (archive, destination) => {
+const fakeExtract: Extractor = (archive, destination) => {
   const folder = path.join(destination, path.basename(archive).replace(/\.tar\.xz$/, ""));
   mkdirSync(folder, { recursive: true });
   writeFileSync(path.join(folder, "typst"), "#!/bin/sh\n");
-  return { ok: true, value: undefined };
+  return Promise.resolve({ ok: true, value: undefined });
 };
 
-const okDownload: Downloader = async () => ({ ok: true, value: ARCHIVE_BYTES });
+const okDownload: Downloader = () => Promise.resolve({ ok: true, value: ARCHIVE_BYTES });
 
-const failingDownload: Downloader = async () => ({
-  ok: false,
-  error: { code: "tool-download-failed", message: "offline" },
-});
+const failingDownload: Downloader = () =>
+  Promise.resolve({
+    ok: false,
+    error: { code: "tool-download-failed", message: "offline" },
+  });
 
-const forbiddenDownload: Downloader = async () => {
-  throw new Error("must not download");
-};
+const forbiddenDownload: Downloader = () => Promise.reject(new Error("must not download"));
 
 function deps(overrides: Partial<InstallDeps> = {}): InstallDeps {
   return { platform: LINUX, download: okDownload, extract: fakeExtract, ...overrides };
@@ -135,9 +142,11 @@ describe("toolStatus and setup", () => {
   test("setup succeeds when both tools are present", async () => {
     const bin = path.join(root, "bin");
     mkdirSync(bin);
-    for (const name of ["typst", "pdftotext"]) writeFileSync(path.join(bin, name), "#!/bin/sh\n", { mode: 0o755 });
+    for (const name of ["typst", "pdftotext"])
+      writeFileSync(path.join(bin, name), "#!/bin/sh\n", { mode: 0o755 });
     const envelope = await runSetup({ ...env, PATH: bin }, deps(), LINUX);
     expect(envelope.ok).toBe(true);
-    if (envelope.ok) expect(envelope.data).toMatchObject({ typst: { found: true, source: "path" } });
+    if (envelope.ok)
+      expect(envelope.data).toMatchObject({ typst: { found: true, source: "path" } });
   });
 });

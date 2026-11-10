@@ -19,7 +19,8 @@ function validate(score: ScoreInput): string | null {
   if (!Number.isInteger(score.score) || score.score < 0 || score.score > 100) {
     return "score must be an integer from 0 to 100";
   }
-  if (score.reasons.some((reason) => reason.trim() === "")) return "reasons must be non-empty strings";
+  if (score.reasons.some((reason) => reason.trim() === ""))
+    return "reasons must be non-empty strings";
   return null;
 }
 
@@ -52,10 +53,16 @@ export async function recordScore(
       [...existing, stored],
     );
     if (!projected.ok) {
-      return fail(projected.error.code, `score recorded but not projected: ${projected.error.message}`);
+      return fail(
+        projected.error.code,
+        `score recorded but not projected: ${projected.error.message}`,
+      );
     }
   } catch (error) {
-    return fail("tracker-projection-failed", `score recorded but not projected: ${errorMessage(error)}`);
+    return fail(
+      "tracker-projection-failed",
+      `score recorded but not projected: ${errorMessage(error)}`,
+    );
   }
   return { ok: true, value: undefined };
 }

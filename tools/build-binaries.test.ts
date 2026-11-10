@@ -2,7 +2,14 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { binaryName, buildBinary, parseArguments, readPluginVersion, TARGETS } from "./build-binaries.ts";
+import { isObject } from "../src/core/narrow.ts";
+import {
+  binaryName,
+  buildBinary,
+  parseArguments,
+  readPluginVersion,
+  TARGETS,
+} from "./build-binaries.ts";
 
 describe("build-binaries helpers", () => {
   test("binaryName drops the bun- prefix", () => {
@@ -69,7 +76,10 @@ describe.skipIf(process.platform !== "linux" || process.arch !== "x64")(
     test("prints the embedded version", () => {
       const result = run("--version");
       expect(result.exitCode).toBe(0);
-      expect(JSON.parse(result.stdout.toString())).toEqual({ ok: true, data: { version: "0.2.0" } });
+      expect(JSON.parse(result.stdout.toString())).toEqual({
+        ok: true,
+        data: { version: "0.2.0" },
+      });
     });
 
     test("init and doctor work from the compiled binary", () => {
@@ -82,22 +92,32 @@ describe.skipIf(process.platform !== "linux" || process.arch !== "x64")(
 
     test("inbox eval finds its embedded fixtures in the compiled binary", () => {
       const fixtureDir = path.resolve(import.meta.dir, "..", "fixtures", "inbox");
-      const predictions = ["emails-en.json", "emails-es.json"]
-        .flatMap((name) => JSON.parse(readFileSync(path.join(fixtureDir, name), "utf8")) as { messageId: string; label: string }[])
-        .map((email) => ({ messageId: email.messageId, classification: email.label }));
+      const predictions = ["emails-en.json", "emails-es.json"].flatMap((name) => {
+        const rows: unknown = JSON.parse(readFileSync(path.join(fixtureDir, name), "utf8"));
+        if (!Array.isArray(rows)) throw new Error(`fixture ${name} is not an array`);
+        return rows.map((row: unknown) => {
+          if (!isObject(row)) throw new Error(`fixture ${name} has a non-object row`);
+          return { messageId: row["messageId"], classification: row["label"] };
+        });
+      });
       const file = path.join(workdir, "classifications.json");
       writeFileSync(file, JSON.stringify(predictions));
       const result = run("inbox", "eval", file);
       expect(result.exitCode).toBe(0);
-      expect(JSON.parse(result.stdout.toString())).toMatchObject({ ok: true, data: { accuracy: 1 } });
+      expect(JSON.parse(result.stdout.toString())).toMatchObject({
+        ok: true,
+        data: { accuracy: 1 },
+      });
     });
 
     test("lazily loaded commands run through the compiled binary", () => {
       const result = run("sweep");
       expect(result.exitCode).not.toBe(0);
-      const envelope: { ok: boolean; error?: { code: string } } = JSON.parse(result.stdout.toString());
-      expect(envelope.ok).toBe(false);
-      expect(envelope.error?.code).not.toBe("not-implemented");
+      const envelope: unknown = JSON.parse(result.stdout.toString());
+      if (!isObject(envelope)) throw new Error("envelope is not an object");
+      expect(envelope["ok"]).toBe(false);
+      const error = envelope["error"];
+      expect(isObject(error) ? error["code"] : undefined).not.toBe("not-implemented");
     });
   },
 );

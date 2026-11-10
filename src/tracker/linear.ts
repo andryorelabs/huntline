@@ -110,7 +110,10 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
   const mapping = options.mapping ?? DEFAULT_LINEAR_MAPPING;
   let metadata: TeamMetadata | null = null;
 
-  async function graphql(query: string, variables: Record<string, unknown>): Promise<Result<unknown>> {
+  async function graphql(
+    query: string,
+    variables: Record<string, unknown>,
+  ): Promise<Result<unknown>> {
     if (options.apiKey === undefined || options.apiKey === "") {
       return fail("tracker-linear-no-key", "LINEAR_API_KEY is not set");
     }
@@ -123,7 +126,10 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
         signal: AbortSignal.timeout(30_000),
       });
     } catch (error) {
-      return fail("tracker-linear-network", errorMessage(error).split(options.apiKey).join("[redacted]"));
+      return fail(
+        "tracker-linear-network",
+        errorMessage(error).split(options.apiKey).join("[redacted]"),
+      );
     }
     if (!response.ok) {
       return fail("tracker-linear-http", `Linear responded with HTTP ${response.status}`);
@@ -138,7 +144,10 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
     const errors = body["errors"];
     if (Array.isArray(errors) && errors.length > 0) {
       const first: unknown = errors[0];
-      const message = isObject(first) && typeof first["message"] === "string" ? first["message"] : "unknown error";
+      const message =
+        isObject(first) && typeof first["message"] === "string"
+          ? first["message"]
+          : "unknown error";
       return fail("tracker-linear-graphql", message);
     }
     return { ok: true, value: body["data"] };
@@ -156,16 +165,22 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
     if (!isObject(team) || typeof team["id"] !== "string") {
       return fail("tracker-linear-no-team", `Linear team ${options.team} was not found`);
     }
-    metadata = { id: team["id"], states: readNamed(team["states"]), labels: readNamed(team["labels"]) };
+    metadata = {
+      id: team["id"],
+      states: readNamed(team["states"]),
+      labels: readNamed(team["labels"]),
+    };
     return { ok: true, value: metadata };
   }
 
-  async function stateId(team: TeamMetadata, state: ApplicationState): Promise<Result<string>> {
+  function stateId(team: TeamMetadata, state: ApplicationState): Promise<Result<string>> {
     const wanted = mapping.states[state];
     const match = team.states.find((candidate) => sameName(candidate.name, wanted));
-    return match === undefined
-      ? fail("tracker-linear-no-state", `Linear state "${wanted}" for ${state} does not exist`)
-      : { ok: true, value: match.id };
+    return Promise.resolve(
+      match === undefined
+        ? fail("tracker-linear-no-state", `Linear state "${wanted}" for ${state} does not exist`)
+        : { ok: true, value: match.id },
+    );
   }
 
   async function labelId(team: TeamMetadata, name: string): Promise<Result<string>> {
@@ -174,7 +189,8 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
     const created = await graphql(CREATE_LABEL_MUTATION, { teamId: team.id, name });
     if (!created.ok) return created;
     const id = pathValue(created.value, ["issueLabelCreate", "issueLabel", "id"]);
-    if (typeof id !== "string") return fail("tracker-linear-malformed", "label creation returned no id");
+    if (typeof id !== "string")
+      return fail("tracker-linear-malformed", "label creation returned no id");
     metadata = { ...team, labels: [...team.labels, { id, name }] };
     return { ok: true, value: id };
   }
@@ -232,7 +248,8 @@ export function createLinearTracker(options: LinearOptions): TrackerAdapter {
     });
     if (!created.ok) return created;
     const id = pathValue(created.value, ["issueCreate", "issue", "id"]);
-    if (typeof id !== "string") return fail("tracker-linear-malformed", "issue creation returned no id");
+    if (typeof id !== "string")
+      return fail("tracker-linear-malformed", "issue creation returned no id");
     options.idempotency.record(mapKey(lead.key), id);
     return { ok: true, value: id };
   }

@@ -49,7 +49,12 @@ export function field(value: unknown, key: string): unknown {
 const SECONDS_THRESHOLD = 100_000_000_000;
 
 export function isoDate(value: unknown): string | undefined {
-  const numeric = typeof value === "number" ? (Math.abs(value) < SECONDS_THRESHOLD ? value * 1000 : value) : undefined;
+  const numeric =
+    typeof value === "number"
+      ? Math.abs(value) < SECONDS_THRESHOLD
+        ? value * 1000
+        : value
+      : undefined;
   const raw = numeric ?? text(value);
   if (raw === undefined) return undefined;
   const parsed = new Date(raw);

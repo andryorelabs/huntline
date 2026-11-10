@@ -1,7 +1,7 @@
 import type { Draft, LintFinding, Recipient } from "./types.ts";
 
-export const LINKEDIN_MAX_CHARS = 300;
-export const EMAIL_MAX_WORDS = 160;
+const LINKEDIN_MAX_CHARS = 300;
+const EMAIL_MAX_WORDS = 160;
 
 const PLACEHOLDER_PATTERNS: readonly RegExp[] = [
   /\[[^\]\n]{1,60}\]/,
@@ -46,7 +46,7 @@ function firstName(fullName: string): string {
 
 function lengthFinding(draft: Draft): LintFinding | null {
   if (draft.channel === "linkedin") {
-    const length = [...draft.body.trimEnd()].length;
+    const length = Array.from(draft.body.trimEnd()).length;
     if (length > LINKEDIN_MAX_CHARS) {
       return {
         rule: "too-long",

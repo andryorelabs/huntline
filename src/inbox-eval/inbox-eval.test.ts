@@ -4,17 +4,37 @@ import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import { exitCodeFor } from "../core/envelope.ts";
+import { isObject, isOneOf } from "../core/narrow.ts";
 import { EMAIL_CLASSES } from "../inbox/types.ts";
 import { run } from "./command.ts";
 import { scoreClassifications, type LabelledEmail } from "./score.ts";
 
 const FIXTURES = path.resolve(import.meta.dir, "..", "..", "fixtures", "inbox");
 
+function toLabelledEmail(row: unknown): LabelledEmail {
+  if (!isObject(row)) throw new Error("fixture row is not an object");
+  const { messageId, language, from, subject, body, label } = row;
+  if (typeof messageId !== "string" || typeof from !== "string" || typeof subject !== "string") {
+    throw new Error("fixture row has a malformed text field");
+  }
+  if (typeof body !== "string") throw new Error("fixture row has a malformed body");
+  if (language !== "en" && language !== "es")
+    throw new Error("fixture row has an unknown language");
+  if (!isOneOf(EMAIL_CLASSES, label)) throw new Error("fixture row has an unknown label");
+  return { messageId, language, from, subject, body, label };
+}
+
+function loadFixtureRows(file: string): LabelledEmail[] {
+  const parsed: unknown = JSON.parse(readFileSync(file, "utf8"));
+  if (!Array.isArray(parsed)) throw new Error(`fixture ${file} is not an array`);
+  return parsed.map((row: unknown) => toLabelledEmail(row));
+}
+
 function loadFixtures(): LabelledEmail[] {
   return readdirSync(FIXTURES)
     .filter((name) => name.endsWith(".json"))
     .toSorted()
-    .flatMap((name) => JSON.parse(readFileSync(path.join(FIXTURES, name), "utf8")) as LabelledEmail[]);
+    .flatMap((name) => loadFixtureRows(path.join(FIXTURES, name)));
 }
 
 let root = "";
@@ -42,7 +62,9 @@ describe("fixtures", () => {
   test("covers both languages and every class in each", () => {
     for (const language of ["en", "es"] as const) {
       for (const label of EMAIL_CLASSES) {
-        expect(fixtures.some((email) => email.language === language && email.label === label)).toBe(true);
+        expect(fixtures.some((email) => email.language === language && email.label === label)).toBe(
+          true,
+        );
       }
     }
   });
@@ -95,7 +117,10 @@ describe("scoreClassifications", () => {
 
 describe("inbox eval command", () => {
   test("matching classifications file yields accuracy 1.0 and exit 0", async () => {
-    const rows = loadFixtures().map((email) => ({ messageId: email.messageId, classification: email.label }));
+    const rows = loadFixtures().map((email) => ({
+      messageId: email.messageId,
+      classification: email.label,
+    }));
     writeFileSync(path.join(root, "c.json"), JSON.stringify(rows));
     const envelope = await run(["c.json"], context());
     expect(exitCodeFor(envelope)).toBe(0);
@@ -109,7 +134,10 @@ describe("inbox eval command", () => {
   });
 
   test("malformed classifications are a usage error", async () => {
-    writeFileSync(path.join(root, "c.json"), JSON.stringify([{ messageId: "x", classification: "bogus" }]));
+    writeFileSync(
+      path.join(root, "c.json"),
+      JSON.stringify([{ messageId: "x", classification: "bogus" }]),
+    );
     const envelope = await run(["c.json"], context());
     expect(exitCodeFor(envelope)).toBe(2);
   });

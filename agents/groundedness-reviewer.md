@@ -23,7 +23,13 @@ Return exactly one JSON object and nothing else:
 ```json
 {
   "grounded": true,
-  "findings": [{ "claim": "string", "problem": "no-fact | number-mismatch | never-claim", "factId": "string or null" }]
+  "findings": [
+    {
+      "claim": "string",
+      "problem": "no-fact | number-mismatch | never-claim",
+      "factId": "string or null"
+    }
+  ]
 }
 ```
 

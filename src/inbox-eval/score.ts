@@ -15,7 +15,7 @@ export type Prediction = {
   readonly classification: EmailClass;
 };
 
-export type ClassScore = {
+type ClassScore = {
   readonly support: number;
   readonly truePositives: number;
   readonly falsePositives: number;
@@ -33,7 +33,12 @@ export type EvalReport = {
   readonly unknown: readonly string[];
 };
 
-type Counts = { truePositives: number; falsePositives: number; falseNegatives: number; support: number };
+type Counts = {
+  truePositives: number;
+  falsePositives: number;
+  falseNegatives: number;
+  support: number;
+};
 
 function ratio(numerator: number, denominator: number): number | null {
   return denominator === 0 ? null : numerator / denominator;
@@ -52,10 +57,14 @@ export function scoreClassifications(
   predictions: readonly Prediction[],
 ): EvalReport {
   const predicted = new Map<string, EmailClass>();
-  for (const prediction of predictions) predicted.set(prediction.messageId, prediction.classification);
+  for (const prediction of predictions)
+    predicted.set(prediction.messageId, prediction.classification);
 
   const counts = new Map<EmailClass, Counts>(
-    EMAIL_CLASSES.map((name) => [name, { truePositives: 0, falsePositives: 0, falseNegatives: 0, support: 0 }]),
+    EMAIL_CLASSES.map((name) => [
+      name,
+      { truePositives: 0, falsePositives: 0, falseNegatives: 0, support: 0 },
+    ]),
   );
   const missing: string[] = [];
   let correct = 0;
@@ -80,12 +89,17 @@ export function scoreClassifications(
 
   const known = new Set(labels.map((email) => email.messageId));
   const unknown = [...predicted.keys()].filter((messageId) => !known.has(messageId));
-  const perClass = Object.fromEntries(
-    EMAIL_CLASSES.map((name) => {
-      const entry = counts.get(name);
-      return [name, toClassScore(entry ?? { truePositives: 0, falsePositives: 0, falseNegatives: 0, support: 0 })];
-    }),
-  ) as Record<EmailClass, ClassScore>;
+  const scoreFor = (name: EmailClass): ClassScore =>
+    toClassScore(
+      counts.get(name) ?? { truePositives: 0, falsePositives: 0, falseNegatives: 0, support: 0 },
+    );
+  const perClass: Record<EmailClass, ClassScore> = {
+    rejection: scoreFor("rejection"),
+    interview: scoreFor("interview"),
+    "info-request": scoreFor("info-request"),
+    offer: scoreFor("offer"),
+    other: scoreFor("other"),
+  };
 
   return {
     total: labels.length,

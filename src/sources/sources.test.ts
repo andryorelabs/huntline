@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isObject } from "../core/narrow.ts";
 import { run } from "./command.ts";
 import { detectAts } from "./detect.ts";
 import type { FetchFunction } from "./http.ts";
@@ -15,7 +16,9 @@ function routedFetch(routes: Record<string, string>): FetchFunction {
   return (input) => {
     const match = Object.entries(routes).find(([fragment]) => input.includes(fragment));
     if (match === undefined) return Promise.resolve(new Response("not found", { status: 404 }));
-    return Promise.resolve(new Response(match[1], { headers: { "content-type": "application/json" } }));
+    return Promise.resolve(
+      new Response(match[1], { headers: { "content-type": "application/json" } }),
+    );
   };
 }
 
@@ -65,7 +68,9 @@ describe("company adapters", () => {
   }
 
   test("greenhouse keeps warnings apart and strips HTML", async () => {
-    const sources = createSources(routedFetch({ "boards-api.greenhouse.io": fixture("greenhouse") }));
+    const sources = createSources(
+      routedFetch({ "boards-api.greenhouse.io": fixture("greenhouse") }),
+    );
     const result = await sources["greenhouse"]?.fetch({ slug: "acme" });
     expect(result?.warnings).toHaveLength(1);
     expect(result?.postings[0]).toMatchObject({
@@ -131,12 +136,15 @@ describe("board adapters", () => {
     const result = await sources["remoteok"]?.fetch({});
     expect(result?.warnings).toEqual([]);
     expect(result?.postings).toHaveLength(1);
-    expect(result?.postings[0]).toMatchObject({ id: "remoteok:555", stack: ["typescript", "node"] });
+    expect(result?.postings[0]).toMatchObject({
+      id: "remoteok:555",
+      stack: ["typescript", "node"],
+    });
   });
 
   test("hn finds the hiring thread then parses job comments", async () => {
     const sources = createSources(
-      routedFetch({ "search_by_date": fixture("hn-stories"), "story_900001": fixture("hn-comments") }),
+      routedFetch({ search_by_date: fixture("hn-stories"), story_900001: fixture("hn-comments") }),
     );
     const result = await sources["hn"]?.fetch({});
     expect(result?.errors).toEqual([]);
@@ -152,7 +160,7 @@ describe("board adapters", () => {
   });
 
   test("hn errors when no hiring thread exists", async () => {
-    const sources = createSources(routedFetch({ "search_by_date": '{"hits":[]}' }));
+    const sources = createSources(routedFetch({ search_by_date: '{"hits":[]}' }));
     const result = await sources["hn"]?.fetch({});
     expect(result?.errors).toHaveLength(1);
   });
@@ -224,18 +232,23 @@ describe("company command", () => {
       env: { PATH: process.env["PATH"] ?? "", HOME: dataDir },
     });
     const parsed: unknown = JSON.parse(result.stdout.toString().trim());
-    return { code: result.exitCode, envelope: { ...(parsed as Record<string, unknown>) } };
+    if (!isObject(parsed)) throw new Error("envelope is not an object");
+    return { code: result.exitCode, envelope: { ...parsed } };
   }
 
   test("company add stores ats and slug, list returns them, repeat is idempotent", () => {
     const first = spawn(["company", "add", "https://jobs.ashbyhq.com/acme"]);
     expect(first.code).toBe(0);
-    expect(first.envelope["data"]).toEqual({ added: true, company: { ats: "ashby", slug: "acme" } });
+    expect(first.envelope["data"]).toEqual({
+      added: true,
+      company: { ats: "ashby", slug: "acme" },
+    });
     expect(JSON.parse(readFileSync(path.join(dataDir, "companies.json"), "utf8"))).toEqual({
       companies: [{ ats: "ashby", slug: "acme" }],
     });
     const again = spawn(["company", "add", "https://jobs.ashbyhq.com/acme"]);
-    expect((again.envelope["data"] as { added: boolean }).added).toBe(false);
+    const againData = again.envelope["data"];
+    expect(isObject(againData) ? againData["added"] : undefined).toBe(false);
     const listed = spawn(["company", "list"]);
     expect(listed.envelope["data"]).toEqual({ companies: [{ ats: "ashby", slug: "acme" }] });
   });
@@ -243,7 +256,8 @@ describe("company command", () => {
   test("an unsupported url exits 1 with an error envelope", () => {
     const result = spawn(["company", "add", "https://acme.example/careers"]);
     expect(result.code).toBe(1);
-    expect((result.envelope["error"] as { code: string }).code).toBe("unsupported-careers-url");
+    const error = result.envelope["error"];
+    expect(isObject(error) ? error["code"] : undefined).toBe("unsupported-careers-url");
   });
 
   test("missing arguments are a usage error", () => {

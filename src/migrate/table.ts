@@ -25,7 +25,10 @@ function isSeparator(line: string): boolean {
 }
 
 function canonicalHeader(header: string): string {
-  const lowered = header.toLowerCase().replace(/[^a-z ]/g, "").trim();
+  const lowered = header
+    .toLowerCase()
+    .replace(/[^a-z ]/g, "")
+    .trim();
   for (const [canonical, names] of Object.entries(ALIASES)) {
     if (names.includes(lowered)) return canonical;
   }
@@ -87,10 +90,8 @@ export function parseTableBlocks(markdown: string): TableBlock[] {
 
 export function headersMatch(block: TableBlock, expected: readonly string[]): boolean {
   const actual = block.headers.map((header) => header.toLowerCase().trim());
-  return actual.length === expected.length && expected.every((name, position) => actual[position] === name);
-}
-
-export function hasColumns(rows: readonly TableRow[], columns: readonly string[]): boolean {
-  const first = rows[0];
-  return first !== undefined && columns.every((column) => column in first);
+  return (
+    actual.length === expected.length &&
+    expected.every((name, position) => actual[position] === name)
+  );
 }

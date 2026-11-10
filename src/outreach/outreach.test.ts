@@ -63,7 +63,10 @@ describe("lintDraft", () => {
       { channel: "linkedin", body: "Hi Grace, loved your talk.", company: "Globex" },
       ctx,
     );
-    expect(findings.map((finding) => finding.rule).toSorted()).toEqual(["wrong-company", "wrong-name"]);
+    expect(findings.map((finding) => finding.rule).toSorted()).toEqual([
+      "wrong-company",
+      "wrong-name",
+    ]);
   });
 
   test("matching greeting is accepted, accents ignored", () => {
@@ -80,7 +83,9 @@ describe("logOutreach and CLI", () => {
   test("concurrent logs never exceed the daily cap", async () => {
     const dir = { path: root };
     const entry = { channel: "email", recipient: "Ada" } as const;
-    const results = await Promise.all(Array.from({ length: 6 }, () => logOutreach(dir, profile, entry)));
+    const results = await Promise.all(
+      Array.from({ length: 6 }, () => logOutreach(dir, profile, entry)),
+    );
     expect(results.filter((result) => result.ok)).toHaveLength(2);
     const logged = (await readEvents(dir)).filter((event) => event.kind === "outreach.logged");
     expect(logged).toHaveLength(2);
@@ -92,7 +97,7 @@ describe("logOutreach and CLI", () => {
     expect((await logOutreach(dir, profile, entry)).ok).toBe(true);
     expect((await logOutreach(dir, profile, entry)).ok).toBe(true);
     const third = await logOutreach(dir, profile, entry);
-    expect(third.ok === false && third.error.code).toBe("daily-cap-reached");
+    expect(!third.ok && third.error.code).toBe("daily-cap-reached");
     const logged = (await readEvents(dir)).filter((event) => event.kind === "outreach.logged");
     expect(logged).toHaveLength(2);
   });

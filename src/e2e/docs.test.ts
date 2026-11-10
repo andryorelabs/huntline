@@ -32,7 +32,7 @@ describe("docs/reference/cli.md", () => {
   });
 
   test("lists every exit code", () => {
-    for (const code of [0, 1, 2, 3]) expect(cli).toMatch(new RegExp(`^\\| ${code} \\|`, "m"));
+    for (const code of [0, 1, 2, 3]) expect(cli).toMatch(new RegExp(`^\\| ${code}\\s+\\|`, "m"));
   });
 });
 

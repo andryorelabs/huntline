@@ -7,7 +7,8 @@ const USAGE = "usage: huntline company add <careers-url> | huntline company list
 
 function dataDirMissing(): Envelope<never> {
   return failure("data-dir-not-found", "company commands need a data directory", {
-    recoveryAction: "pass --data <dir>, set HUNTLINE_HOME, or run from a directory containing huntline.json",
+    recoveryAction:
+      "pass --data <dir>, set HUNTLINE_HOME, or run from a directory containing huntline.json",
   });
 }
 

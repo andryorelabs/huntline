@@ -97,7 +97,11 @@ export async function withImporter(
         },
         status(key, state, discriminator) {
           operations.push(() =>
-            once(`${source}:status:${key}:${state}:${discriminator}`, { kind: "status.changed", key, to: state }),
+            once(`${source}:status:${key}:${state}:${discriminator}`, {
+              kind: "status.changed",
+              key,
+              to: state,
+            }),
           );
         },
         note(key, text) {
@@ -115,7 +119,8 @@ export async function withImporter(
           );
         },
         unknownState(description) {
-          if (!counters.unknownStates.includes(description)) counters.unknownStates.push(description);
+          if (!counters.unknownStates.includes(description))
+            counters.unknownStates.push(description);
         },
         warn(message) {
           counters.warnings.push(message);
@@ -170,7 +175,11 @@ function invert(byKey: ReadonlyMap<string, ReadonlySet<string>>): Map<string, Se
 
 export function linkLegacyIds(
   importer: Importer,
-  found: { readonly legacy: readonly KeyedId[]; readonly linear: readonly KeyedId[]; readonly reportUnmatched: boolean },
+  found: {
+    readonly legacy: readonly KeyedId[];
+    readonly linear: readonly KeyedId[];
+    readonly reportUnmatched: boolean;
+  },
 ): void {
   const legacyByKey = indexNotes(importer, found.legacy, LEGACY_ID_NOTE);
   const linearByKey = indexNotes(importer, found.linear, LINEAR_NOTE);
@@ -181,9 +190,13 @@ export function linkLegacyIds(
     const [legacyId] = [...legacyIds];
     if (legacyId === undefined) continue;
     if (legacyIds.size > 1) {
-      importer.warn(`legacy ids ${[...legacyIds].join(", ")} map to the same Linear issue on ${key}; not linked`);
+      importer.warn(
+        `legacy ids ${[...legacyIds].join(", ")} map to the same Linear issue on ${key}; not linked`,
+      );
     } else if (linearIds.size > 1) {
-      importer.warn(`legacy id ${legacyId} matches several Linear issues (${[...linearIds].join(", ")}); not linked`);
+      importer.warn(
+        `legacy id ${legacyId} matches several Linear issues (${[...linearIds].join(", ")}); not linked`,
+      );
     } else if ((keysByLegacy.get(legacyId)?.size ?? 0) > 1) {
       importer.warn(`legacy id ${legacyId} is recorded on several Leads; not linked`);
     } else {
@@ -197,5 +210,6 @@ export function linkLegacyIds(
     .filter(([, keys]) => [...keys].every((key) => !linearByKey.has(key)))
     .map(([legacyId]) => legacyId)
     .toSorted();
-  if (unmatched.length > 0) importer.warn(`legacy ids with no Linear match: ${unmatched.join(", ")}`);
+  if (unmatched.length > 0)
+    importer.warn(`legacy ids with no Linear match: ${unmatched.join(", ")}`);
 }

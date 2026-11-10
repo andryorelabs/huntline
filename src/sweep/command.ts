@@ -49,7 +49,8 @@ function unwrap<T>(result: Result<T>): Envelope<T> {
 function toPosting(value: unknown, index: number): Posting | string {
   if (!isObject(value)) return `posting ${index} must be an object`;
   const { id, url, company, title } = value;
-  if (typeof id !== "string" || typeof url !== "string") return `posting ${index} needs string id and url`;
+  if (typeof id !== "string" || typeof url !== "string")
+    return `posting ${index} needs string id and url`;
   if (typeof company !== "string" || typeof title !== "string") {
     return `posting ${index} needs string company and title`;
   }
@@ -86,19 +87,22 @@ function optionalFields(value: Record<string, unknown>, index: number): Partial<
     for (const bound of ["min", "max"] as const) {
       const amount = salary[bound];
       if (amount === undefined || amount === null) continue;
-      if (typeof amount !== "number" || !Number.isFinite(amount)) return `posting ${index} salary ${bound} must be a number`;
+      if (typeof amount !== "number" || !Number.isFinite(amount))
+        return `posting ${index} salary ${bound} must be a number`;
       parsed[bound] = amount;
     }
     if (typeof salary["currency"] === "string") parsed["currency"] = salary["currency"];
-    if (salary["period"] === "year" || salary["period"] === "month") parsed["period"] = salary["period"];
+    if (salary["period"] === "year" || salary["period"] === "month")
+      parsed["period"] = salary["period"];
     result["salary"] = parsed;
   }
-  return result as Partial<Posting>;
+  return result;
 }
 
 function parsePostings(raw: unknown): Posting[] | string {
   const list = isObject(raw) ? raw["postings"] : raw;
-  if (!Array.isArray(list)) return "expected a JSON array of postings or an object with a postings array";
+  if (!Array.isArray(list))
+    return "expected a JSON array of postings or an object with a postings array";
   const postings: Posting[] = [];
   for (const [index, entry] of list.entries()) {
     const posting = toPosting(entry, index);
@@ -120,7 +124,10 @@ function readPayload(flags: Flags, cwd: string): { raw: unknown } | { problem: s
   }
 }
 
-async function sweepCommand(argv: readonly string[], ctx: CommandContext): Promise<Envelope<unknown>> {
+async function sweepCommand(
+  argv: readonly string[],
+  ctx: CommandContext,
+): Promise<Envelope<unknown>> {
   const flags = parseFlags(argv);
   if (flags.positionals.length > 0) return usage(SWEEP_USAGE);
   const only = flags.values.get("--source");
@@ -133,7 +140,10 @@ async function sweepCommand(argv: readonly string[], ctx: CommandContext): Promi
   );
 }
 
-async function ingestCommand(argv: readonly string[], ctx: CommandContext): Promise<Envelope<unknown>> {
+async function ingestCommand(
+  argv: readonly string[],
+  ctx: CommandContext,
+): Promise<Envelope<unknown>> {
   const flags = parseFlags(argv);
   const source = one(flags, "--source");
   if (source === undefined || source.trim() === "" || flags.positionals.length > 0) {
@@ -159,7 +169,10 @@ function toScoreInput(flags: Flags): ScoreInput | string {
   };
 }
 
-async function scoreCommand(argv: readonly string[], ctx: CommandContext): Promise<Envelope<unknown>> {
+async function scoreCommand(
+  argv: readonly string[],
+  ctx: CommandContext,
+): Promise<Envelope<unknown>> {
   const flags = parseFlags(argv);
   const [key] = flags.positionals;
   if (key === undefined || flags.positionals.length !== 1) return usage(SCORE_USAGE);

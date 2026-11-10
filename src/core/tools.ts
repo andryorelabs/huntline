@@ -1,4 +1,12 @@
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { errorMessage } from "./narrow.ts";
@@ -28,7 +36,8 @@ const TYPST_ASSETS: Readonly<Record<string, TypstAsset>> = {
 };
 
 const RELEASE_BASE_URL = "https://github.com/typst/typst/releases/download";
-const TYPST_MANUAL_HINT = "install typst yourself: mise use -g typst, cargo install typst-cli or brew install typst";
+const TYPST_MANUAL_HINT =
+  "install typst yourself: mise use -g typst, cargo install typst-cli or brew install typst";
 
 export type ToolEnv = Readonly<Record<string, string | undefined>>;
 export type PlatformInfo = { readonly os: string; readonly arch: string };
@@ -41,17 +50,26 @@ export type InstallDeps = {
   readonly assets?: Readonly<Record<string, TypstAsset>>;
 };
 
-export type ToolSource = "path" | "cache" | "missing";
+type ToolSource = "path" | "cache" | "missing";
 export type ToolStatus = {
-  readonly typst: { readonly found: boolean; readonly source: ToolSource; readonly path: string | null; readonly version: string };
-  readonly pdftotext: { readonly found: boolean; readonly path: string | null; readonly installHint: string };
+  readonly typst: {
+    readonly found: boolean;
+    readonly source: ToolSource;
+    readonly path: string | null;
+    readonly version: string;
+  };
+  readonly pdftotext: {
+    readonly found: boolean;
+    readonly path: string | null;
+    readonly installHint: string;
+  };
 };
 
-export function currentPlatform(): PlatformInfo {
+function currentPlatform(): PlatformInfo {
   return { os: process.platform, arch: process.arch };
 }
 
-export function cacheRoot(env: ToolEnv): string {
+function cacheRoot(env: ToolEnv): string {
   const override = env["HUNTLINE_CACHE_DIR"];
   if (override !== undefined && override !== "") return override;
   const xdg = env["XDG_CACHE_HOME"];
@@ -92,7 +110,11 @@ export function toolStatus(env: ToolEnv, platform: PlatformInfo = currentPlatfor
       path: typst === null ? null : typst.path,
       version: TYPST_VERSION,
     },
-    pdftotext: { found: pdftotext !== null, path: pdftotext, installHint: pdftotextInstallHint(platform) },
+    pdftotext: {
+      found: pdftotext !== null,
+      path: pdftotext,
+      installHint: pdftotextInstallHint(platform),
+    },
   };
 }
 
@@ -100,14 +122,20 @@ function sha256Hex(bytes: Uint8Array): string {
   return new Bun.CryptoHasher("sha256").update(bytes).digest("hex");
 }
 
-export const systemDownloader: Downloader = async (url) => {
+const systemDownloader: Downloader = async (url) => {
   if (!url.startsWith("https://")) {
-    return { ok: false, error: { code: "tool-download-failed", message: `refusing non-https url ${url}` } };
+    return {
+      ok: false,
+      error: { code: "tool-download-failed", message: `refusing non-https url ${url}` },
+    };
   }
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      return { ok: false, error: { code: "tool-download-failed", message: `${url} answered ${response.status}` } };
+      return {
+        ok: false,
+        error: { code: "tool-download-failed", message: `${url} answered ${response.status}` },
+      };
     }
     return { ok: true, value: new Uint8Array(await response.arrayBuffer()) };
   } catch (error) {
@@ -115,12 +143,21 @@ export const systemDownloader: Downloader = async (url) => {
   }
 };
 
-export const systemExtractor: Extractor = async (archive, destination) => {
+const systemExtractor: Extractor = async (archive, destination) => {
   try {
-    const handle = Bun.spawn(["tar", "-xJf", archive, "-C", destination], { stdout: "pipe", stderr: "pipe" });
-    const [stderr, exitCode] = await Promise.all([new Response(handle.stderr).text(), handle.exited]);
+    const handle = Bun.spawn(["tar", "-xJf", archive, "-C", destination], {
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const [stderr, exitCode] = await Promise.all([
+      new Response(handle.stderr).text(),
+      handle.exited,
+    ]);
     if (exitCode !== 0) {
-      return { ok: false, error: { code: "tool-extract-failed", message: `tar exited ${exitCode}: ${stderr.trim()}` } };
+      return {
+        ok: false,
+        error: { code: "tool-extract-failed", message: `tar exited ${exitCode}: ${stderr.trim()}` },
+      };
     }
     return { ok: true, value: undefined };
   } catch (error) {
@@ -139,7 +176,10 @@ function installFailure(code: string, message: string): Result<string> {
 export async function installTypst(env: ToolEnv, deps: InstallDeps): Promise<Result<string>> {
   const asset = (deps.assets ?? TYPST_ASSETS)[`${deps.platform.os}-${deps.platform.arch}`];
   if (asset === undefined) {
-    return installFailure("tool-unsupported-platform", `no typst build for ${deps.platform.os}-${deps.platform.arch}`);
+    return installFailure(
+      "tool-unsupported-platform",
+      `no typst build for ${deps.platform.os}-${deps.platform.arch}`,
+    );
   }
   const downloaded = await deps.download(`${RELEASE_BASE_URL}/v${TYPST_VERSION}/${asset.asset}`);
   if (!downloaded.ok) return installFailure(downloaded.error.code, downloaded.error.message);
@@ -155,7 +195,8 @@ export async function installTypst(env: ToolEnv, deps: InstallDeps): Promise<Res
     const extracted = await deps.extract(archive, staging);
     if (!extracted.ok) return installFailure(extracted.error.code, extracted.error.message);
     const unpacked = path.join(staging, asset.asset.replace(/\.tar\.xz$/, ""), "typst");
-    if (!existsSync(unpacked)) return installFailure("tool-extract-failed", `typst binary missing in ${asset.asset}`);
+    if (!existsSync(unpacked))
+      return installFailure("tool-extract-failed", `typst binary missing in ${asset.asset}`);
     chmodSync(unpacked, 0o755);
     const target = cachedTypstPath(env);
     mkdirSync(path.dirname(target), { recursive: true });

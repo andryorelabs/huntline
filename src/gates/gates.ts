@@ -123,7 +123,9 @@ function salaryGate(profile: Profile, posting: Posting): Eligibility {
   if (salary.period === undefined) {
     return "unknown";
   }
-  return yearly(offered, salary.period) < yearly(floor.amount, floor.period ?? "year") ? "ineligible" : "eligible";
+  return yearly(offered, salary.period) < yearly(floor.amount, floor.period ?? "year")
+    ? "ineligible"
+    : "eligible";
 }
 
 export function evaluateGates(profile: Profile, posting: Posting): GateEvaluation {

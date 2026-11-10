@@ -8,12 +8,17 @@ import profileTemplate from "../../templates/profile.yaml" with { type: "text" }
 import { failure, success, type Envelope } from "./envelope.ts";
 import { withLock, writeAtomic } from "./fs.ts";
 
-export const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
-  "huntline.json": configTemplate,
-  "profile.yaml": profileTemplate,
-  "facts.yaml": factsTemplate,
-  "bullets.yaml": bulletsTemplate,
-  "never-claim.yaml": neverClaimTemplate,
+function templateText(content: unknown): string {
+  if (typeof content !== "string") throw new TypeError("a bundled template did not load as text");
+  return content;
+}
+
+const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
+  "huntline.json": templateText(configTemplate),
+  "profile.yaml": templateText(profileTemplate),
+  "facts.yaml": templateText(factsTemplate),
+  "bullets.yaml": templateText(bulletsTemplate),
+  "never-claim.yaml": templateText(neverClaimTemplate),
 };
 
 export const MARKER = "TODO(huntline):";
@@ -36,13 +41,13 @@ export async function runInit(
   const fallback = homeOverride !== undefined && homeOverride !== "" ? homeOverride : ".";
   const target = path.resolve(cwd, requested ?? fallback);
   const force = argv.includes("--force");
-  const existing = Object.keys(SCAFFOLD_FILES).filter((name) => existsSync(path.join(target, name)));
+  const existing = Object.keys(SCAFFOLD_FILES).filter((name) =>
+    existsSync(path.join(target, name)),
+  );
   if (existing.length > 0 && !force) {
-    return failure(
-      "already-exists",
-      `refusing to overwrite ${existing.join(", ")} in ${target}`,
-      { recoveryAction: "re-run with --force to overwrite the scaffold files" },
-    );
+    return failure("already-exists", `refusing to overwrite ${existing.join(", ")} in ${target}`, {
+      recoveryAction: "re-run with --force to overwrite the scaffold files",
+    });
   }
   await withLock(target, () => {
     for (const [name, content] of Object.entries(SCAFFOLD_FILES)) {

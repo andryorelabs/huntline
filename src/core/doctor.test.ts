@@ -7,8 +7,10 @@ import type { FetchLike } from "../tracker/linear.ts";
 import type { CommandContext } from "./commands.ts";
 import { runDoctor } from "./doctor.ts";
 import { exitCodeFor } from "./envelope.ts";
+import { isObject } from "./narrow.ts";
 
-const RECOVERY = "claude plugin marketplace add AndryOre/huntline && claude plugin install huntline";
+const RECOVERY =
+  "claude plugin marketplace add AndryOre/huntline && claude plugin install huntline";
 
 let workDir = "";
 
@@ -39,13 +41,23 @@ function withEnv(ctx: CommandContext, env: Record<string, string>): CommandConte
 
 function guardOf(envelope: Awaited<ReturnType<typeof runDoctor>>): Record<string, unknown> {
   if (!envelope.ok) throw new Error(`doctor failed: ${envelope.error.message}`);
-  const data = envelope.data as Record<string, unknown>;
-  return data["guard"] as Record<string, unknown>;
+  const data = envelope.data;
+  const guard = isObject(data) ? data["guard"] : undefined;
+  if (!isObject(guard)) throw new Error("doctor data has no guard section");
+  return guard;
 }
 
-function warningsOf(envelope: Awaited<ReturnType<typeof runDoctor>>): { code: string; recoveryAction: string }[] {
+function warningsOf(
+  envelope: Awaited<ReturnType<typeof runDoctor>>,
+): { code: string; recoveryAction: string }[] {
   if (!envelope.ok) throw new Error("doctor failed");
-  return (envelope.data as { warnings: { code: string; recoveryAction: string }[] }).warnings;
+  const data = envelope.data;
+  const warnings: unknown = isObject(data) ? data["warnings"] : undefined;
+  if (!Array.isArray(warnings)) throw new Error("doctor data has no warnings");
+  return warnings.map((warning: unknown) => {
+    if (!isObject(warning)) throw new Error("warning is not an object");
+    return { code: String(warning["code"]), recoveryAction: String(warning["recoveryAction"]) };
+  });
 }
 
 function pluginsFile(contents: string, index = 0): string {
@@ -84,22 +96,30 @@ describe("doctor guard readiness", () => {
 
   test("a plugins file without a huntline entry warns", async () => {
     const file = pluginsFile(JSON.stringify({ version: 2, plugins: { "other@market": [{}] } }));
-    const envelope = await runDoctor(withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }));
+    const envelope = await runDoctor(
+      withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }),
+    );
     expect(envelope.ok).toBe(true);
     expect(guardOf(envelope)["pluginInstalled"]).toBe(false);
     expect(warningsOf(envelope)[0]?.recoveryAction).toBe(RECOVERY);
   });
 
   test("a huntline@ entry means installed and no warning", async () => {
-    const file = pluginsFile(JSON.stringify({ version: 2, plugins: { "huntline@acme-market": [{}] } }));
-    const envelope = await runDoctor(withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }));
+    const file = pluginsFile(
+      JSON.stringify({ version: 2, plugins: { "huntline@acme-market": [{}] } }),
+    );
+    const envelope = await runDoctor(
+      withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }),
+    );
     expect(guardOf(envelope)).toEqual({ selfTest: "pass", pluginInstalled: true });
     expect(warningsOf(envelope)).toEqual([]);
   });
 
   test("a malformed plugins file warns instead of crashing", async () => {
     const ctx = writeDataDir({ kind: "local" });
-    const files = ["{oops", "null", "[]", '{"plugins": 3}'].map((contents, index) => pluginsFile(contents, index));
+    const files = ["{oops", "null", "[]", '{"plugins": 3}'].map((contents, index) =>
+      pluginsFile(contents, index),
+    );
     const envelopes = await Promise.all(
       files.map((file) => runDoctor(withEnv(ctx, { HUNTLINE_CLAUDE_PLUGINS_FILE: file }))),
     );
@@ -121,21 +141,30 @@ describe("doctor guard readiness", () => {
   });
 });
 
-const failingFetch = (): FetchLike => async () => {
-  throw new Error("network must not be touched");
-};
+const failingFetch = (): FetchLike => () =>
+  Promise.reject(new Error("network must not be touched"));
 
 const WORKFLOW_NAMES = ["Backlog", "Todo", "In Progress", "Done", "Canceled"];
 
 function teamFetch(names: readonly string[]): FetchLike {
-  return async () =>
-    new Response(
-      JSON.stringify({
-        data: {
-          teams: { nodes: [{ id: "t1", key: "JOB", states: { nodes: names.map((name, i) => ({ id: `s${i}`, name })) } }] },
-        },
-      }),
-      { status: 200 },
+  return () =>
+    Promise.resolve(
+      new Response(
+        JSON.stringify({
+          data: {
+            teams: {
+              nodes: [
+                {
+                  id: "t1",
+                  key: "JOB",
+                  states: { nodes: names.map((name, i) => ({ id: `s${i}`, name })) },
+                },
+              ],
+            },
+          },
+        }),
+        { status: 200 },
+      ),
     );
 }
 

@@ -1,8 +1,36 @@
-import type { Posting, Salary, SalaryPeriod, SourceAdapter, SourceQuery, SourceResult } from "../core/types.ts";
-import { getJson, field, identifier, isoDate, number, records, stripHtml, text, type FetchFunction } from "./http.ts";
-import { defineAdapter, mapRows, matchesKeywords, withOptional, type AdapterSpec } from "./adapter.ts";
+import type {
+  Posting,
+  Salary,
+  SalaryPeriod,
+  SourceAdapter,
+  SourceQuery,
+  SourceResult,
+} from "../core/types.ts";
+import {
+  getJson,
+  field,
+  identifier,
+  isoDate,
+  number,
+  records,
+  stripHtml,
+  text,
+  type FetchFunction,
+} from "./http.ts";
+import {
+  defineAdapter,
+  mapRows,
+  matchesKeywords,
+  withOptional,
+  type AdapterSpec,
+} from "./adapter.ts";
 
-function salaryOf(min: unknown, max: unknown, currency: unknown, period?: SalaryPeriod): Salary | undefined {
+function salaryOf(
+  min: unknown,
+  max: unknown,
+  currency: unknown,
+  period?: SalaryPeriod,
+): Salary | undefined {
   const low = number(min);
   const high = number(max);
   if ((low === undefined || low === 0) && (high === undefined || high === 0)) return undefined;
@@ -15,7 +43,9 @@ function withSalary(
   currency: string | undefined,
   period: SalaryPeriod | undefined,
 ): Salary {
-  const entries = Object.entries({ min: low, max: high, currency, period }).filter(([, value]) => value !== undefined);
+  const entries = Object.entries({ min: low, max: high, currency, period }).filter(
+    ([, value]) => value !== undefined,
+  );
   return Object.fromEntries(entries);
 }
 
@@ -28,20 +58,26 @@ function filterByKeywords(
   query: SourceQuery,
 ): ReturnType<AdapterSpec["parse"]> {
   if ("error" in parsed) return parsed;
-  return { ...parsed, postings: parsed.postings.filter((posting) => matchesKeywords(posting, query.keywords)) };
+  return {
+    ...parsed,
+    postings: parsed.postings.filter((posting) => matchesKeywords(posting, query.keywords)),
+  };
 }
 
 const getonboard: AdapterSpec = {
   name: "getonboard",
   requiresSlug: false,
-  url: (query) => `https://www.getonbrd.com/api/v0/search/jobs?query=${keywordQuery(query)}&per_page=100`,
+  url: (query) =>
+    `https://www.getonbrd.com/api/v0/search/jobs?query=${keywordQuery(query)}&per_page=100`,
   parse: (body) =>
     mapRows(records(field(body, "data")), "jobs", (row) => {
       const id = identifier(row["id"]);
       const attributes = row["attributes"];
       const title = text(field(attributes, "title"));
       const url = text(field(row["links"], "public_url"));
-      const company = text(field(field(field(field(attributes, "company"), "data"), "attributes"), "name"));
+      const company = text(
+        field(field(field(field(attributes, "company"), "data"), "attributes"), "name"),
+      );
       if (id === undefined || title === undefined || url === undefined) return undefined;
       const countries = field(attributes, "countries");
       const location = Array.isArray(countries)
@@ -54,7 +90,12 @@ const getonboard: AdapterSpec = {
         {
           location: location === "" ? undefined : location,
           remote: typeof remote === "boolean" ? remote : undefined,
-          salary: salaryOf(field(attributes, "min_salary"), field(attributes, "max_salary"), "USD", "month"),
+          salary: salaryOf(
+            field(attributes, "min_salary"),
+            field(attributes, "max_salary"),
+            "USD",
+            "month",
+          ),
           description: description === undefined ? undefined : stripHtml(description),
           postedAt: isoDate(field(attributes, "published_at")),
         },
@@ -73,7 +114,8 @@ const himalayas: AdapterSpec = {
         const title = text(row["title"]);
         const url = text(row["applicationLink"]);
         const company = text(row["companyName"]);
-        if (id === undefined || title === undefined || url === undefined || company === undefined) return undefined;
+        if (id === undefined || title === undefined || url === undefined || company === undefined)
+          return undefined;
         const restrictions = row["locationRestrictions"];
         const location = Array.isArray(restrictions)
           ? restrictions.filter((entry): entry is string => typeof entry === "string").join(", ")
@@ -101,28 +143,33 @@ const remoteok: AdapterSpec = {
   url: () => "https://remoteok.com/api",
   parse: (body, query) =>
     filterByKeywords(
-      mapRows(records(body)?.filter((row) => "id" in row), "jobs", (row) => {
-        const id = identifier(row["id"]);
-        const title = text(row["position"]);
-        const url = text(row["url"]);
-        const company = text(row["company"]);
-        if (id === undefined || title === undefined || url === undefined || company === undefined) return undefined;
-        const tags = Array.isArray(row["tags"])
-          ? row["tags"].filter((entry): entry is string => typeof entry === "string")
-          : undefined;
-        const description = text(row["description"]);
-        return withOptional(
-          { id: `remoteok:${id}`, source: "remoteok", url, company, title },
-          {
-            location: text(row["location"]),
-            remote: true,
-            stack: tags,
-            salary: salaryOf(row["salary_min"], row["salary_max"], "USD", "year"),
-            description: description === undefined ? undefined : stripHtml(description),
-            postedAt: isoDate(row["date"]),
-          },
-        );
-      }),
+      mapRows(
+        records(body)?.filter((row) => "id" in row),
+        "jobs",
+        (row) => {
+          const id = identifier(row["id"]);
+          const title = text(row["position"]);
+          const url = text(row["url"]);
+          const company = text(row["company"]);
+          if (id === undefined || title === undefined || url === undefined || company === undefined)
+            return undefined;
+          const tags = Array.isArray(row["tags"])
+            ? row["tags"].filter((entry): entry is string => typeof entry === "string")
+            : undefined;
+          const description = text(row["description"]);
+          return withOptional(
+            { id: `remoteok:${id}`, source: "remoteok", url, company, title },
+            {
+              location: text(row["location"]),
+              remote: true,
+              stack: tags,
+              salary: salaryOf(row["salary_min"], row["salary_max"], "USD", "year"),
+              description: description === undefined ? undefined : stripHtml(description),
+              postedAt: isoDate(row["date"]),
+            },
+          );
+        },
+      ),
       query,
     ),
 };
@@ -135,7 +182,9 @@ function hnCommentsUrl(storyId: string): string {
 }
 
 function latestHiringStory(body: unknown): string | undefined {
-  const story = records(field(body, "hits"))?.find((hit) => /who is hiring/i.test(text(hit["title"]) ?? ""));
+  const story = records(field(body, "hits"))?.find((hit) =>
+    /who is hiring/i.test(text(hit["title"]) ?? ""),
+  );
   return story === undefined ? undefined : identifier(story["objectID"]);
 }
 
@@ -143,7 +192,10 @@ function hnPosting(row: Record<string, unknown>): Posting | undefined {
   const id = identifier(row["objectID"]);
   const raw = text(row["comment_text"]);
   if (id === undefined || raw === undefined) return undefined;
-  const lines = stripHtml(raw).split("\n").map((line) => line.trim()).filter((line) => line !== "");
+  const lines = stripHtml(raw)
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
   const headline = lines[0] ?? "";
   const segments = headline.split("|").map((segment) => segment.trim());
   const company = segments[0];
@@ -170,7 +222,10 @@ function parseHnComments(body: unknown, query: SourceQuery): ReturnType<AdapterS
   const postings = rows.map(hnPosting).filter((posting) => posting !== undefined);
   const skipped = rows.length - postings.length;
   const warnings = skipped === 0 ? [] : [`skipped ${skipped} comments that are not job posts`];
-  return { postings: postings.filter((posting) => matchesKeywords(posting, query.keywords)), warnings };
+  return {
+    postings: postings.filter((posting) => matchesKeywords(posting, query.keywords)),
+    warnings,
+  };
 }
 
 function hn(fetchFunction: FetchFunction): SourceAdapter {
@@ -178,10 +233,15 @@ function hn(fetchFunction: FetchFunction): SourceAdapter {
     name: "hn",
     async fetch(query): Promise<SourceResult> {
       const storyOutcome = await getJson(fetchFunction, HN_STORY_SEARCH);
-      if (!storyOutcome.ok) return { postings: [], errors: [`hn: ${storyOutcome.error}`], warnings: [] };
+      if (!storyOutcome.ok)
+        return { postings: [], errors: [`hn: ${storyOutcome.error}`], warnings: [] };
       const storyId = latestHiringStory(storyOutcome.body);
       if (storyId === undefined) {
-        return { postings: [], errors: ["hn: no Who is hiring thread found in the response"], warnings: [] };
+        return {
+          postings: [],
+          errors: ["hn: no Who is hiring thread found in the response"],
+          warnings: [],
+        };
       }
       const delegate = defineAdapter(
         {

@@ -32,7 +32,9 @@ function failure(problems: string[]): LinearCheckResult {
   return { ok: false, error: { problems } };
 }
 
-export async function checkLinearConnection(options: LinearCheckOptions): Promise<LinearCheckResult> {
+export async function checkLinearConnection(
+  options: LinearCheckOptions,
+): Promise<LinearCheckResult> {
   const { apiKey, team, mapping } = options;
   const problems: string[] = [];
   const hasKey = apiKey !== undefined && apiKey !== "";
@@ -74,7 +76,8 @@ export async function checkLinearConnection(options: LinearCheckOptions): Promis
   const errors = body["errors"];
   if (Array.isArray(errors) && errors.length > 0) {
     const first: unknown = errors[0];
-    const message = isObject(first) && typeof first["message"] === "string" ? first["message"] : "unknown error";
+    const message =
+      isObject(first) && typeof first["message"] === "string" ? first["message"] : "unknown error";
     return failure([`Linear rejected the request: ${redact(message)}`]);
   }
 
@@ -88,7 +91,8 @@ export async function checkLinearConnection(options: LinearCheckOptions): Promis
 
   const available = new Set(stateNames(found).map((name) => name.toLowerCase()));
   for (const name of new Set(Object.values(mapping.states))) {
-    if (!available.has(name.toLowerCase())) problems.push(`state "${name}" not found in team ${team}`);
+    if (!available.has(name.toLowerCase()))
+      problems.push(`state "${name}" not found in team ${team}`);
   }
   if (problems.length > 0) return failure(problems);
   return { ok: true, value: { teamId: found["id"] } };

@@ -8,7 +8,7 @@ import type {
   ProposedChange,
 } from "./types.ts";
 
-export const ATS_BRANDS: ReadonlySet<string> = new Set([
+const ATS_BRANDS: ReadonlySet<string> = new Set([
   "greenhouse",
   "greenhouse-mail",
   "lever",
@@ -80,7 +80,10 @@ const STATE_BY_CLASS: Readonly<Record<EmailClass, ApplicationState | null>> = {
 
 const PROGRESSION: readonly ApplicationState[] = ["applied", "screening", "interviewing", "offer"];
 
-function proposedTransition(current: ApplicationState | null, target: ApplicationState | null): ApplicationState | null {
+function proposedTransition(
+  current: ApplicationState | null,
+  target: ApplicationState | null,
+): ApplicationState | null {
   if (target === null || current === null) return null;
   const currentRank = PROGRESSION.indexOf(current);
   if (currentRank === -1) return null;
@@ -91,7 +94,10 @@ function proposedTransition(current: ApplicationState | null, target: Applicatio
 type Candidate = { readonly key: string; readonly band: MatchBand; readonly reason: MatchReason };
 
 function foldAccents(value: string): string {
-  return value.toLowerCase().normalize("NFKD").replace(/\p{M}+/gu, "");
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/\p{M}+/gu, "");
 }
 
 function wordsOf(value: string): string[] {
@@ -100,17 +106,17 @@ function wordsOf(value: string): string[] {
     .filter((word) => word !== "");
 }
 
-export function compactName(value: string): string {
+function compactName(value: string): string {
   return foldAccents(value).replace(/[^a-z0-9]+/g, "");
 }
 
-export function companyTokens(company: string): string[] {
+function companyTokens(company: string): string[] {
   const words = wordsOf(company);
   const stripped = words.filter((word) => !COMPANY_SUFFIXES.has(word));
   return stripped.length === 0 ? words : stripped;
 }
 
-export function parseSender(from: string): { name: string; domain: string } {
+function parseSender(from: string): { name: string; domain: string } {
   const angled = /^(.*?)<([^>]+)>\s*$/.exec(from.trim());
   const address = (angled?.[2] ?? from).trim();
   const name = (angled?.[1] ?? "").replace(/^["'\s]+|["'\s]+$/g, "");
@@ -214,7 +220,8 @@ function finalize(
     band: resolution.band,
     reason: resolution.reason,
     confirmed,
-    targetState: confirmed && application !== undefined ? proposedTransition(application.state, target) : null,
+    targetState:
+      confirmed && application !== undefined ? proposedTransition(application.state, target) : null,
   };
 }
 

@@ -1,6 +1,14 @@
 import { isObject } from "../core/narrow.ts";
 import { defineAdapter, mapRows, withOptional, type AdapterSpec } from "./adapter.ts";
-import { field, identifier, isoDate, records, stripHtml, text, type FetchFunction } from "./http.ts";
+import {
+  field,
+  identifier,
+  isoDate,
+  records,
+  stripHtml,
+  text,
+  type FetchFunction,
+} from "./http.ts";
 
 function joined(...parts: (string | undefined)[]): string | undefined {
   const present = parts.filter((part) => part !== undefined);
@@ -148,7 +156,7 @@ const smartrecruiters: AdapterSpec = {
     }),
 };
 
-export const ATS_SPECS: readonly AdapterSpec[] = [greenhouse, lever, ashby, workable, smartrecruiters];
+const ATS_SPECS: readonly AdapterSpec[] = [greenhouse, lever, ashby, workable, smartrecruiters];
 
 export function createAtsAdapters(fetchFunction: FetchFunction) {
   return ATS_SPECS.map((spec) => defineAdapter(spec, fetchFunction));

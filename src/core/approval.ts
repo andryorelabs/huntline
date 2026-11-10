@@ -28,7 +28,9 @@ export class IdempotencyMap {
       throw new Error(`idempotency map ${this.#filePath} is not a key/value map`);
     }
     return Object.fromEntries(
-      Object.entries(parsed).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      Object.entries(parsed).filter(
+        (entry): entry is [string, string] => typeof entry[1] === "string",
+      ),
     );
   }
 

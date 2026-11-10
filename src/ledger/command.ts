@@ -112,7 +112,9 @@ async function eventsCommand(argv: string[], dir: DataDir): Promise<Envelope<unk
     const parsed = parseJsonFlag(rest);
     if (isFailure(parsed)) return parsed;
     if (!isNewEvent(parsed.value)) {
-      return usage(`event needs a "kind" of ${EVENT_KINDS.join(", ")}, its required fields, and no id or at`);
+      return usage(
+        `event needs a "kind" of ${EVENT_KINDS.join(", ")}, its required fields, and no id or at`,
+      );
     }
     return success(await appendEvent(dir, parsed.value));
   }

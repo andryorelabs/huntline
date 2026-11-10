@@ -2,6 +2,7 @@ import { writeSync } from "node:fs";
 
 import type { CommandContext } from "../core/commands.ts";
 import { failure, success, type Envelope } from "../core/envelope.ts";
+import { isObject } from "../core/narrow.ts";
 import { decideGuard, snapshotScope, type GuardDecision } from "./decide.ts";
 import { runGuardSelfTest, SELF_TEST_HOOKS, type SelfTestResult } from "./self-test.ts";
 import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
@@ -68,8 +69,8 @@ export async function guardDecisionFor(stream: AsyncIterable<unknown>): Promise<
 
 export function recordFromPayload(text: string): void {
   const payload = parseJson(text);
-  if (typeof payload !== "object" || payload === null) return;
-  const record = payload as Record<string, unknown>;
+  if (!isObject(payload)) return;
+  const record = payload;
   const sessionId = record["session_id"];
   if (typeof sessionId !== "string" || sessionId === "") return;
   const toolName = record["tool_name"];
@@ -92,9 +93,13 @@ export function selfTestEnvelope(result: SelfTestResult): Envelope<unknown> {
       `${entry.pass ? "ok" : "FAIL"} ${entry.name}: expected ${entry.expected}, actual ${entry.actual}, matcher ${entry.matcherCovers ? "covers" : "misses"} ${entry.tool}`,
   );
   const failed = result.cases.filter((entry) => !entry.pass).map((entry) => entry.name);
-  return failure("guard-self-test-failed", `failing cases: ${failed.join("; ")}\n${lines.join("\n")}`, {
-    recoveryAction: "do not use the Guard until decideGuard and hooks/hooks.json agree again",
-  });
+  return failure(
+    "guard-self-test-failed",
+    `failing cases: ${failed.join("; ")}\n${lines.join("\n")}`,
+    {
+      recoveryAction: "do not use the Guard until decideGuard and hooks/hooks.json agree again",
+    },
+  );
 }
 
 export async function run(argv: string[], _ctx: CommandContext): Promise<Envelope<unknown>> {
@@ -102,5 +107,5 @@ export async function run(argv: string[], _ctx: CommandContext): Promise<Envelop
   if (argv.includes("--record")) return runRecorder();
   const decision = await guardDecisionFor(process.stdin);
   writeSync(1, `${JSON.stringify(formatHookOutput(decision))}\n`);
-  process.exit(0);
+  return process.exit(0);
 }

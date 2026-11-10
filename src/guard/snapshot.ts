@@ -6,7 +6,7 @@ import { isObject } from "../core/narrow.ts";
 
 const UID_LINE = /\buid=(\S+)\s+(.*)$/;
 
-export function snapshotDirectory(): string {
+function snapshotDirectory(): string {
   return path.join(os.tmpdir(), "huntline-guard");
 }
 
@@ -18,7 +18,8 @@ function collectStrings(value: unknown, into: string[], depth = 0): void {
   if (depth > 8) return;
   if (typeof value === "string") into.push(value);
   else if (Array.isArray(value)) for (const entry of value) collectStrings(entry, into, depth + 1);
-  else if (isObject(value)) for (const entry of Object.values(value)) collectStrings(entry, into, depth + 1);
+  else if (isObject(value))
+    for (const entry of Object.values(value)) collectStrings(entry, into, depth + 1);
 }
 
 export function parseSnapshotLabels(response: unknown): Record<string, string> {

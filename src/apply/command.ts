@@ -55,7 +55,10 @@ function toDump(value: unknown): FieldDump | null {
   return { name, value: fieldValue };
 }
 
-function collect<Item>(rows: readonly unknown[], convert: (row: unknown) => Item | null): Item[] | null {
+function collect<Item>(
+  rows: readonly unknown[],
+  convert: (row: unknown) => Item | null,
+): Item[] | null {
   const items: Item[] = [];
   for (const row of rows) {
     const item = convert(row);
@@ -83,7 +86,10 @@ async function runAnswer(argv: readonly string[], dir: DataDir): Promise<Envelop
   const result = lookupAnswer(dir, question, scope);
   if (result.status === "answer") return success(result);
   const event = await recordBlocker(dir, key, "field", `${UNANSWERED_PREFIX}${question}`);
-  return success({ status: "abstain", blockerId: event.kind === "blocker.opened" ? event.blockerId : null });
+  return success({
+    status: "abstain",
+    blockerId: event.kind === "blocker.opened" ? event.blockerId : null,
+  });
 }
 
 function runVerify(argv: readonly string[], cwd: string): Envelope<unknown> {
@@ -109,10 +115,16 @@ async function runBlock(argv: readonly string[], dir: DataDir): Promise<Envelope
   const scope = flagValue(argv, "--scope") ?? "field";
   const detail = flagValue(argv, "--detail");
   if (key === undefined) return usage("apply block needs a lead key");
-  if (!isOneOf(BLOCKER_SCOPES, scope)) return usage("--scope must be field, section or application");
-  if (detail === undefined || detail.trim() === "") return usage("apply block needs --detail <text>");
+  if (!isOneOf(BLOCKER_SCOPES, scope))
+    return usage("--scope must be field, section or application");
+  if (detail === undefined || detail.trim() === "")
+    return usage("apply block needs --detail <text>");
   const event = await recordBlocker(dir, key, scope, detail);
-  return success({ blockerId: event.kind === "blocker.opened" ? event.blockerId : null, key, scope });
+  return success({
+    blockerId: event.kind === "blocker.opened" ? event.blockerId : null,
+    key,
+    scope,
+  });
 }
 
 async function dispatchApply(

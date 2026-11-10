@@ -56,7 +56,11 @@ describe("resolveDataDir", () => {
     mkdirSync(flagDir);
     mkdirSync(homeDir);
     writeFileSync(path.join(workDir, "huntline.json"), "{}");
-    const result = resolveDataDir(["doctor", "--data", flagDir], { HUNTLINE_HOME: homeDir }, workDir);
+    const result = resolveDataDir(
+      ["doctor", "--data", flagDir],
+      { HUNTLINE_HOME: homeDir },
+      workDir,
+    );
     expect(result).toEqual({ ok: true, value: { path: flagDir } });
   });
 
@@ -145,7 +149,11 @@ describe("fs", () => {
     writeAtomic(target, "one");
     writeAtomic(target, "two");
     expect(readFileSync(target, "utf8")).toBe("two");
-    expect(Bun.spawnSync(["ls", path.dirname(target)]).stdout.toString().trim()).toBe("file.txt");
+    expect(
+      Bun.spawnSync(["ls", path.dirname(target)])
+        .stdout.toString()
+        .trim(),
+    ).toBe("file.txt");
   });
 
   test("withLock serializes concurrent critical sections", async () => {
@@ -164,9 +172,11 @@ describe("fs", () => {
   });
 
   test("withLock releases the lock when the callback throws", async () => {
-    await expect(
-      withLock(workDir, () => Promise.reject(new Error("boom"))),
-    ).rejects.toThrow("boom");
+    const lockFailure = await withLock(workDir, () => Promise.reject(new Error("boom"))).catch(
+      (error: unknown) => error,
+    );
+    expect(lockFailure).toBeInstanceOf(Error);
+    expect(String(lockFailure)).toContain("boom");
     expect(await withLock(workDir, () => Promise.resolve("again"))).toBe("again");
   });
 

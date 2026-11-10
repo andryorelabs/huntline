@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "bun.lock",
+    "LICENSE",
+    "**/node_modules/**",
+    ".claude/**",
+    "dist/**",
+    "fixtures/**",
+    "src/**/fixtures/**",
+    "src/tracker/linear-fixture.json",
+    "docs/agents/**",
+    "emet.config.json"
+  ]
+}

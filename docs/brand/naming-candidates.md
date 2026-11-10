@@ -532,3 +532,342 @@ This is input for the maintainer, who decides.
    rename, and search for trademarks, which this research did not do.
 
 Nothing was bought or registered for this research.
+
+## Round 3
+
+Run 3 research, 2026-11-10. Status: options and a recommendation, input for
+the maintainer, who decides. Nothing here is a decision, and no name is
+registered, bought or renamed. Rounds 1 and 2 above are unchanged.
+
+### Why a third round
+
+The maintainer pointed at "Jobbie" as the kind of name they like: friendly, a
+small character, easy to say, a name you can say to a friend ("ask Jobbie").
+Rounds 1 and 2 leaned on lines, trails and job vocabulary and produced precise,
+cool names. Round 3 looks for warmth: diminutives (`-ie`, `-y`, `-o`), pals and
+helpers, and small creatures with an easy mascot or mark. Every name still
+carries a work cue (job, role, lead, tally, CV, post, sweep) so a stranger can
+connect it to a job search.
+
+The hard filters are unchanged: no hunting or weapon imagery, no purple,
+LinkedIn-blue or Claude-orange associations, no auto-apply or "AI magic" tone,
+no implication that the tool applies for the user, npm and GitHub slug free,
+lowercase and CLI-friendly, and the name must read well as `/<name>:sweep`.
+Any mascot idea is a plain generic animal, never a copy of a real person's or
+brand's character.
+
+The brief asks for calm, precise and trustworthy. A playful name can sit
+against that, and the Brief fit axis says where it does.
+
+### What "Jobbie" is
+
+`jobbie` is taken in the job space, so it is a reference here, not a candidate.
+Checked 2026-11-10:
+
+- **npm:** `jobbie` is taken. Version 0.1.0 is described as a "Privacy-first
+  Agent Skill and CLI for evidence-based job applications, keyword-gap checks,
+  and outcome tracking". That is the same space as huntline.
+- **GitHub:** `jobbie-bot/Summer-2027-Tech-Internships` (101 stars, every row
+  "applies through Jobbie"), `alexsieusahai/Jobbie` ("Automated job applier",
+  3 stars), plus unrelated repos (a Quartz.NET scheduler, a job board).
+- **Web:** directories list `jobbie.io`, a job application and resume product
+  whose listings describe it as one-click application automation (Product
+  Hunt, TrustMRR) or as a resume checker (creati.ai). Sources disagree on what
+  it does. An iOS app "Jobbie Employee" also exists.
+- **Domains:** `jobbie.com` is registered. `jobbie.dev` has no RDAP record.
+- **Account:** the GitHub account `jobbie` is held by a User.
+
+Plainly: Jobbie is a live job-search product and its tone includes
+auto-apply, which is the opposite of the huntline position. The close
+variants `jobby`, `jobbit`, `jobsy` and `joby` are all taken on npm. The
+round 3 names borrow the feeling, not the word.
+
+### Long list by family
+
+70 new candidates in 3 families.
+
+#### Diminutives
+
+Short soft endings (`-ie`, `-y`, `-o`) on a work word.
+
+| Name    | Why it fits                    |
+| ------- | ------------------------------ |
+| jobby   | A friendly "job"               |
+| jobbit  | A small job, with a nod to bit |
+| jobsy   | Jobs, said with a smile        |
+| joby    | A short, soft "job"            |
+| jobbo   | A pal called Job               |
+| jobo    | Short and easy to say          |
+| jobito  | A little job                   |
+| leady   | A friendly "lead"              |
+| leadie  | A small Lead                   |
+| rolie   | A small role                   |
+| roley   | A soft "role"                  |
+| rolo    | Role, shortened                |
+| cvie    | A friendly CV                  |
+| cvy     | CV with a soft ending          |
+| postie  | A Posting, and the postie      |
+| posty   | A soft "post"                  |
+| listie  | A small shortlist              |
+| tallie  | A tally, made small            |
+| tallo   | A tally, in two syllables      |
+| shortie | A short list                   |
+| sweepy  | A sweep, made friendly         |
+| sweepie | The sweep, as a helper         |
+| workie  | A bit of work                  |
+| worky   | Work, made friendly            |
+| hirie   | A hire, made small             |
+| gigly   | A gig, made light              |
+| nudgy   | A gentle nudge                 |
+| findy   | A thing that finds             |
+
+#### Pals and helpers
+
+A name you could say to a friend, built from a work word and a helper word.
+
+| Name     | Why it fits               |
+| -------- | ------------------------- |
+| jobpal   | A pal for the job search  |
+| jobmate  | A mate for the job search |
+| jobbud   | A buddy for jobs          |
+| cvpal    | A pal for your CV         |
+| cvbuddy  | A buddy for your CV       |
+| leadpal  | A pal for your Leads      |
+| rolepal  | A pal for roles           |
+| leadmate | A mate for Leads          |
+| rolemate | A mate for roles          |
+| tallypal | A pal who keeps the tally |
+| sweeppal | A pal who does the sweep  |
+| postpal  | A pal for Postings        |
+| workpal  | A pal for work            |
+| workmate | A colleague               |
+| applypal | A pal for applications    |
+| shortpal | A pal for the shortlist   |
+| listpal  | A pal for lists           |
+| jobkit   | A small kit for jobs      |
+| cvkit    | A small kit for CVs       |
+
+#### Small creatures and homes
+
+A small, calm, generic animal or a snug place, so there is an easy mascot or
+mark. No predator, dog-and-chase or hunting animal is intended.
+
+| Name     | Why it fits                             |
+| -------- | --------------------------------------- |
+| jobpup   | A young helper dog                      |
+| jobbee   | A busy bee for jobs                     |
+| jobmouse | A small mouse, quiet and careful        |
+| jobbird  | A small bird for jobs                   |
+| rolebird | A bird for roles                        |
+| leadbird | A bird for Leads                        |
+| jobowl   | An owl that keeps watch over the record |
+| hirowl   | An owl for hiring                       |
+| jobotter | An otter, playful and calm              |
+| rolebee  | A bee for roles                         |
+| leadbee  | A bee for Leads                         |
+| jobwren  | A wren, small and exact                 |
+| tallybee | A bee that keeps a tally                |
+| tallypup | A pup that keeps a tally                |
+| jobpip   | A small seed or mark for jobs           |
+| leadpip  | A small mark for a Lead                 |
+| rolepip  | A small mark for a role                 |
+| jobnest  | A snug place for jobs                   |
+| rolenest | A snug place for roles                  |
+| leadnest | A snug place for Leads                  |
+| jobtail  | The tail of a log, a tail on a mascot   |
+| leadtail | The tail of a Lead                      |
+| roletail | The tail of a role                      |
+
+### Availability filter
+
+Checked 2026-11-10 with the same method as rounds 1 and 2: `npm view <name>
+name`, `gh api repos/andryorelabs/<name>`, `gh api users/<name>`, RDAP for
+`.dev` (`https://pubapi.registry.google/rdap/domain/<name>.dev`) and `.com`
+(`https://rdap.verisign.com/com/v1/domain/<name>.com`); `rdap.org` was not
+used. Lookups ran one name at a time with a pause between calls, and a 429 on
+`.dev` was retried after a longer pause. Web collision is `gh search repos
+<name> --match name` on every name free on npm, plus a web search on the
+finalists; the stars shown are from the top results. `no record` is not a
+registrar quote.
+
+| Name     | npm   | gh slug | gh account | .dev      | .com      | Web collision                                                      | Verdict                                                                    |
+| -------- | ----- | ------- | ---------- | --------- | --------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| jobby    | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| jobbit   | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| jobsy    | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| joby     | taken | free    | Org        | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| jobbo    | free  | free    | User       | no record | taken     | job-board repos, 12 to 178 stars                                   | survivor, not shortlisted: reads as a job board, account held              |
+| jobo     | free  | free    | User       | taken     | taken     | `GresonKwan/JobOK` 445 stars, a near match                         | survivor, not shortlisted: `.dev` taken, account held                      |
+| jobito   | free  | free    | User       | taken     | taken     | 0 stars                                                            | survivor, not shortlisted: `.dev` taken, account held                      |
+| leady    | free  | free    | User       | taken     | taken     | 0 stars                                                            | survivor, not shortlisted: `.dev` taken, sales-lead reading                |
+| leadie   | free  | free    | User       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, sales-lead reading                |
+| rolie    | free  | free    | User       | no record | taken     | `rolieup/rolie` 4 stars                                            | survivor, not shortlisted: account held, reads as a person                 |
+| roley    | free  | free    | User       | taken     | taken     | `roleypoly/roleypoly` 45 stars                                     | survivor, not shortlisted: `.dev` taken, Discord roles                     |
+| rolo     | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| cvie     | free  | free    | User       | no record | taken     | `cview` near matches, 14 stars at most                             | survivor, not shortlisted: account held, hard to say                       |
+| cvy      | taken | free    | User       | no record | taken     | not searched                                                       | drop: npm taken                                                            |
+| postie   | taken | free    | Org        | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| posty    | taken | free    | Org        | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| listie   | free  | free    | User       | no record | taken     | 1 star                                                             | survivor, not shortlisted: account held, shopping-list feel                |
+| tallie   | free  | free    | User       | taken     | taken     | `tallier` near matches, 21 stars                                   | survivor, not shortlisted: `.dev` taken, account held                      |
+| tallo    | free  | free    | User       | taken     | taken     | `basil00/Tallow` 561 stars, a near match                           | survivor, not shortlisted: `.dev` taken, account held                      |
+| shortie  | free  | free    | User       | taken     | taken     | `getify/shortie.me` 12 stars                                       | survivor, not shortlisted: `.dev` taken, reads as slang                    |
+| sweepy   | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| sweepie  | free  | free    | User       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, cleaning reading                  |
+| workie   | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| worky    | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| hirie    | free  | free    | User       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, recruiter reading                 |
+| gigly    | free  | free    | User       | taken     | taken     | `GroundworkTechnologies/Gigly` 6 stars                             | survivor, not shortlisted: `.dev` taken, gig-work reading                  |
+| nudgy    | free  | free    | User       | taken     | taken     | `Hamma111/nudgy` 12 stars                                          | survivor, not shortlisted: `.dev` taken, nudging is pressure               |
+| findy    | taken | free    | Org        | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| jobpal   | free  | free    | Org        | taken     | taken     | `Heimdall21/JobPal` 1 star; JobPal is a recruiting chatbot company | survivor, not shortlisted: `.dev` taken, a recruiting chatbot has the name |
+| jobmate  | free  | free    | Org        | no record | taken     | `bnguyen212/jobmate` 5 stars                                       | survivor, not shortlisted: account held, JobMate repos                     |
+| jobbud   | free  | free    | none       | no record | taken     | 0 stars; `JobBuddy` repos nearby                                   | survivor, not shortlisted: "bud" reads oddly, near JobBuddy                |
+| cvpal    | free  | free    | User       | taken     | taken     | `pichenettes/cvpal` 87 stars                                       | survivor, not shortlisted: `.dev` taken, account held                      |
+| cvbuddy  | free  | free    | Org        | no record | taken     | `teamorigin/cvbuddy` 2 stars                                       | survivor, not shortlisted: account held, CV-only                           |
+| leadpal  | free  | free    | User       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, sales-lead reading                |
+| rolepal  | free  | free    | none       | no record | taken     | `rolepaly` repos, a typo-near "roleplay"                           | **finalist**                                                               |
+| leadmate | free  | free    | Org        | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, sales-lead reading                |
+| rolemate | free  | free    | Org        | no record | taken     | `SiddyDevelops/RoleMate` 2 stars                                   | survivor, not shortlisted: account held                                    |
+| tallypal | free  | free    | none       | no record | taken     | one repo, 0 stars                                                  | **finalist**                                                               |
+| sweeppal | free  | free    | none       | no record | taken     | none found                                                         | survivor, not shortlisted: `/sweeppal:sweep` repeats itself                |
+| postpal  | free  | free    | Org        | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, reads as mail                     |
+| workpal  | taken | free    | Org        | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| workmate | taken | free    | User       | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| applypal | free  | free    | User       | no record | taken     | `NacerKROUDIR/ApplyPal` 5 stars                                    | survivor, not shortlisted: "apply" hints at auto-apply                     |
+| shortpal | free  | free    | User       | no record | taken     | 2 stars                                                            | survivor, not shortlisted: account held, reads as palindrome               |
+| listpal  | free  | free    | User       | no record | taken     | `aschmelyun/listpal` 40 stars                                      | survivor, not shortlisted: account held, list app                          |
+| jobkit   | taken | free    | Org        | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| cvkit    | taken | free    | Org        | taken     | taken     | not searched                                                       | drop: npm taken                                                            |
+| jobpup   | free  | free    | none       | no record | taken     | `DonCastillo/jobpup` 0 stars                                       | survivor, not shortlisted: dog-and-chase reading                           |
+| jobbee   | free  | free    | Org        | no record | taken     | `ghulamabbas2/jobbee-api` 43 stars, a job board                    | survivor, not shortlisted: account held, job-board repos                   |
+| jobmouse | free  | free    | none       | no record | taken     | none found                                                         | **finalist**                                                               |
+| jobbird  | free  | free    | none       | no record | taken     | 0-star job-board repos                                             | survivor, not shortlisted: generic bird, job-board repos                   |
+| rolebird | free  | free    | none       | no record | taken     | none found                                                         | survivor, not shortlisted: weaker job cue than jobwren                     |
+| leadbird | free  | free    | User       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, sales-lead reading                |
+| jobowl   | free  | free    | Org        | no record | taken     | `rekasa7000/jobowl` 1 star                                         | survivor, not shortlisted: account held                                    |
+| hirowl   | free  | free    | User       | no record | no record | none found                                                         | survivor, not shortlisted: account held, reads as a typo                   |
+| jobotter | free  | free    | none       | no record | taken     | none found; "otter" brings Otter.ai to mind                        | **finalist**                                                               |
+| rolebee  | free  | free    | none       | no record | taken     | none found                                                         | survivor, not shortlisted: a busy bee argues against calm                  |
+| leadbee  | free  | free    | User       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: account held, sales-lead reading                |
+| jobwren  | free  | free    | none       | no record | taken     | none found                                                         | **finalist**                                                               |
+| tallybee | free  | free    | User       | no record | taken     | `beeminder/tallybee` 1 star                                        | survivor, not shortlisted: account held                                    |
+| tallypup | free  | free    | none       | no record | taken     | none found                                                         | survivor, not shortlisted: dog-and-chase reading                           |
+| jobpip   | free  | free    | none       | no record | taken     | `archtechx/jobpipeline` 133 stars, a near match                    | survivor, not shortlisted: reads as pip, the Python tool                   |
+| leadpip  | free  | free    | none       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: reads as a pipe, sales-lead reading             |
+| rolepip  | free  | free    | none       | no record | no record | none found                                                         | survivor, not shortlisted: nonword feel, no job cue                        |
+| jobnest  | free  | free    | Org        | taken     | taken     | `Shanisoni/JobNest` 7 stars                                        | survivor, not shortlisted: `.dev` taken, account held                      |
+| rolenest | free  | free    | none       | no record | taken     | 0 stars                                                            | survivor, not shortlisted: a nest suggests staying put                     |
+| leadnest | free  | free    | Org        | no record | taken     | `useleadnest/leadnest` 0 stars                                     | survivor, not shortlisted: account held, sales-lead reading                |
+| jobtail  | free  | free    | none       | no record | taken     | `dalogax/jobtail` 2 stars                                          | survivor, not shortlisted: "tail" reads as following, near "tailor"        |
+| leadtail | free  | free    | Org        | no record | taken     | `Aaryan-Codes/LeadTail` 0 stars                                    | survivor, not shortlisted: account held, sales-lead reading                |
+| roletail | free  | free    | none       | no record | no record | 0 stars; near `RoleTailor` repos                                   | survivor, not shortlisted: reads as "role tailor"                          |
+
+What the filter shows:
+
+- **npm removes few.** 16 of 70 are taken, so 54 survive. Short
+  pet-like words (`jobby`, `joby`, `postie`, `sweepy`) are mostly gone;
+  compounds with a helper or creature word are mostly free.
+- **`.com` is gone for most.** Only `hirowl`, `rolepip` and `roletail` have no
+  `.com` record, and all three read poorly. As in earlier rounds, `.com` does
+  not separate the names.
+- **`.dev` has no record for 43 of 70.** Of the 54 npm
+  survivors, 42 have no `.dev` record. Short diminutives are the ones that lose
+  it.
+- **GitHub account** is held far more often for the diminutives and pal names
+  than for the creature names. The slug `andryorelabs/<name>` is free for all 70. The finalists below all have an unheld account.
+- **The shortlist is small on purpose.** Names with a held account, a taken
+  `.dev`, a sales-lead or recruiter reading, an "apply" cue or a hunting
+  hint were set aside.
+
+### Round 3 finalists: scored /80
+
+Five finalists, chosen for a free npm name, slug and `.dev`, an unheld GitHub
+account and a work cue, spread over the three families. Axes are the round 2
+definitions: sound, registry collision, brand collision, brief fit, headroom,
+warmth, overpromise risk and findability, each 0 to 10. This is directional
+judgment, not a formula.
+
+| Axis               | jobotter                                        | jobwren                                         | tallypal                                    | jobmouse                                    | rolepal                                            |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------- | ------------------------------------------- | ------------------------------------------- | -------------------------------------------------- |
+| Sound              | 8: 8 letters, easy to say                       | 7: "wren" is short but a little odd after "job" | 8: 8 letters, easy rhythm                   | 7: 8 letters, "mouse" also means the device | 8: 7 letters, "ask rolepal" reads naturally        |
+| Registry collision | 9: npm, slug, `.dev` free, no account held      | 9: npm, slug, `.dev` free, no account held      | 9: npm, slug, `.dev` free, no account held  | 9: npm, slug, `.dev` free, no account held  | 9: npm, slug, `.dev` free, no account held         |
+| Brand collision    | 6: no repo, but "otter" brings Otter.ai to mind | 9: no repo or product found                     | 9: one 0-star repo                          | 8: none found, a generic animal             | 6: typo-near "roleplay", a 2336-star repo nearby   |
+| Brief fit          | 5: playful, against calm and precise            | 6: a small quiet bird, careful and exact        | 6: a tally is precise, "pal" is casual      | 5: playful, a careful small creature        | 5: "pal" is casual and suggests an agent           |
+| Headroom           | 4: job-bound                                    | 4: job-bound                                    | 5: a tally of anything                      | 4: job-bound                                | 5: role is broader than job                        |
+| Warmth             | 10: an otter is the friendliest mark here       | 8: small and gentle, a less obvious mascot      | 9: a pal who keeps count                    | 9: a mouse is easy to draw and friendly     | 9: a pal                                           |
+| Overpromise risk   | 8: nothing promised                             | 9: nothing promised                             | 7: a pal can hint at doing the work for you | 8: nothing promised                         | 6: a pal for roles can read as doing roles for you |
+| Findability        | 8: "job" says it, the otter is a mnemonic       | 7: "job" says it, "wren" does not               | 6: a tally and a pal, no job cue            | 7: "job" says it, "mouse" is a mnemonic     | 7: "role" reads as job or as access roles          |
+| **Total /80**      | **58**                                          | **59**                                          | **59**                                      | **57**                                      | **55**                                             |
+
+Each total is the sum of its eight scores: jobotter 8+9+6+5+4+10+8+8 = 58,
+jobwren 7+9+9+6+4+8+9+7 = 59, tallypal 8+9+9+6+5+9+7+6 = 59, jobmouse
+7+9+8+5+4+9+8+7 = 57, rolepal 8+9+6+5+5+9+6+7 = 55.
+
+Where these sit against the brief: no round 3 name scores above 6 on Brief
+fit, because a cute name is not calm and precise by default. `jobwren` and
+`tallypal` score 6 because a wren is small and exact and a tally is a precise
+thing. The brief's personality is "precise, calm, trustworthy", with "no hype
+and no exclamation marks", so a warm mascot name should be read as a trade:
+more warmth and findability, less formality. Overpromise risk is where the
+`-pal` and `-mate` names lose points, since a friend you ask can sound like a
+friend who does it for you, and huntline's position is that you press Submit.
+
+### Rounds 1 to 3 compared
+
+The five round 3 finalists next to the top three of rounds 1 and 2, on the
+same /80 scale.
+
+| Rank | Name       | Round | Total /80 | Brief fit | Warmth | Findability |
+| ---- | ---------- | ----- | --------- | --------- | ------ | ----------- |
+| 1    | jobwren    | 3     | 59        | 6         | 8      | 7           |
+| 1    | tallypal   | 3     | 59        | 6         | 9      | 6           |
+| 3    | jobtally   | 2     | 58        | 7         | 6      | 9           |
+| 3    | jobotter   | 3     | 58        | 5         | 10     | 8           |
+| 5    | roleline   | 2     | 57        | 7         | 4      | 7           |
+| 5    | jobmouse   | 3     | 57        | 5         | 9      | 7           |
+| 7    | careerline | 2     | 56        | 7         | 4      | 9           |
+| 8    | rolepal    | 3     | 55        | 5         | 9      | 7           |
+
+Reading it straight:
+
+- **The spread is narrow again.** All eight sit within 4 points, inside the
+  noise of a judgment score. Treat the table as a group, not a ladder.
+- **Round 3 wins on warmth and loses on brief fit.** The round 3 finalists
+  average 5.4 on Brief fit and 9.0 on Warmth. The three round 2 names average
+  7.0 and 4.7. The total hides that trade.
+- **jobwren** has the cleanest collision profile and the best overpromise
+  score, and a wren is a small, quiet mark. Its weakness is that "wren" tells a
+  stranger nothing, so the slogan and README carry the meaning.
+- **tallypal** continues the tally idea behind `jobtally` and `tallyline`, with
+  warmth added. It has no job cue in the name and "pal" invites the "does it
+  for me" reading.
+- **jobotter** is the friendliest and the closest to the feel of "Jobbie". The
+  otter brings Otter.ai (a note-taking product) to mind, which costs it brand
+  collision points, and it has the weakest fit with the calm brief.
+- **jobmouse** has an easy mark, but "mouse" also means the pointing device.
+- **rolepal** lands last: it reads as "roleplay", and "pal" is the riskiest
+  word on overpromise.
+
+### Round 3 recommendation
+
+This is input for the maintainer, who decides.
+
+1. **If character matters most, take `jobwren`.** It is the friendliest name
+   that still fits "small, quiet and exact", it has no brand collision, and it
+   tops the round with `tallypal`.
+2. **If a clear job cue and warmth matter most, `jobotter`** is the warmest and
+   has the strongest findability, but check the Otter.ai association before
+   relying on it.
+3. **If the brief's calm tone matters most, round 2 still wins.** `jobtally`
+   (58) has Brief fit 7 and Findability 9 against 6 and 7 for `jobwren`. A
+   1-point gap is not a reason to trade fit for charm.
+4. **Avoid the `-pal` and `-mate` names for the public name.** They are the
+   most likely to read as a tool that acts for you, which the brief rules out.
+5. **Jobbie itself stays out.** It is a live job-search product, with an
+   auto-apply tone in some of its listings.
+6. **Confirm before acting.** RDAP "no record" is a signal, not a quote, and
+   registrations change. Re-run the table and ask a registrar before any
+   rename, and search for trademarks, which this research did not do.
+
+Nothing was bought or registered for this research.

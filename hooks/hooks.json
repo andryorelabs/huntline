@@ -1,8 +1,18 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HUNTLINE_PREFETCH=1 \"${CLAUDE_PLUGIN_ROOT}/bin/huntline\""
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
-        "matcher": "mcp__.*([Cc]hrome|[Bb]rowser|[Dd]evtools|[Pp]laywright|[Pp]uppeteer|cdp|[Dd]ash).*|mcp__.*__(click|press_key|type_text|fill|fill_form|evaluate_script|drag|upload_file|handle_dialog|hover)|mcp__.*Gmail.*__(send_message|reply|forward)",
+        "matcher": "mcp__.*([Cc]hrome|[Bb]rowser|[Dd]evtools|[Pp]laywright|[Pp]uppeteer|cdp).*|mcp__.*__(click|press_key|type_text|fill|fill_form|evaluate_script|drag|upload_file|handle_dialog|hover)|mcp__.*[Gg][Mm][Aa][Ii][Ll].*__.*([Ss][Ee][Nn][Dd]|[Rr][Ee][Pp][Ll][Yy]|[Ff][Oo][Rr][Ww][Aa][Rr][Dd]).*",
         "hooks": [
           {
             "type": "command",

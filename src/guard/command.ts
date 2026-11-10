@@ -3,7 +3,7 @@ import { writeSync } from "node:fs";
 import type { CommandContext } from "../core/commands.ts";
 import { failure, success, type Envelope } from "../core/envelope.ts";
 import { isObject } from "../core/narrow.ts";
-import { decideGuard, snapshotScope, type GuardDecision } from "./decide.ts";
+import { decideGuard, parseMcpToolName, snapshotScope, type GuardDecision } from "./decide.ts";
 import { runGuardSelfTest, SELF_TEST_HOOKS, type SelfTestResult } from "./self-test.ts";
 import { lookupLabel, parseSnapshotLabels, recordSnapshot } from "./snapshot.ts";
 
@@ -12,18 +12,23 @@ export const MAX_STDIN_BYTES = 1024 * 1024;
 type HookOutput = {
   readonly hookSpecificOutput: {
     readonly hookEventName: "PreToolUse";
-    readonly permissionDecision: "allow" | "deny";
+    readonly permissionDecision: "deny";
     readonly permissionDecisionReason: string;
   };
 };
 
-export function formatHookOutput(decision: GuardDecision): HookOutput {
+/**
+ * Turns a Guard decision into PreToolUse hook output. The Guard never grants
+ * permission: no objection returns `null`, meaning print nothing and leave
+ * Claude Code's normal permission flow in charge.
+ */
+export function formatHookOutput(decision: GuardDecision): HookOutput | null {
+  if (decision.decision !== "deny") return null;
   return {
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
-      permissionDecision: decision.decision,
-      permissionDecisionReason:
-        decision.decision === "deny" ? decision.reason : "no submit or send action detected",
+      permissionDecision: "deny",
+      permissionDecisionReason: decision.reason,
     },
   };
 }
@@ -74,9 +79,13 @@ export function recordFromPayload(text: string): void {
   const sessionId = record["session_id"];
   if (typeof sessionId !== "string" || sessionId === "") return;
   const toolName = record["tool_name"];
-  const server = typeof toolName === "string" ? /^mcp__(.+?)__/.exec(toolName)?.[1] : undefined;
-  if (server === undefined) return;
-  recordSnapshot(snapshotScope(sessionId, server), parseSnapshotLabels(record["tool_response"]));
+  if (typeof toolName !== "string") return;
+  const parsed = parseMcpToolName(toolName);
+  if (parsed === null || parsed === "not-mcp") return;
+  recordSnapshot(
+    snapshotScope(sessionId, parsed.server),
+    parseSnapshotLabels(record["tool_response"]),
+  );
 }
 
 async function runRecorder(): Promise<never> {
@@ -105,7 +114,7 @@ export function selfTestEnvelope(result: SelfTestResult): Envelope<unknown> {
 export async function run(argv: string[], _ctx: CommandContext): Promise<Envelope<unknown>> {
   if (argv.includes("--self-test")) return selfTestEnvelope(runGuardSelfTest(SELF_TEST_HOOKS));
   if (argv.includes("--record")) return runRecorder();
-  const decision = await guardDecisionFor(process.stdin);
-  writeSync(1, `${JSON.stringify(formatHookOutput(decision))}\n`);
+  const output = formatHookOutput(await guardDecisionFor(process.stdin));
+  if (output !== null) writeSync(1, `${JSON.stringify(output)}\n`);
   return process.exit(0);
 }

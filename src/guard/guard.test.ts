@@ -17,7 +17,17 @@ const LABELS: Readonly<Record<string, string>> = {
 const lookup: LabelLookup = (scope, uid) =>
   scope.endsWith("__chrome-devtools") ? (LABELS[uid] ?? null) : null;
 
+const NESTED_LABELS: Readonly<Record<string, string>> = {
+  "4_1": 'button "Apply"',
+  "4_2": 'button "Next"',
+};
+const nestedLookup: LabelLookup = (scope, uid) =>
+  scope === snapshotScope("s1", "remote-devices__Claude_Browser")
+    ? (NESTED_LABELS[uid] ?? null)
+    : null;
+
 function permissionDecisionOf(stdout: string): string {
+  if (stdout === "") return "none";
   const parsed: unknown = JSON.parse(stdout);
   const output = isObject(parsed) ? parsed["hookSpecificOutput"] : undefined;
   const decision = isObject(output) ? output["permissionDecision"] : undefined;
@@ -52,6 +62,61 @@ describe("decideGuard", () => {
     expect(verdict(call(`${CHROME}click`, { uid: "1_1" }))).toBe("deny");
     expect(verdict(call(`${CHROME}click`, { uid: "1_3" }))).toBe("deny");
     expect(verdict(call(`${CHROME}click`, { uid: "1_2" }))).toBe("allow");
+  });
+
+  test("denies submit-like labels as whole words and allows ordinary navigation", () => {
+    const labels: Readonly<Record<string, string>> = {
+      a: 'button "Apply"',
+      b: 'link "Apply for this job"',
+      c: 'button "Connect"',
+      d: 'button "Confirm"',
+      e: 'button "Post"',
+      f: 'button "Send invitation"',
+      g: 'button "APPLY NOW"',
+      n: 'button "Next"',
+      o: 'button "Continue"',
+      p: 'button "Save draft"',
+      q: 'StaticText "Applying for roles is easy"',
+      r: 'StaticText "Posted 3 days ago"',
+      s: 'link "Connections"',
+    };
+    const wide: LabelLookup = (_scope, uid) => labels[uid] ?? null;
+    const ask = (uid: string): string =>
+      decideGuard(call(`${CHROME}click`, { uid }), wide).decision;
+    for (const uid of ["a", "b", "c", "d", "e", "f", "g"]) expect(ask(uid)).toBe("deny");
+    for (const uid of ["n", "o", "p", "q", "r", "s"]) expect(ask(uid)).toBe("allow");
+  });
+
+  test("reads the action as the last segment of a nested tool name", () => {
+    const nested = "mcp__remote-devices__Claude_Browser__";
+    expect(decideGuard(call(`${nested}click`, { uid: "4_1" }), nestedLookup).decision).toBe("deny");
+    expect(decideGuard(call(`${nested}click`, { uid: "4_2" }), nestedLookup).decision).toBe(
+      "allow",
+    );
+    expect(verdict(call(`${nested}press_key`, { key: "Enter" }))).toBe("deny");
+    expect(verdict(call(`${nested}take_snapshot`, {}))).toBe("allow");
+    expect(verdict(call(`${nested}teleport`, {}))).toBe("deny");
+  });
+
+  test("denies an MCP tool name it cannot split into server and action", () => {
+    for (const tool of ["mcp__", "mcp__server", "mcp__server__", "mcp____click"]) {
+      expect(verdict(call(tool, {}))).toBe("deny");
+    }
+  });
+
+  test("denies accepting a dialog and allows dismissing it", () => {
+    expect(verdict(call(`${CHROME}handle_dialog`, { action: "accept" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}handle_dialog`, { action: "accept", promptText: "x" }))).toBe(
+      "deny",
+    );
+    expect(verdict(call(`${CHROME}handle_dialog`, {}))).toBe("deny");
+    expect(verdict(call(`${CHROME}handle_dialog`, { action: "Dismiss" }))).toBe("deny");
+    expect(verdict(call(`${CHROME}handle_dialog`, { action: "dismiss" }))).toBe("allow");
+  });
+
+  test("does not treat dash as a browser server name", () => {
+    expect(verdict(call("mcp__x__delete_dashboard", {}))).toBe("allow");
+    expect(verdict(call("mcp__dash__type_text", { text: "x\n" }))).toBe("deny");
   });
 
   test("denies a click on an unknown uid or without a session", () => {
@@ -111,6 +176,19 @@ describe("decideGuard", () => {
       expect(verdict(call(`${GMAIL}${action}`, { body: "x" }))).toBe("deny");
     }
     expect(verdict(call(`${GMAIL}create_draft`, { body: "x" }))).toBe("allow");
+  });
+
+  test("denies Gmail send-like actions on any casing of the server name", () => {
+    for (const tool of [
+      "mcp__gmail__send_email",
+      "mcp__Gmail__send_draft",
+      "mcp__GMAIL__Reply_All",
+      "mcp__my-gmail__forward_thread",
+    ]) {
+      expect(verdict(call(tool, { body: "x" }))).toBe("deny");
+    }
+    expect(verdict(call("mcp__gmail__list_labels", {}))).toBe("allow");
+    expect(verdict(call("mcp__slack__send_message", { text: "x" }))).toBe("allow");
   });
 
   test("denies malformed and unknown shapes", () => {
@@ -175,10 +253,14 @@ describe("guardDecisionFor", () => {
     expect((await guardDecisionFor(Readable.from([payload]))).decision).toBe("allow");
   });
 
-  test("formats the hook output", () => {
+  test("formats a deny as hook output", () => {
     const output = formatHookOutput({ decision: "deny", reason: "r" });
-    expect(output.hookSpecificOutput.permissionDecision).toBe("deny");
-    expect(output.hookSpecificOutput.permissionDecisionReason).toBe("r");
+    expect(output?.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(output?.hookSpecificOutput.permissionDecisionReason).toBe("r");
+  });
+
+  test("formats no objection as no output, never an allow", () => {
+    expect(formatHookOutput({ decision: "allow" })).toBeNull();
   });
 });
 
@@ -189,11 +271,13 @@ describe("huntline guard process", () => {
     expect(decision).toBe("deny");
   });
 
-  test("allows a navigation end to end and denies an unrecorded click", () => {
+  test("prints nothing for a navigation or snapshot and denies an unrecorded click", () => {
     const nav = runGuard(
       JSON.stringify(call(`${CHROME}navigate_page`, { url: "https://example.test" })),
     );
-    expect(nav.decision).toBe("allow");
+    expect(nav).toEqual({ code: 0, decision: "none" });
+    const snapshot = runGuard(JSON.stringify(call(`${CHROME}take_snapshot`, {})));
+    expect(snapshot).toEqual({ code: 0, decision: "none" });
     const click = runGuard(JSON.stringify(call(`${CHROME}click`, { uid: "1_2" })));
     expect(click.decision).toBe("deny");
   });
@@ -249,6 +333,6 @@ describe("snapshot labels", () => {
       return permissionDecisionOf(result.stdout.toString());
     };
     expect(ask("3_1")).toBe("deny");
-    expect(ask("3_2")).toBe("allow");
+    expect(ask("3_2")).toBe("none");
   });
 });

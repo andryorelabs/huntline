@@ -5,13 +5,15 @@ export type GuardDecision =
 export type LabelLookup = (sessionId: string, uid: string) => string | null;
 
 const SUBMIT_LABEL =
-  /\b(submit|send|finali[sz]e|apply now|complete application|confirm application|post application)\b/i;
+  /\b(submit|send|send invitation|finali[sz]e|apply|connect|confirm|post|complete application)\b/i;
+
 export function snapshotScope(sessionId: string, server: string): string {
   return `${sessionId}__${server}`;
 }
 
-const MCP_TOOL = /^mcp__(.+?)__(.+)$/;
-const BROWSER_SERVER = /chrome|browser|devtools|playwright|puppeteer|cdp|dash/i;
+const MCP_PREFIX = "mcp__";
+const NAME_SEPARATOR = "__";
+const BROWSER_SERVER = /chrome|browser|devtools|playwright|puppeteer|cdp/i;
 const GMAIL_SERVER = /gmail/i;
 const GMAIL_SEND_ACTION = /send|reply|forward/i;
 const KEY_THAT_SUBMITS = /enter|return|space/i;
@@ -45,10 +47,28 @@ const BENIGN_BROWSER_ACTIONS: ReadonlySet<string> = new Set([
   "get_console_message",
   "list_network_requests",
   "get_network_request",
-  "handle_dialog",
 ]);
 
 const ALLOW: GuardDecision = { decision: "allow" };
+
+export type McpToolName = { readonly server: string; readonly action: string };
+
+/**
+ * Splits an MCP tool name into its server and action. The action is the last
+ * `__`-separated segment, so nested names such as
+ * `mcp__remote-devices__Claude_Browser__click` keep every middle segment in the
+ * server. Returns `"not-mcp"` for a non-MCP tool and `null` for an MCP name with
+ * an empty server or action.
+ */
+export function parseMcpToolName(toolName: string): McpToolName | "not-mcp" | null {
+  if (!toolName.startsWith(MCP_PREFIX)) return "not-mcp";
+  const segments = toolName.slice(MCP_PREFIX.length).split(NAME_SEPARATOR);
+  if (segments.length < 2) return null;
+  const action = segments.at(-1) ?? "";
+  const server = segments.slice(0, -1).join(NAME_SEPARATOR);
+  if (server === "" || action === "" || segments.includes("")) return null;
+  return { server, action };
+}
 
 function deny(reason: string): GuardDecision {
   return { decision: "deny", reason };
@@ -133,6 +153,11 @@ function decideBrowser(
       : ALLOW;
   }
   if (action === "drag") return deny("drag is blocked");
+  if (action === "handle_dialog") {
+    return toolInput["action"] === "dismiss"
+      ? ALLOW
+      : deny("accepting a dialog can confirm a submit or send; the human accepts it");
+  }
   return BENIGN_BROWSER_ACTIONS.has(action) ? ALLOW : deny(`unknown browser action "${action}"`);
 }
 
@@ -140,10 +165,10 @@ function decideUnchecked(input: unknown, lookup: LabelLookup): GuardDecision {
   if (!isRecord(input)) return deny("hook payload is not a JSON object");
   const toolName = input["tool_name"];
   if (typeof toolName !== "string" || toolName === "") return deny("hook payload has no tool_name");
-  const match = MCP_TOOL.exec(toolName);
-  if (match === null) return ALLOW;
-  const server = match[1] ?? "";
-  const action = match[2] ?? "";
+  const parsed = parseMcpToolName(toolName);
+  if (parsed === "not-mcp") return ALLOW;
+  if (parsed === null) return deny(`MCP tool name "${toolName}" has no readable server and action`);
+  const { server, action } = parsed;
   if (GMAIL_SERVER.test(server)) {
     return GMAIL_SEND_ACTION.test(action)
       ? deny(`Gmail ${action} is blocked; the human presses Send`)

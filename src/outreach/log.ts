@@ -11,7 +11,7 @@ function utcDay(timestamp: string): string {
   return timestamp.slice(0, 10);
 }
 
-export async function countLoggedToday(dir: DataDir, now: Date = new Date()): Promise<number> {
+async function countLoggedToday(dir: DataDir, now: Date = new Date()): Promise<number> {
   const today = utcDay(now.toISOString());
   const events = await readEvents(dir);
   return events.filter((event) => event.kind === "outreach.logged" && utcDay(event.at) === today)
@@ -24,13 +24,19 @@ export async function logOutreach(
   entry: OutreachEntry,
 ): Promise<Result<void>> {
   try {
-    return await withLock(path.join(dir.path, LOCK_DIRECTORY), () => logUnderLock(dir, profile, entry));
+    return await withLock(path.join(dir.path, LOCK_DIRECTORY), () =>
+      logUnderLock(dir, profile, entry),
+    );
   } catch (error) {
     return { ok: false, error: { code: "internal", message: errorMessage(error) } };
   }
 }
 
-async function logUnderLock(dir: DataDir, profile: Profile, entry: OutreachEntry): Promise<Result<void>> {
+async function logUnderLock(
+  dir: DataDir,
+  profile: Profile,
+  entry: OutreachEntry,
+): Promise<Result<void>> {
   try {
     const used = await countLoggedToday(dir);
     if (used >= profile.outreachDailyCap) {

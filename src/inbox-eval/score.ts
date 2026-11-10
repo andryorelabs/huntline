@@ -15,7 +15,7 @@ export type Prediction = {
   readonly classification: EmailClass;
 };
 
-export type ClassScore = {
+type ClassScore = {
   readonly support: number;
   readonly truePositives: number;
   readonly falsePositives: number;

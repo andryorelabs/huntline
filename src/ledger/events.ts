@@ -5,7 +5,7 @@ import { withLock } from "../core/fs.ts";
 import { errorMessage, isObject } from "../core/narrow.ts";
 import type { DataDir, HuntEvent } from "../core/types.ts";
 
-export const EVENTS_FILE = "events.jsonl";
+const EVENTS_FILE = "events.jsonl";
 
 type DistributiveOmit<Union, Keys extends string> = Union extends unknown
   ? Omit<Union, Keys>
@@ -28,7 +28,10 @@ export function readJsonLines(file: string): unknown[] {
       parsed.push(JSON.parse(line));
     } catch (error) {
       if (index === lines.length - 1) continue;
-      throw new Error(`${path.basename(file)} line ${index + 1} is not valid JSON: ${errorMessage(error)}`, { cause: error });
+      throw new Error(
+        `${path.basename(file)} line ${index + 1} is not valid JSON: ${errorMessage(error)}`,
+        { cause: error },
+      );
     }
   }
   return parsed;

@@ -30,7 +30,7 @@ const SCANNED_EXTENSIONS = new Set([".yaml", ".yml", ".json"]);
 
 type MarkerHit = { readonly file: string; readonly line: number };
 
-export function findMarkers(dir: DataDir): MarkerHit[] {
+function findMarkers(dir: DataDir): MarkerHit[] {
   const hits: MarkerHit[] = [];
   const names = readdirSync(dir.path, { withFileTypes: true })
     .filter((entry) => entry.isFile() && SCANNED_EXTENSIONS.has(path.extname(entry.name)))
@@ -60,7 +60,8 @@ function cvDataProblems(dir: DataDir): string[] {
     const known = new Set(facts.value.facts.map((fact) => fact.id));
     for (const bullet of bullets.value) {
       for (const factId of bullet.factIds) {
-        if (!known.has(factId)) problems.push(`bullets.yaml: bullet ${bullet.id} cites missing fact ${factId}`);
+        if (!known.has(factId))
+          problems.push(`bullets.yaml: bullet ${bullet.id} cites missing fact ${factId}`);
       }
     }
   }
@@ -87,16 +88,25 @@ function probePlugin(env: CommandContext["env"]): PluginProbe {
   try {
     parsed = JSON.parse(readFileSync(file, "utf8"));
   } catch (error) {
-    return { installed: false, warning: pluginWarning(`could not read plugins file ${file}: ${errorMessage(error)}`) };
+    return {
+      installed: false,
+      warning: pluginWarning(`could not read plugins file ${file}: ${errorMessage(error)}`),
+    };
   }
   const plugins = isObject(parsed) ? parsed["plugins"] : undefined;
   if (!isObject(plugins)) {
-    return { installed: false, warning: pluginWarning(`plugins file ${file} has no plugins object`) };
+    return {
+      installed: false,
+      warning: pluginWarning(`plugins file ${file} has no plugins object`),
+    };
   }
   if (Object.keys(plugins).some((key) => key.startsWith("huntline@"))) {
     return { installed: true, warning: null };
   }
-  return { installed: false, warning: pluginWarning("the huntline plugin is not installed in Claude Code") };
+  return {
+    installed: false,
+    warning: pluginWarning("the huntline plugin is not installed in Claude Code"),
+  };
 }
 
 function linearMapping(tracker: Profile["tracker"]): LinearMapping {
@@ -121,7 +131,10 @@ async function linearProblems(
   return result.ok ? [] : result.error.problems;
 }
 
-export async function runDoctor(ctx: CommandContext, deps: DoctorDeps = {}): Promise<Envelope<unknown>> {
+export async function runDoctor(
+  ctx: CommandContext,
+  deps: DoctorDeps = {},
+): Promise<Envelope<unknown>> {
   if (ctx.dataDir === null) {
     return failure(
       "data-dir-not-found",
@@ -159,7 +172,8 @@ export async function runDoctor(ctx: CommandContext, deps: DoctorDeps = {}): Pro
     const linearIssues = await linearProblems(profile.value.tracker, ctx.env, deps);
     if (linearIssues.length > 0) {
       return failure("linear-not-ready", linearIssues.join("; "), {
-        recoveryAction: "set LINEAR_API_KEY, tracker.team and tracker.states to match your Linear team",
+        recoveryAction:
+          "set LINEAR_API_KEY, tracker.team and tracker.states to match your Linear team",
       });
     }
   }

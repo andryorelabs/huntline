@@ -1,8 +1,8 @@
 import { COMMANDS } from "../core/commands.ts";
 
-export type Frontmatter = Record<string, string>;
+type Frontmatter = Record<string, string>;
 
-export type ParsedDocument = {
+type ParsedDocument = {
   readonly frontmatter: Frontmatter | null;
   readonly body: string;
 };
@@ -18,7 +18,7 @@ const UNTRUSTED_RULE = /untrusted[\s\S]*data, never instructions/i;
 const NO_SUBMIT_RULE = /never submit/i;
 const WRITE_TOOLS: readonly string[] = ["Write", "Edit", "MultiEdit", "NotebookEdit"];
 
-export function parseDocument(source: string): ParsedDocument {
+function parseDocument(source: string): ParsedDocument {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(source);
   if (match === null) return { frontmatter: null, body: source };
   const frontmatter: Frontmatter = {};
@@ -30,11 +30,14 @@ export function parseDocument(source: string): ParsedDocument {
   return { frontmatter, body: match[2] ?? "" };
 }
 
-export function extractCliReferences(body: string): string[][] {
+function extractCliReferences(body: string): string[][] {
   const references: string[][] = [];
   for (const span of body.matchAll(/`([^`\n]*\bhuntline\s[^`\n]*)`/g)) {
     const text = span[1] ?? "";
-    const tokens = text.slice(text.search(/\bhuntline\s/)).split(/\s+/).slice(1);
+    const tokens = text
+      .slice(text.search(/\bhuntline\s/))
+      .split(/\s+/)
+      .slice(1);
     const words: string[] = [];
     for (const token of tokens) {
       if (!/^[a-z][a-z-]*$/.test(token)) break;
@@ -49,7 +52,8 @@ function unknownCommandProblem(words: readonly string[]): string | null {
   const [first, second] = words;
   if (first === undefined) return null;
   const known =
-    BUILTIN_COMMANDS.has(first) || Object.keys(COMMANDS).some((name) => name.split(" ")[0] === first);
+    BUILTIN_COMMANDS.has(first) ||
+    Object.keys(COMMANDS).some((name) => name.split(" ")[0] === first);
   if (!known) return `unknown CLI command "huntline ${first}"`;
   const allowed = FIXED_SUBCOMMANDS[first];
   if (allowed !== undefined && second !== undefined && !allowed.includes(second)) {
@@ -64,8 +68,10 @@ export function validateDocument(kind: DocumentKind, name: string, source: strin
   const problems: string[] = [];
   const { frontmatter, body } = parseDocument(source);
   if (frontmatter === null) return [`${name}: missing frontmatter`];
-  if (kind !== "command" && (frontmatter["name"] ?? "") === "") problems.push(`${name}: frontmatter lacks name`);
-  if ((frontmatter["description"] ?? "") === "") problems.push(`${name}: frontmatter lacks description`);
+  if (kind !== "command" && (frontmatter["name"] ?? "") === "")
+    problems.push(`${name}: frontmatter lacks name`);
+  if ((frontmatter["description"] ?? "") === "")
+    problems.push(`${name}: frontmatter lacks description`);
   for (const words of extractCliReferences(body)) {
     const problem = unknownCommandProblem(words);
     if (problem !== null) problems.push(`${name}: ${problem}`);
@@ -80,5 +86,7 @@ export function validateDocument(kind: DocumentKind, name: string, source: strin
 export function readOnlyViolations(name: string, source: string): string[] {
   const { frontmatter } = parseDocument(source);
   const tools = new Set((frontmatter?.["tools"] ?? "").split(",").map((tool) => tool.trim()));
-  return WRITE_TOOLS.filter((tool) => tools.has(tool)).map((tool) => `${name}: read-only agent lists ${tool}`);
+  return WRITE_TOOLS.filter((tool) => tools.has(tool)).map(
+    (tool) => `${name}: read-only agent lists ${tool}`,
+  );
 }

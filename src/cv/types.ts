@@ -30,7 +30,7 @@ export type FactBank = {
   readonly skills?: readonly SkillGroup[];
 };
 
-export type VariantRule = {
+type VariantRule = {
   readonly all?: readonly string[];
   readonly any?: readonly string[];
   readonly none?: readonly string[];
@@ -47,7 +47,7 @@ export type Bullet = {
   readonly order?: number;
 };
 
-export type LintRule = "never-claim" | "repeated-phrase" | "unbacked-number" | "placeholder";
+type LintRule = "never-claim" | "repeated-phrase" | "unbacked-number" | "placeholder";
 
 export type LintFinding = {
   readonly rule: LintRule;

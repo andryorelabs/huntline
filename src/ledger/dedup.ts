@@ -5,7 +5,7 @@ import { isObject } from "../core/narrow.ts";
 import type { DataDir, Posting, RejectionReason } from "../core/types.ts";
 import { discardUncommittedTail, eventsPath, readJsonLines } from "./events.ts";
 
-export const LEDGER_FILE = "ledger.jsonl";
+const LEDGER_FILE = "ledger.jsonl";
 const FUZZY_WINDOW_DAYS = 60;
 const TITLE_SIMILARITY = 0.8;
 const MS_PER_DAY = 86_400_000;
@@ -16,13 +16,65 @@ const CANONICAL_ID_SOURCES: ReadonlySet<string> = new Set([
   "workable",
   "smartrecruiters",
 ]);
-const NOISE_TOKENS: ReadonlySet<string> = new Set(["remote", "m", "f", "d", "w", "x", "the", "a", "and"]);
-const COMPANY_SUFFIXES: ReadonlySet<string> = new Set(["inc", "llc", "ltd", "gmbh", "corp", "co", "sa", "bv"]);
+const NOISE_TOKENS: ReadonlySet<string> = new Set([
+  "remote",
+  "m",
+  "f",
+  "d",
+  "w",
+  "x",
+  "the",
+  "a",
+  "and",
+]);
+const COMPANY_SUFFIXES: ReadonlySet<string> = new Set([
+  "inc",
+  "llc",
+  "ltd",
+  "gmbh",
+  "corp",
+  "co",
+  "sa",
+  "bv",
+]);
 const DISTINGUISHING_TOKENS: ReadonlySet<string> = new Set([
-  "junior", "jr", "senior", "sr", "staff", "lead", "principal", "head", "intern", "manager",
-  "i", "ii", "iii", "iv", "1", "2", "3", "4", "5",
-  "frontend", "backend", "fullstack", "mobile", "ios", "android", "data", "ml", "devops", "sre",
-  "security", "qa", "platform", "infrastructure", "design", "product", "sales", "marketing",
+  "junior",
+  "jr",
+  "senior",
+  "sr",
+  "staff",
+  "lead",
+  "principal",
+  "head",
+  "intern",
+  "manager",
+  "i",
+  "ii",
+  "iii",
+  "iv",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "frontend",
+  "backend",
+  "fullstack",
+  "mobile",
+  "ios",
+  "android",
+  "data",
+  "ml",
+  "devops",
+  "sre",
+  "security",
+  "qa",
+  "platform",
+  "infrastructure",
+  "design",
+  "product",
+  "sales",
+  "marketing",
 ]);
 
 export type LedgerOutcome = "seen" | "dismissed" | "duplicate";
@@ -94,7 +146,7 @@ function timestampOf(posting: Posting, fallback: string): number {
   return Number.isNaN(parsed) ? Date.parse(fallback) : parsed;
 }
 
-export function isFuzzyDuplicate(
+function isFuzzyDuplicate(
   candidate: Posting,
   candidateAt: string,
   incoming: Posting,
@@ -102,7 +154,12 @@ export function isFuzzyDuplicate(
 ): boolean {
   if (normalizeCompany(candidate.company) !== normalizeCompany(incoming.company)) return false;
   if (!titlesMatch(normalizeTitle(candidate.title), normalizeTitle(incoming.title))) return false;
-  if (!locationsCompatible(normalizeLocation(candidate.location), normalizeLocation(incoming.location))) {
+  if (
+    !locationsCompatible(
+      normalizeLocation(candidate.location),
+      normalizeLocation(incoming.location),
+    )
+  ) {
     return false;
   }
   const gap = Math.abs(timestampOf(candidate, candidateAt) - timestampOf(incoming, incomingAt));
@@ -123,12 +180,14 @@ function isLedgerEntry(value: unknown): value is LedgerEntry {
     isObject(value) &&
     typeof value["key"] === "string" &&
     typeof value["at"] === "string" &&
-    (value["outcome"] === "seen" || value["outcome"] === "dismissed" || value["outcome"] === "duplicate") &&
+    (value["outcome"] === "seen" ||
+      value["outcome"] === "dismissed" ||
+      value["outcome"] === "duplicate") &&
     isPosting(value["posting"])
   );
 }
 
-export function ledgerPath(dir: DataDir): string {
+function ledgerPath(dir: DataDir): string {
   return path.join(dir.path, LEDGER_FILE);
 }
 
@@ -174,7 +233,8 @@ async function loadCandidates(dir: DataDir): Promise<Candidate[]> {
   for (const raw of raws) {
     if (!isObject(raw) || !isPosting(raw["posting"]) || typeof raw["at"] !== "string") continue;
     const kind = raw["kind"];
-    if (kind !== "lead.created" && kind !== "posting.seen" && kind !== "posting.dismissed") continue;
+    if (kind !== "lead.created" && kind !== "posting.seen" && kind !== "posting.dismissed")
+      continue;
     const key = typeof raw["key"] === "string" ? raw["key"] : dedupKey(raw["posting"]);
     events.push({
       key,
@@ -188,13 +248,23 @@ async function loadCandidates(dir: DataDir): Promise<Candidate[]> {
 }
 
 function toMatch(candidate: Candidate, matchedBy: "exact" | "fuzzy"): DuplicateMatch {
-  return { key: candidate.key, matchedBy, dismissed: candidate.dismissed, source: candidate.source };
+  return {
+    key: candidate.key,
+    matchedBy,
+    dismissed: candidate.dismissed,
+    source: candidate.source,
+  };
 }
 
-export async function findDuplicate(dir: DataDir, posting: Posting): Promise<DuplicateMatch | null> {
+export async function findDuplicate(
+  dir: DataDir,
+  posting: Posting,
+): Promise<DuplicateMatch | null> {
   const candidates = await loadCandidates(dir);
   const key = dedupKey(posting);
-  const exact = candidates.find((candidate) => candidate.key === key || dedupKey(candidate.posting) === key);
+  const exact = candidates.find(
+    (candidate) => candidate.key === key || dedupKey(candidate.posting) === key,
+  );
   if (exact !== undefined) return toMatch(exact, "exact");
   const now = new Date().toISOString();
   const fuzzy = candidates.find((candidate) =>

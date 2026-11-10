@@ -16,7 +16,7 @@ import {
   type ProposedChange,
 } from "./types.ts";
 
-export const BATCH_DIRECTORY = "inbox";
+const BATCH_DIRECTORY = "inbox";
 const BATCH_HASHES_FILE = "inbox-batches.json";
 const THREADS_FILE = "inbox-threads.json";
 const LOCK_DIRECTORY = ".inbox";

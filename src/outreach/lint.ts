@@ -1,7 +1,7 @@
 import type { Draft, LintFinding, Recipient } from "./types.ts";
 
-export const LINKEDIN_MAX_CHARS = 300;
-export const EMAIL_MAX_WORDS = 160;
+const LINKEDIN_MAX_CHARS = 300;
+const EMAIL_MAX_WORDS = 160;
 
 const PLACEHOLDER_PATTERNS: readonly RegExp[] = [
   /\[[^\]\n]{1,60}\]/,

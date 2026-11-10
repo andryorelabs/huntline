@@ -1,5 +1,5 @@
 export const CHANNELS = ["linkedin", "email"] as const;
-export type Channel = (typeof CHANNELS)[number];
+type Channel = (typeof CHANNELS)[number];
 
 export type Draft = {
   readonly channel: Channel;
@@ -18,7 +18,7 @@ export type OutreachEntry = {
   readonly key?: string;
 };
 
-export type LintRule =
+type LintRule =
   | "too-long"
   | "empty"
   | "placeholder"

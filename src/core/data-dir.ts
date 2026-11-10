@@ -4,8 +4,8 @@ import { errorMessage } from "./narrow.ts";
 import { validateProfile } from "./profile.ts";
 import type { DataDir, Profile, Result } from "./types.ts";
 
-export const CONFIG_FILE = "huntline.json";
-export const PROFILE_FILE = "profile.yaml";
+const CONFIG_FILE = "huntline.json";
+const PROFILE_FILE = "profile.yaml";
 
 function readFlagValue(argv: readonly string[], flag: string): Result<string | undefined> {
   const index = argv.indexOf(flag);
@@ -30,7 +30,10 @@ function explicitDir(source: string, value: string, cwd: string): Result<DataDir
   if (!isDirectory(resolved)) {
     return {
       ok: false,
-      error: { code: "data-dir-not-found", message: `${source} points to ${resolved}, which is not a directory` },
+      error: {
+        code: "data-dir-not-found",
+        message: `${source} points to ${resolved}, which is not a directory`,
+      },
     };
   }
   return { ok: true, value: { path: resolved } };
@@ -83,7 +86,10 @@ export function loadProfile(dir: DataDir): Result<Profile> {
   } catch (error) {
     return {
       ok: false,
-      error: { code: "profile-malformed", message: `${PROFILE_FILE} is not valid YAML: ${errorMessage(error)}` },
+      error: {
+        code: "profile-malformed",
+        message: `${PROFILE_FILE} is not valid YAML: ${errorMessage(error)}`,
+      },
     };
   }
   return validateProfile(parsed);

@@ -44,7 +44,7 @@ export function createTracker(
   });
 }
 
-export function describeEvent(event: HuntEvent): string | null {
+function describeEvent(event: HuntEvent): string | null {
   switch (event.kind) {
     case "score.recorded":
       return `score ${event.score} (${event.liveness}): ${event.reasons.join("; ")}`;

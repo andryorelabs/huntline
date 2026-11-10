@@ -15,7 +15,7 @@ export type FieldDump = {
   readonly value: string;
 };
 
-export type VerifyFindingClass = "missing" | "value-mismatch" | "file-name-mismatch";
+type VerifyFindingClass = "missing" | "value-mismatch" | "file-name-mismatch";
 
 export type VerifyFinding = {
   readonly field: string;
@@ -24,7 +24,11 @@ export type VerifyFinding = {
   readonly actual: string | null;
 };
 
-export type NeedsItem = { readonly blockerId: string; readonly detail: string; readonly at: string };
+export type NeedsItem = {
+  readonly blockerId: string;
+  readonly detail: string;
+  readonly at: string;
+};
 
 export type NeedsGroup = {
   readonly key: string;

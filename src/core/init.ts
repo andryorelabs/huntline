@@ -13,7 +13,7 @@ function templateText(content: unknown): string {
   return content;
 }
 
-export const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
+const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   "huntline.json": templateText(configTemplate),
   "profile.yaml": templateText(profileTemplate),
   "facts.yaml": templateText(factsTemplate),

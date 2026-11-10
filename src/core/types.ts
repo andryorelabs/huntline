@@ -14,12 +14,12 @@ export const CONTRACT_TYPES = [
 export type ContractType = (typeof CONTRACT_TYPES)[number];
 
 export const REMOTE_PREFERENCES = ["remote-only", "hybrid", "any"] as const;
-export type RemotePreference = (typeof REMOTE_PREFERENCES)[number];
+type RemotePreference = (typeof REMOTE_PREFERENCES)[number];
 
 export const TRACKER_KINDS = ["local", "linear"] as const;
-export type TrackerKind = (typeof TRACKER_KINDS)[number];
+type TrackerKind = (typeof TRACKER_KINDS)[number];
 
-export const DIMENSIONS = ["remote", "region", "contract", "stack", "salary", "company"] as const;
+const DIMENSIONS = ["remote", "region", "contract", "stack", "salary", "company"] as const;
 export type Dimension = (typeof DIMENSIONS)[number];
 
 export const ELIGIBILITIES = ["eligible", "ineligible", "unknown"] as const;
@@ -54,7 +54,7 @@ export type ApplicationState = (typeof APPLICATION_STATES)[number];
 
 export type Liveness = "live" | "closed" | "unknown";
 export type EmailClass = "rejection" | "interview" | "info-request" | "offer" | "other";
-export type BlockerScope = "field" | "section" | "application";
+type BlockerScope = "field" | "section" | "application";
 
 export const SALARY_PERIODS = ["year", "month"] as const;
 export type SalaryPeriod = (typeof SALARY_PERIODS)[number];

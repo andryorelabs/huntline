@@ -8,7 +8,7 @@ import { loadBullets, loadFactBank, loadVariants } from "./facts.ts";
 import { selectBullets } from "./select.ts";
 import type { Bullet, Entry } from "./types.ts";
 
-export type CompileRequest = {
+type CompileRequest = {
   readonly root: string;
   readonly template: string;
   readonly dataFile: string;
@@ -28,9 +28,9 @@ export type BuildOptions = {
   readonly runner?: TypstRunner;
 };
 
-export const CV_DIRECTORY = "cv";
-export const CV_OUTPUT_DIRECTORY = "out";
-export const DEFAULT_TEMPLATE = "template.typ";
+const CV_DIRECTORY = "cv";
+const CV_OUTPUT_DIRECTORY = "out";
+const DEFAULT_TEMPLATE = "template.typ";
 
 async function runProcess(command: string[]): Promise<Result<string>> {
   try {
@@ -43,14 +43,20 @@ async function runProcess(command: string[]): Promise<Result<string>> {
     if (exitCode !== 0) {
       return {
         ok: false,
-        error: { code: "cv-tool-failed", message: `${command[0]} exited ${exitCode}: ${stderr.trim()}` },
+        error: {
+          code: "cv-tool-failed",
+          message: `${command[0]} exited ${exitCode}: ${stderr.trim()}`,
+        },
       };
     }
     return { ok: true, value: stdout };
   } catch (error) {
     return {
       ok: false,
-      error: { code: "cv-tool-missing", message: `could not run ${command[0]}: ${errorMessage(error)}` },
+      error: {
+        code: "cv-tool-missing",
+        message: `could not run ${command[0]}: ${errorMessage(error)}`,
+      },
     };
   }
 }
@@ -95,7 +101,10 @@ export function isSafeVariantName(name: string): boolean {
   return VARIANT_NAME_PATTERN.test(name) && !name.includes("..");
 }
 
-export function outputPaths(dir: DataDir, name: string): { pdf: string; text: string; data: string } {
+export function outputPaths(
+  dir: DataDir,
+  name: string,
+): { pdf: string; text: string; data: string } {
   const base = path.join(dir.path, CV_DIRECTORY, CV_OUTPUT_DIRECTORY, name);
   return { pdf: `${base}.pdf`, text: `${base}.txt`, data: `${base}.json` };
 }
@@ -127,7 +136,10 @@ export async function buildCv(
 
   const variants = loadVariants(dir);
   if (!variants.ok) return variants;
-  const rule = options.name === undefined ? undefined : variants.value.find((item) => item.name === options.name);
+  const rule =
+    options.name === undefined
+      ? undefined
+      : variants.value.find((item) => item.name === options.name);
   const noSelector = (options.tags ?? []).length === 0 && (options.requirements ?? []).length === 0;
   if (
     options.name !== undefined &&
@@ -138,7 +150,10 @@ export async function buildCv(
   ) {
     return {
       ok: false,
-      error: { code: "unknown-variant", message: `variant "${options.name}" is not defined in bullets.yaml` },
+      error: {
+        code: "unknown-variant",
+        message: `variant "${options.name}" is not defined in bullets.yaml`,
+      },
     };
   }
 
@@ -190,14 +205,20 @@ export async function buildCv(
 
   const template = options.template ?? path.join(dir.path, CV_DIRECTORY, DEFAULT_TEMPLATE);
   if (!existsSync(template)) {
-    return { ok: false, error: { code: "cv-template-missing", message: `no Typst template at ${template}` } };
+    return {
+      ok: false,
+      error: { code: "cv-template-missing", message: `no Typst template at ${template}` },
+    };
   }
 
   const name = options.name ?? "cv";
   if (!isSafeVariantName(name)) {
     return {
       ok: false,
-      error: { code: "invalid-variant", message: `variant name "${name}" must match ${VARIANT_NAME_PATTERN}` },
+      error: {
+        code: "invalid-variant",
+        message: `variant name "${name}" must match ${VARIANT_NAME_PATTERN}`,
+      },
     };
   }
   const paths = outputPaths(dir, name);
@@ -237,6 +258,9 @@ export function readCvText(file: string): Result<string> {
   try {
     return { ok: true, value: readFileSync(file, "utf8") };
   } catch (error) {
-    return { ok: false, error: { code: "cv-text-missing", message: `cannot read ${file}: ${errorMessage(error)}` } };
+    return {
+      ok: false,
+      error: { code: "cv-text-missing", message: `cannot read ${file}: ${errorMessage(error)}` },
+    };
   }
 }

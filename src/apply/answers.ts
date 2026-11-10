@@ -6,7 +6,7 @@ import { closeFieldBlockers, UNANSWERED_PREFIX } from "./blockers.ts";
 import type { DataDir, Result } from "../core/types.ts";
 import type { AnswerResult, AnswerScope } from "./types.ts";
 
-export const ANSWERS_FILE = "answers.json";
+const ANSWERS_FILE = "answers.json";
 export const GLOBAL_SCOPE: AnswerScope = "global";
 
 type StoredAnswer = {
@@ -16,7 +16,7 @@ type StoredAnswer = {
   readonly provenance: string;
 };
 
-export function normalizeQuestion(question: string): string {
+function normalizeQuestion(question: string): string {
   return question
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, " ")
@@ -64,7 +64,8 @@ export async function saveAnswer(
   provenance: string,
 ): Promise<Result<void>> {
   const normalized = normalizeQuestion(question);
-  if (normalized === "") return { ok: false, error: { code: "usage", message: "question is empty" } };
+  if (normalized === "")
+    return { ok: false, error: { code: "usage", message: "question is empty" } };
   if (provenance.trim() === "") {
     return { ok: false, error: { code: "usage", message: "provenance is required" } };
   }

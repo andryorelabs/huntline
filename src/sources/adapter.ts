@@ -11,7 +11,7 @@ export type AdapterSpec = {
   parse(body: unknown, query: SourceQuery): Parsed | ParseFailure;
 };
 
-export function isParseFailure(value: Parsed | ParseFailure): value is ParseFailure {
+function isParseFailure(value: Parsed | ParseFailure): value is ParseFailure {
   return "error" in value;
 }
 
@@ -35,7 +35,10 @@ export function defineAdapter(spec: AdapterSpec, fetchFunction: FetchFunction): 
   };
 }
 
-export function matchesKeywords(posting: Posting, keywords: readonly string[] | undefined): boolean {
+export function matchesKeywords(
+  posting: Posting,
+  keywords: readonly string[] | undefined,
+): boolean {
   if (keywords === undefined || keywords.length === 0) return true;
   const haystack = [posting.title, posting.description ?? "", ...(posting.stack ?? [])]
     .join(" ")
@@ -60,7 +63,8 @@ export function mapRows(
   const warnings: string[] = [];
   rows.forEach((row, index) => {
     const posting = mapper(row);
-    if (posting === undefined) warnings.push(`skipped ${label} entry ${index} without id, title or url`);
+    if (posting === undefined)
+      warnings.push(`skipped ${label} entry ${index} without id, title or url`);
     else postings.push(posting);
   });
   return { postings, warnings };

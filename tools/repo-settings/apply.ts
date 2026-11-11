@@ -1,5 +1,10 @@
 import type { JsonValue, RepoSettings } from "./compare.ts";
 import { readExpectedSettings } from "./check.ts";
+import {
+  assertExpectedRepository,
+  readPackageRepository,
+  resolveRepository,
+} from "./repository.ts";
 
 export type HttpMethod = "PATCH" | "PUT" | "POST" | "DELETE";
 
@@ -107,16 +112,6 @@ function runGh(args: string[], input?: string): { ok: boolean; stdout: string; s
   };
 }
 
-/** Resolves `owner/name` of the current repository. */
-function resolveRepository(): string {
-  const result = runGh(["repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]);
-  const name = result.stdout.trim();
-  if (!result.ok || name === "") {
-    throw new Error(`gh repo view failed: ${result.stderr.trim() || "no output"}`);
-  }
-  return name;
-}
-
 /** Reads the live ruleset list; a read, never a write. */
 function readLiveRulesets(repository: string): LiveRulesetRef[] {
   const endpoint = `repos/${repository}/rulesets`;
@@ -146,6 +141,7 @@ function main(argv: string[]): number {
   const dryRun = argv.includes("--dry-run");
   try {
     const repository = resolveRepository();
+    assertExpectedRepository(repository, readPackageRepository());
     const calls = planApply(repository, readExpectedSettings(), readLiveRulesets(repository));
     for (const call of calls) {
       console.log(formatCall(call));

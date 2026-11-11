@@ -10,7 +10,6 @@ What the latest release, 0.3.0, already does:
 - Builds CVs only from verified facts and lints them.
 - Assists form filling in your own browser and stops before Submit.
 - Syncs replies from your inbox.
-- Tracks status as a fold over the event log, with the Guard denying Submit and Send.
 
 Nothing else is in progress yet.
 

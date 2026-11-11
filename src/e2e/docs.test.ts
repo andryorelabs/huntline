@@ -265,6 +265,10 @@ describe("community files", () => {
     expect(read(".gitattributes")).toContain("linguist-generated");
   });
 
+  test("llms.txt description equals the copy.md GitHub About line", () => {
+    expect(read("llms.txt"), "llms.txt description").toContain(`> ${copyLine("GitHub About")}`);
+  });
+
   test("the pull request template has its sections and the title format", () => {
     const template = read(".github/PULL_REQUEST_TEMPLATE.md");
     const headings = [...template.matchAll(/^## (.+)$/gm)].map((match) => match[1]);

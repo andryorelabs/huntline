@@ -69,6 +69,23 @@ describe("extractChangelogSection", () => {
     expect(() => extractChangelogSection(SAMPLE, "v1.1.0")).toThrow("is empty");
   });
 
+  test("throws when the section holds only headings", () => {
+    const headingsOnly = [
+      "## [2.0.0] - 2026-02-01",
+      "",
+      "### Added",
+      "",
+      "### Fixed",
+      "",
+      "## [1.0.0] - 2025-11-01",
+      "",
+      "- The first thing.",
+      "",
+    ].join("\n");
+    expect(() => extractChangelogSection(headingsOnly, "v2.0.0")).toThrow("is empty");
+    expect(extractChangelogSection(headingsOnly, "v1.0.0")).toBe("- The first thing.");
+  });
+
   test("never returns the Unreleased section for a tag", () => {
     expect(() => extractChangelogSection(SAMPLE, "Unreleased")).toThrow("no section");
     expect(() => extractChangelogSection(SAMPLE, "v")).toThrow("no section");

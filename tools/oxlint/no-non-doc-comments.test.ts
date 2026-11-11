@@ -57,6 +57,32 @@ describe("local/no-non-doc-comments", () => {
     expect(await linter.lint(`${directive}\nexport const answer: number = 42;\n`)).toEqual([]);
   });
 
+  test("ignores // inside strings and template literals", async () => {
+    expect(
+      await linter.lint('export const url = "https://x.test//a"; export const t = `a // b`;\n'),
+    ).toEqual([]);
+  });
+
+  test.each(["// global state is reset here", "// eslint does not see this"])(
+    "rejects the prose line comment %s",
+    async (comment) => {
+      expect(await linter.lint(`${comment}\nexport const answer = 42;\n`)).toHaveLength(1);
+    },
+  );
+
+  test("rejects a prose line comment that opens with globals", async () => {
+    expect(
+      await linter.lint("// globals are declared elsewhere\nexport const answer = 42;\n"),
+    ).toHaveLength(1);
+  });
+
+  test.each(["/* global answerSeed */", "/* globals answerSeed */", "/* eslint no-var: off */"])(
+    "allows the block-only tool directive %s",
+    async (directive) => {
+      expect(await linter.lint(`${directive}\nexport const answer: number = 42;\n`)).toEqual([]);
+    },
+  );
+
   test("reports every offending comment in a file", async () => {
     expect(
       await linter.lint("// first\nconst answer = 42; /* second */\nexport { answer };\n"),

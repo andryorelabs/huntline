@@ -10,9 +10,6 @@ const toolDirectivePrefixes: readonly string[] = [
   "oxlint-enable",
   "eslint-disable",
   "eslint-enable",
-  "eslint ",
-  "global ",
-  "globals ",
   "@ts-expect-error",
   "@ts-ignore",
   "@ts-nocheck",
@@ -27,6 +24,13 @@ const toolDirectivePrefixes: readonly string[] = [
   "#__NO_SIDE_EFFECTS__",
   "@__NO_SIDE_EFFECTS__",
 ];
+
+/**
+ * Prefixes that are directives only in a block comment, such as a
+ * `global name` block. In a line comment the same words open ordinary prose,
+ * so they are not exempt there.
+ */
+const blockOnlyDirectivePrefixes: readonly string[] = ["eslint ", "global ", "globals "];
 
 const tripleSlashDirectivePattern = /^\/\s*<(reference|amd-module|amd-dependency)\b/;
 
@@ -47,7 +51,13 @@ function isToolDirective(comment: Comment): boolean {
     return true;
   }
   const directiveText = comment.value.trim();
-  return toolDirectivePrefixes.some((prefix) => directiveText.startsWith(prefix));
+  if (toolDirectivePrefixes.some((prefix) => directiveText.startsWith(prefix))) {
+    return true;
+  }
+  return (
+    comment.type === "Block" &&
+    blockOnlyDirectivePrefixes.some((prefix) => directiveText.startsWith(prefix))
+  );
 }
 
 const noNonDocComments = defineRule({

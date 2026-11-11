@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-11
+
+### Changed
+
+- The product is now named jobship: the launcher, plugin, package, env vars (`JOBSHIP_*`), data dir marker (`jobship.json`), cache dir and release assets (`jobship-<os>-<arch>`).
+- Renamed the lock directory to `.jobship.lock`, the template marker to `TODO(jobship):` and the Linear issue marker to `[jobship-key: ...]`.
+- Added the brand kit under `docs/brand/` and a terminal banner on `jobship --help`, written to stderr on a TTY only.
+
+### Removed
+
+- Every `huntline` name: the `huntline` launcher, the `HUNTLINE_*` env vars and the `huntline.json` marker. No installs existed, so there is no compatibility layer ([ADR-0006](docs/adr/0006-drop-huntline-compatibility.md)).
+
 ## [0.2.0] - 2026-11-10
 
 ### Added

@@ -1,0 +1,480 @@
+/**
+ * jobship brandbook layout. Colours come from ../tokens.css; this file only
+ * repeats them where a page cannot pick a theme by class: the light values
+ * under prefers-color-scheme, and the dark values for panels that must stay
+ * dark. tools/brand/brandbook.test.ts checks every repeated value.
+ */
+
+:root {
+  color-scheme: dark light;
+  --rule: color-mix(in srgb, var(--muted) 32%, transparent);
+  --gutter: 16px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f7faff;
+    --surface: #eaf1fa;
+    --fg: #181b1f;
+    --muted: #5c646f;
+    --accent: #297cef;
+    --accent-text: #145ec1;
+    --accent-shape: #4590fd;
+    --on-accent: #0b0f0d;
+    --ok: #057836;
+    --warn: #825b01;
+    --error: #b02a2d;
+    --info: #145ec1;
+  }
+}
+
+.ground-dark {
+  --bg: #0c1015;
+  --surface: #151a20;
+  --fg: #eaeff5;
+  --muted: #979fab;
+  --accent: #297cef;
+  --accent-text: #3b84ea;
+  --accent-shape: #297cef;
+  --on-accent: #0b0f0d;
+  --ok: #68ca80;
+  --warn: #e6ac3d;
+  --error: #fe7f78;
+  --info: #3b84ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--accent-text);
+  text-underline-offset: 0.2em;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+
+code,
+pre,
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.masthead {
+  padding: 28px 0 8px;
+}
+
+.masthead .lockup {
+  width: 168px;
+}
+
+.hero {
+  padding-block: 48px 40px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  max-width: 38rem;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 1.0625rem;
+}
+
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+}
+
+.toc a {
+  display: inline-block;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+section {
+  padding: 56px 0 8px;
+  scroll-margin-top: 8px;
+}
+
+section > .wrap > header {
+  margin-bottom: 28px;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+h3 {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+.note {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--muted);
+}
+
+.stack {
+  display: grid;
+  gap: 24px;
+}
+
+.pair {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.panel {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.panel > h3 {
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 24px 32px;
+}
+
+.cell {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.cell figcaption,
+.caption {
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+figure {
+  margin: 0;
+}
+
+.mark-large {
+  width: 160px;
+  height: 160px;
+}
+
+.lockup-large {
+  width: min(100%, 22rem);
+}
+
+.swatches {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 7.5rem), 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.swatch {
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.chip {
+  height: 52px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.swatch .label {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px 10px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.swatch .name {
+  font-weight: 500;
+}
+
+.swatch .hex {
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+.table-scroll {
+  max-width: 100%;
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+th,
+td {
+  padding: 8px 10px 8px 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+td.figure {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sample {
+  display: inline-block;
+  min-width: 2.75rem;
+  padding: 2px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.specimens {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+
+.specimen {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.specimen .face {
+  margin: 0 0 4px;
+  font-size: 2.25rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.specimen .weights {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.specimen .weights p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.specimen .weights small {
+  display: block;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+.w400 {
+  font-weight: 400;
+}
+
+.w500 {
+  font-weight: 500;
+}
+
+.w700 {
+  font-weight: 700;
+}
+
+.brand-line {
+  margin: 0 0 20px;
+  font-size: clamp(1.75rem, 6vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.plain-line {
+  max-width: 40rem;
+  margin-bottom: 32px;
+  font-size: 1.0625rem;
+}
+
+.we-table th:first-child,
+.we-table td:first-child {
+  padding-right: 20px;
+}
+
+.we-table td:first-child {
+  color: var(--accent-text);
+}
+
+.we-table {
+  min-width: 0;
+  font-size: 0.9375rem;
+}
+
+.we-table td {
+  width: 50%;
+}
+
+.we-table td:last-child {
+  color: var(--muted);
+}
+
+.terminal {
+  margin: 0;
+  padding: 24px;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+.avoid-list {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.avoid-list > div {
+  display: grid;
+  gap: 4px 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.avoid-list dt {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.avoid-list dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 40rem) {
+  .avoid-list > div {
+    grid-template-columns: 8rem 1fr;
+  }
+
+  .masthead .lockup {
+    width: 200px;
+  }
+}
+
+footer {
+  margin-top: 72px;
+  padding: 28px 0 48px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+footer p {
+  margin: 0 0 6px;
+}
+
+.panel table td,
+.panel table th {
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem) {
+  .panel,
+  .specimen,
+  .terminal {
+    padding: 16px;
+  }
+}

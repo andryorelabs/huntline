@@ -41,10 +41,12 @@ function fakeGh(overrides: Record<string, GhResult> = {}): GhApi {
       JSON.stringify([
         { id: 1, name: "main" },
         { id: 2, name: "tags" },
+        { id: 3, name: "develop" },
       ]),
     ),
     [`${BASE}/rulesets/1`]: ok(liveRuleset(1, "main")),
     [`${BASE}/rulesets/2`]: ok(liveRuleset(2, "tags")),
+    [`${BASE}/rulesets/3`]: ok(liveRuleset(3, "develop")),
     ...overrides,
   };
   return (endpoint) => responses[endpoint] ?? { ok: false, stdout: "", stderr: "HTTP 404" };

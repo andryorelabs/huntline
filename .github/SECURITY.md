@@ -25,7 +25,7 @@ guarantees.
 ## Supported Versions
 
 Only the latest release is supported. There are no maintained release branches —
-a fix lands on `main` and ships in the next release.
+a fix lands on `develop` and ships in the next release.
 
 | Version | Supported |
 | ------- | --------- |

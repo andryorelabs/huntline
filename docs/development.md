@@ -34,9 +34,10 @@ CI and the git hooks call these scripts, never the tools behind them. Do not run
 
 Repository settings live as code, not as clicks:
 
-- `.github/rulesets/main.json`: the `main` ruleset (no deletion, no force push, linear history, pull request required, squash only, thread resolution, the "CI passed" and "Validate PR title" checks, signed commits, no bypass actors).
+- `.github/rulesets/develop.json`: the `develop` ruleset (no deletion, no force push, linear history, pull request required, squash only, thread resolution, the "CI passed" and "Validate PR title" checks with the up to date policy, signed commits, no bypass actors).
+- `.github/rulesets/main.json`: the `main` ruleset (no deletion, no force push, pull request required, merge commits only, thread resolution, the same two checks, signed commits, no bypass actors).
 - `.github/rulesets/tags.json`: the `refs/tags/v*` ruleset (no deletion, update or force push).
-- `.github/repo-settings.json`: the repository-level settings (squash-only merges, title and message defaults, branch cleanup, auto-merge, security features, homepage and topics).
+- `.github/repo-settings.json`: the repository-level settings (squash and merge-commit merges, title and message defaults, branch cleanup, auto-merge, security features, homepage and topics).
 
 `bun run repo-settings:check` reads the live values with `gh api`, diffs them against those files, prints each difference and exits non-zero when there is any. It needs an authenticated `gh`.
 
@@ -50,10 +51,10 @@ Live settings are never edited in the web UI. Drift is fixed by re-applying the 
 
 ## Releasing
 
-A release is a signed, annotated `v*` tag on `main`. The `release.yml` workflow does the rest.
+`develop` is the trunk and `main` holds released history only ([ADR-0008](adr/0008-develop-is-the-trunk.md)). A release is a signed, annotated `v*` tag on `main`. The `release.yml` workflow does the rest.
 
-1. Move the `[Unreleased]` notes in `CHANGELOG.md` under a new `## [X.Y.Z] - YYYY-MM-DD` heading, add its compare-link reference at the bottom, and set `version` in `package.json` and in `.claude-plugin/plugin.json`. Merge that through a pull request titled `chore: 🔖 release X.Y.Z`.
-2. Update local `main` to the merged commit.
+1. Move the `[Unreleased]` notes in `CHANGELOG.md` under a new `## [X.Y.Z] - YYYY-MM-DD` heading, add its compare-link reference at the bottom, and set `version` in `package.json` and in `.claude-plugin/plugin.json`. Squash that into `develop` through a pull request titled `chore: 🔖 release X.Y.Z`.
+2. Open a pull request from `develop` to `main` with the same title and merge it with a merge commit. Then update local `main` to that merge commit.
 3. Cut the tag with your signing key:
 
    ```sh

@@ -29,7 +29,7 @@ with the reason the coordinator generated for it (`emet lock-reason`) —
 that's built into `/emet` itself, identical in every repo, and nothing
 below needs to restate it.
 
-After the lock, `git checkout -b <branch> main`, then `bun install --silent` (wired in
+After the lock, `git checkout -b <branch> develop`, then `bun install --silent` (wired in
 `worktree.bootstrap`). Nothing is copied from the main checkout: the repo holds no secrets,
 and tests use synthetic fixtures and never touch the network.
 

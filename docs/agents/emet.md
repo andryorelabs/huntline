@@ -15,8 +15,8 @@ literal calls `/emet` makes to create, read, and transition tickets here, and
 
 ## Ticket ids and branches
 
-- Ticket id shape: `^HUN-\d+$` (e.g. `HUN-1`).
-- Worker branch: `hun-<n>-<slug>` — each worker checks this out
+- Ticket id shape: `^JOB-\d+$` (e.g. `JOB-1`).
+- Worker branch: `job-<n>-<slug>` — each worker checks this out
   itself at worktree step 0. Local-only, never pushed.
 - Commit: add a trailer line referencing the ticket at the end of the commit
   body (see `commit.trailer`/`commit.trailerPosition` in `emet.config.json` if

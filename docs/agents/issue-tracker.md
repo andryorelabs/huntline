@@ -7,7 +7,7 @@ no adapter layer to keep in sync with `gh`'s own flags.
 
 ## Ticket shape
 
-- Ticket id: the bare issue number (`^HUN-\d+$`, e.g. `HUN-1`).
+- Ticket id: the bare issue number (`^JOB-\d+$`, e.g. `JOB-1`).
 - Spec: a parent issue. Create tickets as its sub-issues:
   `gh issue create --title "..." --body "..." --parent <spec-number>` (`gh`
   ≥2.100 has native `--parent`/`--blocked-by`/`--blocking`; check

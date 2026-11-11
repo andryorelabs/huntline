@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to huntline! By participating you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
+Thanks for your interest in contributing to jobship! By participating you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Setup
 
@@ -20,7 +20,7 @@ New functionality and bug fixes must add or update tests in the same PR. Use syn
 
 ## Safety rules
 
-huntline never submits a form or sends a message, and the Guard fails closed. A change that weakens either will not be merged. See the [safety model](docs/guide/safety.md).
+jobship never submits a form or sends a message, and the Guard fails closed. A change that weakens either will not be merged. See the [safety model](docs/guide/safety.md).
 
 ## Reporting security issues
 

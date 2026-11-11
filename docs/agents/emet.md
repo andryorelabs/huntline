@@ -1,4 +1,4 @@
-# `/emet` operational specifics for huntline
+# `/emet` operational specifics for jobship
 
 Repo-specific config the global `/emet` command reads before running any of
 its 9 phases. Machine-checkable values (trunk/remote, ticket id shape,

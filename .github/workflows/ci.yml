@@ -86,7 +86,7 @@ jobs:
       - name: Compiled binary smoke
         run: |
           bun tools/build-binaries.ts --target bun-darwin-arm64 --outdir dist
-          ./dist/huntline-darwin-arm64 --version
+          ./dist/jobship-darwin-arm64 --version
 
   ci-passed:
     name: CI passed

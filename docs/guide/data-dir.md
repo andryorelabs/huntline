@@ -5,8 +5,8 @@ All personal data lives in one directory that is never part of this repository.
 ## Resolution order
 
 1. `--data <dir>` on the command line.
-2. The `HUNTLINE_HOME` environment variable.
-3. The nearest directory, searching upward from the working directory, that contains `huntline.json`.
+2. The `JOBSHIP_HOME` environment variable (the legacy `HUNTLINE_HOME` is still read when it is unset).
+3. The nearest directory, searching upward from the working directory, that contains `jobship.json` (or the legacy `huntline.json`).
 
 If none resolves, commands that need data exit 2 with `data-dir-not-found`.
 
@@ -14,7 +14,7 @@ If none resolves, commands that need data exit 2 with `data-dir-not-found`.
 
 | Path                                     | Created by            | Purpose                                                            |
 | ---------------------------------------- | --------------------- | ------------------------------------------------------------------ |
-| `huntline.json`                          | `init`                | Marks the data dir; holds the schema version.                      |
+| `jobship.json`                           | `init`                | Marks the data dir; holds the schema version.                      |
 | `profile.yaml`                           | `init`                | The Profile. See the [Profile reference](../reference/profile.md). |
 | `facts.yaml`                             | `init`                | The Fact bank: every claim you may make, each with an id.          |
 | `bullets.yaml`                           | `init`                | CV Bullets; each cites the fact ids that back it.                  |

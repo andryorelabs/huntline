@@ -1,6 +1,6 @@
 # Brand brief
 
-What huntline is, who it is for and how it presents itself. Terms follow [GLOSSARY.md](../../GLOSSARY.md). The decisions table in `docs/brand/README.md` is the source of truth for name, slogan, palette, typography, mark and cover style; this brief does not set or change any of them. The field is mapped in [competitors.md](competitors.md).
+What jobship is, who it is for and how it presents itself. Terms follow [GLOSSARY.md](../../GLOSSARY.md). The decisions table in `docs/brand/README.md` is the source of truth for name, slogan, palette, typography, mark and cover style; this brief does not set or change any of them. The field is mapped in [competitors.md](competitors.md).
 
 ## Category
 
@@ -8,7 +8,7 @@ A local-first job-search system for Claude Code: a plugin plus a CLI. It sweeps 
 
 ## Position
 
-**You press Submit.** Most neighbouring tools compete on how much they do for you, and some on how much they apply for you. huntline takes the other side of that line: code does the mechanical work, every claim traces to a Fact bank fact, and no code path submits a form or sends a message ([ADR-0002](../adr/0002-the-guard-fails-closed.md)). The brand claims no more than the tool ships today.
+**You press Submit.** Most neighbouring tools compete on how much they do for you, and some on how much they apply for you. jobship takes the other side of that line: code does the mechanical work, every claim traces to a Fact bank fact, and no code path submits a form or sends a message ([ADR-0002](../adr/0002-the-guard-fails-closed.md)). The brand claims no more than the tool ships today.
 
 ## Audience
 
@@ -42,7 +42,7 @@ Precise, calm, trustworthy. The human stays in control. The voice is plain and e
 
 ## Relation to Anthropic and Claude Code
 
-huntline runs on Claude Code and copy may say so descriptively, for example "plugin for Claude Code". It always carries the notice "Not affiliated with or endorsed by Anthropic". The name, mark, palette and any mascot stay fully separate from Claude's identity.
+jobship runs on Claude Code and copy may say so descriptively, for example "plugin for Claude Code". It always carries the notice "Not affiliated with or endorsed by Anthropic". The name, mark, palette and any mascot stay fully separate from Claude's identity.
 
 ## Visual world
 

@@ -9,28 +9,28 @@
 
 ## As a Claude Code plugin
 
-Add the repository as a plugin marketplace and install `huntline`:
+Add the repository as a plugin marketplace and install `jobship`:
 
 ```sh
 claude plugin marketplace add andryorelabs/huntline
-claude plugin install huntline@huntline-marketplace
+claude plugin install jobship@jobship-marketplace
 ```
 
-The plugin ships the skills, the two subagents, the `/huntline:init` and `/huntline:doctor` commands, and the Guard hook registration. Its `bin/huntline` launcher downloads the release binary for your platform on the first session start (a `SessionStart` hook prefetches it) and verifies its checksum. If the checksum does not match, the launcher refuses to run.
+The plugin ships the skills, the two subagents, the `/jobship:init` and `/jobship:doctor` commands, and the Guard hook registration. Its `bin/jobship` launcher downloads the release binary for your platform on the first session start (a `SessionStart` hook prefetches it) and verifies its checksum. If the checksum does not match, the launcher refuses to run.
 
-After installing, run `/huntline:init` in an empty directory, then `/huntline:doctor`, and follow the [dogfooding checklist](dogfooding.md).
+After installing, run `/jobship:init` in an empty directory, then `/jobship:doctor`, and follow the [dogfooding checklist](dogfooding.md).
 
 ### Put the binary on your PATH (optional)
 
-The binary is cached at `~/.cache/huntline/<version>/huntline` (or under `$XDG_CACHE_HOME`, or `$HUNTLINE_CACHE_DIR`). To use the CLI from a terminal, link it:
+The binary is cached at `~/.cache/jobship/<version>/jobship` (or under `$XDG_CACHE_HOME`, or `$JOBSHIP_CACHE_DIR`). To use the CLI from a terminal, link it:
 
 ```sh
 mkdir -p ~/.local/bin
-ln -sf "$(ls -d ~/.cache/huntline/*/huntline | sort -V | tail -n 1)" ~/.local/bin/huntline
-huntline --help
+ln -sf "$(ls -d ~/.cache/jobship/*/jobship | sort -V | tail -n 1)" ~/.local/bin/jobship
+jobship --help
 ```
 
-Re-run the link after an update. `huntline --help` (or `huntline help`) lists every command and the global flags `--data <dir>`, `--version` and `--help`.
+Re-run the link after an update. `jobship --help` (or `jobship help`) lists every command and the global flags `--data <dir>`, `--version` and `--help`.
 
 ## From source
 
@@ -38,19 +38,19 @@ Re-run the link after an update. `huntline --help` (or `huntline help`) lists ev
 git clone https://github.com/andryorelabs/huntline
 cd huntline
 bun install
-HUNTLINE_FROM_SOURCE=1 bin/huntline doctor
+JOBSHIP_FROM_SOURCE=1 bin/jobship doctor
 ```
 
-`HUNTLINE_FROM_SOURCE=1` makes the launcher run `src/cli.ts` with bun instead of downloading a binary. Contributors run `bun run check` and `bun test`.
+`JOBSHIP_FROM_SOURCE=1` makes the launcher run `src/cli.ts` with bun instead of downloading a binary. Contributors run `bun run check` and `bun test`.
 
 ## External tools
 
-| Tool                  | Needed for                                                                                                              |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `typst`               | `cv build`. Installed by `huntline setup` (or on first `cv build`) into the huntline cache, checksum-verified, no sudo. |
-| `pdftotext` (poppler) | `cv build` text extraction. See [poppler](#poppler); `huntline setup` and `doctor` report it.                           |
-| Browser MCP over CDP  | `apply`, `browser-source` skills. See [Browser MCP](#browser-mcp).                                                      |
-| Gmail MCP             | `inbox`, `outreach` skills. See [Gmail MCP](#gmail-mcp).                                                                |
+| Tool                  | Needed for                                                                                                            |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `typst`               | `cv build`. Installed by `jobship setup` (or on first `cv build`) into the jobship cache, checksum-verified, no sudo. |
+| `pdftotext` (poppler) | `cv build` text extraction. See [poppler](#poppler); `jobship setup` and `doctor` report it.                          |
+| Browser MCP over CDP  | `apply`, `browser-source` skills. See [Browser MCP](#browser-mcp).                                                    |
+| Gmail MCP             | `inbox`, `outreach` skills. See [Gmail MCP](#gmail-mcp).                                                              |
 
 ### Poppler
 
@@ -68,7 +68,7 @@ The `apply` and `browser-source` skills drive your own Chrome through a browser 
 1. Start Chrome with a dedicated profile and a debugging port:
 
    ```sh
-   google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/huntline-chrome"
+   google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/jobship-chrome"
    ```
 
    On macOS use `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"` instead of `google-chrome`. Log in to the sites you need in that window.
@@ -96,14 +96,14 @@ The `inbox` and `outreach` skills use the Gmail connector for Claude Code (tools
 
 `sources` in the Profile lists the Source names that `sweep` runs. Valid names:
 
-| Kind   | Names                                                         | Notes                                                           |
-| ------ | ------------------------------------------------------------- | --------------------------------------------------------------- |
-| ATS    | `greenhouse`, `lever`, `ashby`, `workable`, `smartrecruiters` | Need companies saved with `huntline company add <careers-url>`. |
-| Boards | `getonboard`, `himalayas`, `remoteok`, `hn`                   | Public APIs; no setup.                                          |
+| Kind   | Names                                                         | Notes                                                          |
+| ------ | ------------------------------------------------------------- | -------------------------------------------------------------- |
+| ATS    | `greenhouse`, `lever`, `ashby`, `workable`, `smartrecruiters` | Need companies saved with `jobship company add <careers-url>`. |
+| Boards | `getonboard`, `himalayas`, `remoteok`, `hn`                   | Public APIs; no setup.                                         |
 
-An ATS Source with no saved companies is reported as misconfigured, with a hint to run `huntline company add`. An unknown name is reported as `unknown source`. Browser-only Sources (Wellfound, LinkedIn, X) are not `sweep` Sources; the `browser-source` skill collects them and passes the result to `huntline ingest`.
+An ATS Source with no saved companies is reported as misconfigured, with a hint to run `jobship company add`. An unknown name is reported as `unknown source`. Browser-only Sources (Wellfound, LinkedIn, X) are not `sweep` Sources; the `browser-source` skill collects them and passes the result to `jobship ingest`.
 
-Example: `huntline company add https://jobs.ashbyhq.com/acme` detects the ATS and stores `{ats: "ashby", slug: "acme"}`.
+Example: `jobship company add https://jobs.ashbyhq.com/acme` detects the ATS and stores `{ats: "ashby", slug: "acme"}`.
 
 ### Terms of service
 
@@ -111,8 +111,8 @@ Browser Sources (LinkedIn, X, Wellfound) are read through your own logged-in ses
 
 ## Changing an Application's state
 
-`huntline status <key> --set <state>` records a `status.changed` Event and projects it to the tracker. Valid states: `lead`, `to-apply`, `applied`, `screening`, `interviewing`, `offer`, `hired`, `rejected`, `withdrawn`, `discarded`. An unknown state exits 2; an unknown key exits 1 with `not-found`.
+`jobship status <key> --set <state>` records a `status.changed` Event and projects it to the tracker. Valid states: `lead`, `to-apply`, `applied`, `screening`, `interviewing`, `offer`, `hired`, `rejected`, `withdrawn`, `discarded`. An unknown state exits 2; an unknown key exits 1 with `not-found`.
 
 ## Choosing where your data lives
 
-Keep your data outside the repository. See [data dir layout](data-dir.md) for how huntline finds it.
+Keep your data outside the repository. See [data dir layout](data-dir.md) for how jobship finds it.

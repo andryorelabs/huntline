@@ -125,11 +125,11 @@ describe("dogfooding checklist", () => {
 
   test("every command it names exists in the CLI reference", () => {
     const named = new Set<string>();
-    for (const match of dogfooding.matchAll(/`huntline ([a-z]+)/g)) {
+    for (const match of dogfooding.matchAll(/`jobship ([a-z]+)/g)) {
       if (match[1] !== undefined) named.add(match[1]);
     }
     expect(named.size).toBeGreaterThan(3);
-    for (const command of named) expect(cli).toContain(`### \`huntline ${command}`);
+    for (const command of named) expect(cli).toContain(`### \`jobship ${command}`);
   });
 
   test("is linked from the README and the install guide", () => {

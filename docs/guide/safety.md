@@ -2,11 +2,11 @@
 
 ## No submit, no send
 
-huntline never submits a form and never sends a message. No command and no skill has such a code path. The `apply` skill fills a form, runs a required-field sweep, verifies it with `huntline apply verify` and stops before Submit. The `outreach` and `inbox` skills create drafts and propose changes; you press Send.
+jobship never submits a form and never sends a message. No command and no skill has such a code path. The `apply` skill fills a form, runs a required-field sweep, verifies it with `jobship apply verify` and stops before Submit. The `outreach` and `inbox` skills create drafts and propose changes; you press Send.
 
 ## The Guard
 
-`huntline guard` is registered by the plugin as a PreToolUse hook. It reads the hook payload from stdin and either objects or stays silent.
+`jobship guard` is registered by the plugin as a PreToolUse hook. It reads the hook payload from stdin and either objects or stays silent.
 
 - **It never grants permission.** When it has no objection it prints nothing and exits 0, so Claude Code's normal permission flow still decides. When it objects it prints a PreToolUse `deny` with the reason.
 - **What it matches.** Browser (CDP) tools on any server whose name mentions chrome, browser, devtools, playwright, puppeteer or cdp; interactive actions (`click`, `press_key`, `type_text`, `fill`, `fill_form`, `evaluate_script`, `drag`, `upload_file`, `handle_dialog`, `hover`) on any server; and any Gmail action whose name contains send, reply or forward. The Gmail server name is matched in any case, so `mcp__gmail__send_email` and `mcp__Gmail__send_draft` are both denied. Drafts are not.
@@ -14,14 +14,14 @@ huntline never submits a form and never sends a message. No command and no skill
 - **Clicks.** A click is judged by the label recorded from the last snapshot. Labels with submit, send, send invitation, finalize, apply, connect, confirm, post or complete application as whole words (any case) are denied, so "Apply" and "Send invitation" are denied while "Next", "Continue" and "Save draft" are not. A click on an element with no recorded label is denied; take a fresh snapshot first.
 - **Keys, scripts and dialogs.** Enter, Return and Space, a line break in typed or filled text, a submit key, `evaluate_script` and `drag` are denied. `handle_dialog` is denied unless it dismisses the dialog.
 - **It fails closed.** Invalid JSON, oversized input (over 1 MiB), an MCP tool name without a readable server and action, and any internal error deny.
-- `huntline guard --record` runs after `take_snapshot` and records element labels so later clicks can be judged by label.
-- `huntline guard --self-test` checks that the Guard still denies the canned submit and send actions, still stays silent on the canned harmless ones, and that the shipped hook matcher covers every denied tool and does not cover unrelated tools such as `mcp__x__delete_dashboard`. `huntline doctor` runs the same check and fails if it does not pass. The self-test never changes the decision or the matcher; it only reads them.
+- `jobship guard --record` runs after `take_snapshot` and records element labels so later clicks can be judged by label.
+- `jobship guard --self-test` checks that the Guard still denies the canned submit and send actions, still stays silent on the canned harmless ones, and that the shipped hook matcher covers every denied tool and does not cover unrelated tools such as `mcp__x__delete_dashboard`. `jobship doctor` runs the same check and fails if it does not pass. The self-test never changes the decision or the matcher; it only reads them.
 
 ### The launcher
 
-The hooks run `bin/huntline`, which downloads the release binary for your platform, checks it against `SHA256SUMS` and caches it.
+The hooks run `bin/jobship`, which downloads the release binary for your platform, checks it against `SHA256SUMS` and caches it.
 
-- A `SessionStart` hook runs the launcher with `HUNTLINE_PREFETCH=1`, so the binary is downloaded when the session starts, before the first guarded call.
+- A `SessionStart` hook runs the launcher with `JOBSHIP_PREFETCH=1`, so the binary is downloaded when the session starts, before the first guarded call.
 - When the launcher runs as the Guard and cannot produce or run the binary (unsupported platform or architecture, no curl, no sha256sum or shasum, a failed download, a checksum mismatch, a `plugin.json` without a version, or a binary that exits with an error), it prints a `deny` with the reason and exits 0. A guarded call is never let through because the Guard could not start.
 - For `guard --record` and every other command, the same failures exit 1 with a message on stderr.
 

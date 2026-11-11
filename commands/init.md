@@ -1,9 +1,9 @@
 ---
-description: Scaffold a huntline data directory with `huntline init`, then list what is left to fill in
+description: Scaffold a jobship data directory with `jobship init`, then list what is left to fill in
 ---
 
-Run `huntline init` with the Bash tool. Pass `--data <dir>` when the user named a
-directory; otherwise it scaffolds the current directory. `huntline` is on PATH in
+Run `jobship init` with the Bash tool. Pass `--data <dir>` when the user named a
+directory; otherwise it scaffolds the current directory. `jobship` is on PATH in
 plugin sessions.
 
 Then summarize the result:

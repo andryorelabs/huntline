@@ -1,4 +1,4 @@
-# huntline
+# jobship
 
 A local-first job-search system: it finds Postings, turns the worthwhile ones into Leads, and carries each Lead through an Application, with a human making every irreversible move.
 

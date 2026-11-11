@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Guide for coding agents working in huntline. Terms follow [GLOSSARY.md](GLOSSARY.md).
+Guide for coding agents working in jobship. Terms follow [GLOSSARY.md](GLOSSARY.md).
 
 ## Layout
 
-- `src/`: the `huntline` CLI, one folder per area (`core`, `ledger`, `guard`, `cv`, `sweep`, `sources`, `inbox`, `outreach`, `apply`, `interview`, `tracker`, `migrate`, `gates`). Entry point is `src/cli.ts`; `bin/huntline` is the launcher.
+- `src/`: the `jobship` CLI, one folder per area (`core`, `ledger`, `guard`, `cv`, `sweep`, `sources`, `inbox`, `outreach`, `apply`, `interview`, `tracker`, `migrate`, `gates`). Entry point is `src/cli.ts`; `bin/jobship` is the launcher.
 - `skills/`, `agents/`, `commands/`, `hooks/hooks.json`, `.claude-plugin/`: the Claude Code plugin. The Guard is registered in `hooks/hooks.json`.
 - `schema/`, `templates/`, `examples/`, `fixtures/`: bundled data and synthetic test data.
 - `tools/`: build and dev scripts with their tests.

@@ -11,7 +11,11 @@ describe("planApply", () => {
   test("creates every ruleset when none exists live", () => {
     const calls = planApply(REPOSITORY, expected, []);
     const posts = calls.filter((call) => call.method === "POST");
-    expect(posts.map((call) => call.endpoint)).toEqual([`${BASE}/rulesets`, `${BASE}/rulesets`]);
+    expect(posts.map((call) => call.endpoint)).toEqual([
+      `${BASE}/rulesets`,
+      `${BASE}/rulesets`,
+      `${BASE}/rulesets`,
+    ]);
   });
 
   test("updates a ruleset in place when a live one has its name", () => {
@@ -19,7 +23,7 @@ describe("planApply", () => {
     expect(calls.map((call) => `${call.method} ${call.endpoint}`)).toContain(
       `PUT ${BASE}/rulesets/7`,
     );
-    expect(calls.filter((call) => call.method === "POST")).toHaveLength(1);
+    expect(calls.filter((call) => call.method === "POST")).toHaveLength(2);
   });
 
   test("turns Dependabot alerts on before the PATCH that sets security updates", () => {

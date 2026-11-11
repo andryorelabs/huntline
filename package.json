@@ -42,7 +42,7 @@
     "prepare": "husky",
     "lint:docs": "bun tools/lint-docs.ts",
     "lint:commit-msg": "commitlint --edit",
-    "lint:commits": "bun x --no-install commitlint --from origin/main --to HEAD",
+    "lint:commits": "bun x --no-install commitlint --from origin/develop --to HEAD",
     "repo-settings:check": "bun tools/repo-settings/check.ts",
     "brand:export": "bun tools/brand/brand-export.ts"
   },

@@ -52,7 +52,7 @@ describe("package.json scripts", () => {
     ["format:check", "oxfmt --check"],
     ["fix", "bun run format:write && bun run lint --fix"],
     ["lint:docs", "bun tools/lint-docs.ts"],
-    ["lint:commits", "bun x --no-install commitlint --from origin/main --to HEAD"],
+    ["lint:commits", "bun x --no-install commitlint --from origin/develop --to HEAD"],
     ["repo-settings:check", "bun tools/repo-settings/check.ts"],
   ])("%s runs %s", async (scriptName, scriptCommand) => {
     const scripts = stringEntriesOf(await readRootManifest(), "scripts");

@@ -12,4 +12,5 @@ Decisions that are hard to reverse, surprising without context, and the result o
 | 0004 | [The brand kit lives in docs/brand](0004-brand-kit-in-docs-brand.md)                        | Accepted   | -                                               |
 | 0005 | [Rename huntline to jobship, with legacy compatibility](0005-rename-huntline-to-jobship.md) | Superseded | [ADR-0006](0006-drop-huntline-compatibility.md) |
 | 0006 | [Drop the huntline compatibility](0006-drop-huntline-compatibility.md)                      | Accepted   | -                                               |
-| 0007 | [Adopt the cross-repo standard v1](0007-adopt-cross-repo-standard-v1.md)                    | Accepted   | -                                               |
+| 0007 | [Adopt the cross-repo standard v1](0007-adopt-cross-repo-standard-v1.md)                    | Accepted   | [ADR-0008](0008-develop-is-the-trunk.md)        |
+| 0008 | [develop is the trunk](0008-develop-is-the-trunk.md)                                        | Accepted   | -                                               |

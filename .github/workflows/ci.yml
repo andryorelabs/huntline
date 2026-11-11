@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
   workflow_dispatch:
 
@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
 
 jobs:
   check:
@@ -94,7 +94,7 @@ jobs:
     runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.BLACKSMITH_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
-      # Full history of the merge ref: origin/main..HEAD is then the pull request's commits.
+      # Full history of the merge ref: origin/develop..HEAD is then the pull request's commits.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false

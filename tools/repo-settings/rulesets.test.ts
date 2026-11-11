@@ -74,9 +74,11 @@ function requiredContexts(ruleset: Ruleset): string[] {
 describe("rulesets", () => {
   test("every required check context is a job name in .github/workflows", () => {
     const jobNames = readJobNames();
-    const contexts = requiredContexts(readRuleset("main"));
-    expect(contexts).toEqual(["CI passed", "Validate PR title"]);
-    expect(contexts.filter((context) => !jobNames.has(context))).toEqual([]);
+    for (const name of ["main", "develop"]) {
+      const contexts = requiredContexts(readRuleset(name));
+      expect(contexts).toEqual(["CI passed", "Validate PR title"]);
+      expect(contexts.filter((context) => !jobNames.has(context))).toEqual([]);
+    }
   });
 
   test("a required check missing from the workflows is detected", () => {
@@ -84,11 +86,26 @@ describe("rulesets", () => {
     expect(jobNames.has("No such job")).toBe(false);
   });
 
-  test("main is squash only, signed, linear, up to date and without bypass", () => {
+  test("main takes merge commits only, signed and without bypass", () => {
     const ruleset = readRuleset("main");
     expect(ruleset.target).toBe("branch");
     expect(ruleset.enforcement).toBe("active");
     expect(ruleset.conditions.ref_name.include).toEqual(["~DEFAULT_BRANCH"]);
+    expect(ruleset.bypass_actors).toEqual([]);
+    for (const type of ["deletion", "non_fast_forward", "required_signatures"]) {
+      expect(findRule(ruleset, type)).toBeDefined();
+    }
+    expect(findRule(ruleset, "required_linear_history")).toBeUndefined();
+    const pullRequest = findRule(ruleset, "pull_request")?.parameters;
+    expect(pullRequest?.allowed_merge_methods).toEqual(["merge"]);
+    expect(pullRequest?.required_review_thread_resolution).toBe(true);
+  });
+
+  test("develop is squash only, signed, linear, up to date and without bypass", () => {
+    const ruleset = readRuleset("develop");
+    expect(ruleset.target).toBe("branch");
+    expect(ruleset.enforcement).toBe("active");
+    expect(ruleset.conditions.ref_name.include).toEqual(["refs/heads/develop"]);
     expect(ruleset.bypass_actors).toEqual([]);
     for (const type of [
       "deletion",

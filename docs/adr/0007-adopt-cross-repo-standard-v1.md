@@ -2,6 +2,7 @@
 
 Status: Accepted
 Date: 2026-11-11
+Revised: 2026-11-11 `ROADMAP.md` removed and the `$schema` URL adopted.
 
 jobship follows the cross-repo standard v1 for repository settings, workflows, scripts, linting, docs and ADR form, with the not-applicable rules listed below.
 
@@ -21,7 +22,7 @@ The maintainer keeps several repositories that share one standard, written in th
   - `.node-version`: nothing in this repo runs under Node, and the bun version is pinned by `packageManager` and `engines` in `package.json` (not by the lockfile).
   - A separate lint-docs workflow: `lint:docs` already runs inside `check` and the existing CI job.
   - `.git-blame-ignore-revs`: there is no mass-reformat commit to hide.
-  - The `$schema` URL in `emet.config.json`: it waits for the emet release that publishes the schema.
+  - `ROADMAP.md`: nothing is committed beyond the released features, so the file would only restate `PRODUCT.md` and `CHANGELOG.md`. Add it back when there is planned work to list.
   - Changes to any other repository: this adoption touches jobship only.
 
 ## Consequences

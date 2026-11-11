@@ -35,7 +35,8 @@ Decisions live in [docs/adr/](docs/adr/README.md). Read those touching your area
 
 ## Branch and commit conventions
 
-- Feature branches always; never push to `main`.
+- Feature branches always; never push to `main` or `develop`.
+- `develop` is the trunk: pull requests squash into `develop`, and a release merges `develop` into `main` with a merge commit. See [ADR-0008](docs/adr/0008-develop-is-the-trunk.md).
 - Commits are gitmoji + conventional, in English, with a bullet body: `feat: ✨ add user authentication`.
 - PR titles use the same conventional types as commitlint.
 - One commit per logical change.

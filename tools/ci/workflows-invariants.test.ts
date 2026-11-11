@@ -135,8 +135,13 @@ describe("ci.yml", () => {
   const { raw, workflow } = workflowFile(workflows, "ci.yml");
   const jobs = workflow.jobs;
 
-  test("spares main from concurrency cancellation", () => {
+  test("spares main and develop from concurrency cancellation", () => {
     expect(JSON.stringify(workflow.concurrency)).toContain("refs/heads/main");
+    expect(JSON.stringify(workflow.concurrency)).toContain("refs/heads/develop");
+  });
+
+  test("runs on pushes to main and develop", () => {
+    expect(raw).toContain("branches: [main, develop]");
   });
 
   test("runs the check and test scripts", () => {

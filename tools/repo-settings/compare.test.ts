@@ -15,13 +15,13 @@ function freshSettings(): RepoSettings {
   return structuredClone(readExpectedSettings());
 }
 
-/** Rewrites the `main` ruleset of `settings` through `change`. */
-function changeMain(settings: RepoSettings, change: (main: JsonObject) => JsonObject): void {
-  const main = settings.rulesets["main"];
+/** Rewrites the `develop` ruleset of `settings` through `change`. */
+function changeDevelop(settings: RepoSettings, change: (main: JsonObject) => JsonObject): void {
+  const main = settings.rulesets["develop"];
   if (!isObject(main)) {
-    throw new Error("missing main ruleset");
+    throw new Error("missing develop ruleset");
   }
-  settings.rulesets["main"] = change(main);
+  settings.rulesets["develop"] = change(main);
 }
 
 /** Maps every rule of `main`. */
@@ -41,7 +41,7 @@ describe("compareSettings", () => {
   test("ignores topic order, rule order and volatile ruleset fields", () => {
     const live = freshSettings();
     live.repository.topics.reverse();
-    changeMain(live, (main) => {
+    changeDevelop(live, (main) => {
       const rules = main["rules"];
       return {
         ...main,
@@ -56,7 +56,7 @@ describe("compareSettings", () => {
 
   test("ignores parameters GitHub adds that the files do not name", () => {
     const live = freshSettings();
-    changeMain(live, (main) =>
+    changeDevelop(live, (main) =>
       mapRules(main, (rule) =>
         isObject(rule["parameters"])
           ? { ...rule, parameters: { ...rule["parameters"], required_reviewers: [] } }
@@ -68,9 +68,9 @@ describe("compareSettings", () => {
 
   test("reports a drifted repository setting with its path", () => {
     const live = freshSettings();
-    live.repository.allow_merge_commit = true;
+    live.repository.allow_merge_commit = false;
     expect(compareSettings(freshSettings(), live)).toEqual([
-      { path: "repository.allow_merge_commit", expected: false, live: true },
+      { path: "repository.allow_merge_commit", expected: true, live: false },
     ]);
   });
 
@@ -83,7 +83,7 @@ describe("compareSettings", () => {
 
   test("reports a changed rule parameter", () => {
     const live = freshSettings();
-    changeMain(live, (main) =>
+    changeDevelop(live, (main) =>
       mapRules(main, (rule) =>
         isObject(rule["parameters"])
           ? {
@@ -95,13 +95,13 @@ describe("compareSettings", () => {
     );
     const differences = compareSettings(freshSettings(), live);
     expect(differences.map((difference) => difference.path)).toEqual([
-      "rulesets.main.rules[5].parameters.strict_required_status_checks_policy",
+      "rulesets.develop.rules[5].parameters.strict_required_status_checks_policy",
     ]);
   });
 
   test("reports a dropped rule", () => {
     const live = freshSettings();
-    changeMain(live, (main) => {
+    changeDevelop(live, (main) => {
       const rules = main["rules"];
       return {
         ...main,
@@ -113,7 +113,7 @@ describe("compareSettings", () => {
     const differences = compareSettings(freshSettings(), live);
     expect(differences.length).toBeGreaterThan(0);
     expect(
-      differences.every((difference) => difference.path.startsWith("rulesets.main.rules")),
+      differences.every((difference) => difference.path.startsWith("rulesets.develop.rules")),
     ).toBe(true);
   });
 

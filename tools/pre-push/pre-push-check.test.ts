@@ -12,8 +12,8 @@ const push = (branch: string, localSha = sha): PushedRef => ({
 });
 
 describe("checkPush", () => {
-  test("refuses main before typecheck", () => {
-    const verdict = checkPush([push("main")]);
+  test.each(["main", "develop"])("refuses %s before typecheck", (branch) => {
+    const verdict = checkPush([push(branch)]);
     expect(verdict.ok).toBe(false);
     expect(verdict.runTypecheck).toBe(false);
   });

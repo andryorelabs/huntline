@@ -17,6 +17,7 @@ export type PushVerdict =
 
 const zeroSha = /^0+$/;
 const branchPrefix = "refs/heads/";
+const protectedBranches: ReadonlySet<string> = new Set(["main", "develop"]);
 const conventionalBranch =
   /^(?:feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ticketBranch = /^job-\d+(?:-[a-z0-9]+)+$/;
@@ -42,7 +43,7 @@ export function parsePushedRefs(input: string): PushedRef[] {
 }
 
 /**
- * Refuses a push to `main` or to a branch outside the naming rules, before any gate runs.
+ * Refuses a push to `main` or `develop`, or to a branch outside the naming rules, before any gate runs.
  * Tag pushes and branch deletions are skipped; typecheck runs only when a branch is updated.
  */
 export function checkPush(refs: PushedRef[]): PushVerdict {
@@ -51,10 +52,10 @@ export function checkPush(refs: PushedRef[]): PushVerdict {
     if (!ref.remoteRef.startsWith(branchPrefix) || zeroSha.test(ref.localSha)) continue;
     updatesBranch = true;
     const branch = ref.remoteRef.slice(branchPrefix.length);
-    if (branch === "main") {
+    if (protectedBranches.has(branch)) {
       return {
         ok: false,
-        reason: "pushing to main is not allowed; push a feature branch and open a PR",
+        reason: `pushing to ${branch} is not allowed; push a feature branch and open a PR`,
         runTypecheck: false,
       };
     }

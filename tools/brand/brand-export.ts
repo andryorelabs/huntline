@@ -8,7 +8,7 @@
  */
 
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -52,17 +52,28 @@ function brandDirOf(root: string): string {
   return join(root, "docs", "brand");
 }
 
-/** Writes each file through a sibling temp file and a rename, after every file passed its checks. */
+/**
+ * Stages every file as a sibling temp file, and renames them into place only
+ * after all of them were staged. A failed stage removes every temp file and
+ * leaves the committed files untouched.
+ */
 async function writeAtomically(brandDir: string, pending: PendingWrite[]): Promise<void> {
-  await Promise.all(
-    pending.map(async ([output, bytes]) => {
-      const target = join(brandDir, output);
-      const temp = `${target}.tmp-${process.pid}`;
+  const staged = pending.map(([output, bytes]) => {
+    const target = join(brandDir, output);
+    return { target, temp: `${target}.tmp-${process.pid}`, bytes };
+  });
+  const outcomes = await Promise.allSettled(
+    staged.map(async ({ target, temp, bytes }) => {
       await mkdir(dirname(target), { recursive: true });
       await writeFile(temp, bytes);
-      await rename(temp, target);
     }),
   );
+  const failed = outcomes.find((outcome) => outcome.status === "rejected");
+  if (failed !== undefined) {
+    await Promise.all(staged.map(({ temp }) => rm(temp, { force: true, recursive: true })));
+    throw failed.reason;
+  }
+  await Promise.all(staged.map(({ target, temp }) => rename(temp, target)));
 }
 
 async function renderMark(svg: Uint8Array, size: number): Promise<Uint8Array> {
@@ -84,9 +95,7 @@ async function readSource(brandDir: string, source: string): Promise<Uint8Array>
   }
 }
 
-/** Regenerates the mark PNGs and `favicon.ico` under `<root>/docs/brand/`. */
-export async function exportMarks(options: { root: string }): Promise<void> {
-  const brandDir = brandDirOf(options.root);
+async function prepareMarks(brandDir: string): Promise<PendingWrite[]> {
   const sizes = [...new Set([...MARK_TARGETS.map((target) => target.width), ...ICO_SIZES])];
   const renders = new Map(
     await Promise.all(
@@ -115,7 +124,13 @@ export async function exportMarks(options: { root: string }): Promise<void> {
     );
   }
   pending.push([ICO_TARGET.output, ico]);
-  await writeAtomically(brandDir, pending);
+  return pending;
+}
+
+/** Regenerates the mark PNGs and `favicon.ico` under `<root>/docs/brand/`. */
+export async function exportMarks(options: { root: string }): Promise<void> {
+  const brandDir = brandDirOf(options.root);
+  await writeAtomically(brandDir, await prepareMarks(brandDir));
 }
 
 async function assertNoRemoteUrls(brandDir: string): Promise<void> {
@@ -129,14 +144,12 @@ async function assertNoRemoteUrls(brandDir: string): Promise<void> {
   });
 }
 
-/** Renders the covers and social previews from `og/*.html` under `<root>/docs/brand/`. */
-export async function exportOg(options: {
-  root: string;
-  openRenderer?: () => Promise<PageRenderer>;
-}): Promise<void> {
-  const brandDir = brandDirOf(options.root);
+async function prepareOg(
+  brandDir: string,
+  openRenderer?: () => Promise<PageRenderer>,
+): Promise<PendingWrite[]> {
   await assertNoRemoteUrls(brandDir);
-  const renderer = await (options.openRenderer ?? openChromiumRenderer)();
+  const renderer = await (openRenderer ?? openChromiumRenderer)();
   let captures: PageCapture[];
   try {
     captures = await Promise.all(
@@ -166,7 +179,16 @@ export async function exportOg(options: {
     assertRaster(target, capture.png);
     return [target.output, capture.png];
   });
-  await writeAtomically(brandDir, pending);
+  return pending;
+}
+
+/** Renders the covers and social previews from `og/*.html` under `<root>/docs/brand/`. */
+export async function exportOg(options: {
+  root: string;
+  openRenderer?: () => Promise<PageRenderer>;
+}): Promise<void> {
+  const brandDir = brandDirOf(options.root);
+  await writeAtomically(brandDir, await prepareOg(brandDir, options.openRenderer));
 }
 
 const FONT_CHECK_SCRIPT = `(async (required) => {
@@ -227,7 +249,12 @@ async function findChromium(): Promise<string> {
   return newest.path;
 }
 
-/** A Chromium renderer that aborts and records every request that is not a `file:` URL. */
+/**
+ * A Chromium renderer that aborts and records every request that is not a
+ * `file:` URL. `--no-sandbox` is needed because the dev host runs as a
+ * container or root user where the Chromium sandbox cannot start; the pages are
+ * local files and every network request is blocked.
+ */
 async function openChromiumRenderer(): Promise<PageRenderer> {
   const browser = await chromium.launch({
     executablePath: await findChromium(),
@@ -261,8 +288,10 @@ async function openChromiumRenderer(): Promise<PageRenderer> {
 
 /** Regenerates every raster of the kit under `<root>/docs/brand/`. */
 export async function exportBrand(options: { root: string }): Promise<void> {
-  await exportMarks(options);
-  await exportOg(options);
+  const brandDir = brandDirOf(options.root);
+  const marks = await prepareMarks(brandDir);
+  const og = await prepareOg(brandDir);
+  await writeAtomically(brandDir, [...marks, ...og]);
 }
 
 if (import.meta.main) {

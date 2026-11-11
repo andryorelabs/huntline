@@ -188,6 +188,19 @@ describe("exportOg", () => {
     ).toContain("og/og.css: remote URL //cdn.example/a.css");
   });
 
+  test("a failed write replaces no output and leaves no temp file behind", async () => {
+    const root = await ogRoot();
+    const ogDir = join(root, "docs", "brand", "og");
+    await writeFile(join(ogDir, "cover.png"), "committed");
+    await mkdir(join(ogDir, `social-preview.png.tmp-${process.pid}`));
+    const fake = fakeRenderer();
+
+    await failureOf(exportOg({ root, openRenderer: () => Promise.resolve(fake.renderer) }));
+
+    expect(await readFile(join(ogDir, "cover.png"), "utf8")).toBe("committed");
+    expect((await readdir(ogDir)).filter((entry) => entry.includes(".tmp-"))).toEqual([]);
+  });
+
   test("fails and writes nothing when the browser blocked a non-file request", async () => {
     const root = await ogRoot();
     const fake = fakeRenderer((url, capture) =>

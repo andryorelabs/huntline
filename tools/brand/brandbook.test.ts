@@ -86,6 +86,16 @@ function sectionOf(html: string, id: string): string {
   return new RegExp(`<section id="${id}"[\\s\\S]*?</section>`).exec(html)?.[0] ?? "";
 }
 
+/** Token declarations (`--name: #hex`) of a CSS block, as name to lowercase hex. */
+function declarations(block: string): Record<string, string> {
+  return Object.fromEntries(
+    [...block.matchAll(/--([a-z-]+):\s*(#[0-9a-f]{6})\b/gi)].map(([, name, value]) => [
+      name ?? "",
+      (value ?? "").toLowerCase(),
+    ]),
+  );
+}
+
 describe("brandbook page", () => {
   const page = readText(PAGE_PATH);
   const styles = readText(STYLES_PATH);
@@ -267,6 +277,15 @@ describe("brandbook page", () => {
       expect(known).toContain(value?.toLowerCase());
     }
     expect(page).not.toMatch(/style="[^"]*#[0-9a-f]{3,8}\b/i);
+  });
+
+  test("repeats the light and dark tokens exactly: same names, same values", () => {
+    const lightBlock = /@media \(prefers-color-scheme: light\) \{([\s\S]*?)\n\}/.exec(styles)?.[1];
+    const darkBlock = /\.ground-dark \{([\s\S]*?)\n\}/.exec(styles)?.[1];
+    expect(lightBlock).toBeDefined();
+    expect(darkBlock).toBeDefined();
+    expect(declarations(lightBlock ?? "")).toEqual(tokens.light);
+    expect(declarations(darkBlock ?? "")).toEqual(tokens.dark);
   });
 
   test("declares a viewport and guards against sideways scroll", () => {

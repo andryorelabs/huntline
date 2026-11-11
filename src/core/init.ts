@@ -7,6 +7,8 @@ import factsTemplate from "../../templates/facts.yaml" with { type: "text" };
 import neverClaimTemplate from "../../templates/never-claim.yaml" with { type: "text" };
 import profileTemplate from "../../templates/profile.yaml" with { type: "text" };
 import cvTemplate from "../../templates/cv-template.typ" with { type: "text" };
+import { CONFIG_FILE } from "./data-dir.ts";
+import { settingValue } from "./env.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
 import { withLock, writeAtomic } from "./fs.ts";
 
@@ -16,7 +18,7 @@ function templateText(content: unknown): string {
 }
 
 const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
-  "huntline.json": templateText(configTemplate),
+  [CONFIG_FILE]: templateText(configTemplate),
   "profile.yaml": templateText(profileTemplate),
   "facts.yaml": templateText(factsTemplate),
   "bullets.yaml": templateText(bulletsTemplate),
@@ -25,6 +27,7 @@ const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   "cv/template.typ": templateText(cvTemplate),
 };
 
+/** The placeholder marker the bundled templates still carry; doctor counts what remains. */
 export const MARKER = "TODO(huntline):";
 
 function readDirectoryFlag(argv: readonly string[]): string | undefined {
@@ -41,8 +44,7 @@ export async function runInit(
   if (argv.includes("--data") && (requested === undefined || requested.startsWith("--"))) {
     return failure("usage", "--data needs a directory");
   }
-  const homeOverride = env["HUNTLINE_HOME"];
-  const fallback = homeOverride !== undefined && homeOverride !== "" ? homeOverride : ".";
+  const fallback = settingValue(env, "HOME") ?? ".";
   const target = path.resolve(cwd, requested ?? fallback);
   const force = argv.includes("--force");
   const existing = Object.keys(SCAFFOLD_FILES).filter((name) =>
@@ -63,6 +65,6 @@ export async function runInit(
     dataDir: target,
     written: Object.keys(SCAFFOLD_FILES),
     overwritten: force ? existing : [],
-    next: `fill every ${MARKER} marker, then run huntline doctor`,
+    next: `fill every ${MARKER} marker, then run jobship doctor`,
   });
 }

@@ -3,12 +3,12 @@ import { failure, success, type Envelope } from "../core/envelope.ts";
 import { addCompany, readCompanies } from "./companies.ts";
 import { detectAts } from "./detect.ts";
 
-const USAGE = "usage: huntline company add <careers-url> | huntline company list";
+const USAGE = "usage: jobship company add <careers-url> | jobship company list";
 
 function dataDirMissing(): Envelope<never> {
   return failure("data-dir-not-found", "company commands need a data directory", {
     recoveryAction:
-      "pass --data <dir>, set HUNTLINE_HOME, or run from a directory containing huntline.json",
+      "pass --data <dir>, set JOBSHIP_HOME, or run from a directory containing jobship.json",
   });
 }
 

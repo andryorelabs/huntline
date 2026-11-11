@@ -8,11 +8,11 @@ import { normalizeLiveness, recordScore } from "./score.ts";
 import { ingestPostings, runSweep } from "./sweep.ts";
 import type { ScoreInput } from "./types.ts";
 
-const SWEEP_USAGE = "usage: huntline sweep [--source <name>]... [--keyword <text>]...";
+const SWEEP_USAGE = "usage: jobship sweep [--source <name>]... [--keyword <text>]...";
 const INGEST_USAGE =
-  "usage: huntline ingest --source <label> (--file <postings.json> | --json <postings>)";
+  "usage: jobship ingest --source <label> (--file <postings.json> | --json <postings>)";
 const SCORE_USAGE =
-  "usage: huntline score <key> --score <0-100> [--reason <text>]... [--liveness live|closed|unknown] [--liveness-error <message>]";
+  "usage: jobship score <key> --score <0-100> [--reason <text>]... [--liveness live|closed|unknown] [--liveness-error <message>]";
 
 type Flags = { readonly values: Map<string, string[]>; readonly positionals: string[] };
 

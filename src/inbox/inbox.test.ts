@@ -27,7 +27,7 @@ const PROFILE = {
 };
 
 beforeEach(() => {
-  dir = { path: mkdtempSync(path.join(os.tmpdir(), "huntline-inbox-")) };
+  dir = { path: mkdtempSync(path.join(os.tmpdir(), "jobship-inbox-")) };
   writeFileSync(path.join(dir.path, "profile.yaml"), JSON.stringify(PROFILE));
 });
 

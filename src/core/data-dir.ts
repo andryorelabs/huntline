@@ -1,12 +1,25 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import { LEGACY_PRODUCT_NAME, PRODUCT_NAME, readSetting } from "./env.ts";
 import { errorMessage, isObject } from "./narrow.ts";
 import { validateProfileWithWarnings } from "./profile.ts";
 import type { DataDir, Profile, Result } from "./types.ts";
 
 const SUPPORTED_DATA_DIR_VERSION = 1;
 
-const CONFIG_FILE = "huntline.json";
+/** The data dir marker file, written by `jobship init`. */
+export const CONFIG_FILE = `${PRODUCT_NAME}.json`;
+
+/** The pre-rename marker file, still found and read in place. See ADR-0005. */
+const LEGACY_CONFIG_FILE = `${LEGACY_PRODUCT_NAME}.json`;
+
+/** The marker file present in `dir`, preferring the current name, or null. */
+function configFileIn(dir: string): string | null {
+  for (const name of [CONFIG_FILE, LEGACY_CONFIG_FILE]) {
+    if (existsSync(path.join(dir, name))) return name;
+  }
+  return null;
+}
 const PROFILE_FILE = "profile.yaml";
 
 function readFlagValue(argv: readonly string[], flag: string): Result<string | undefined> {
@@ -28,8 +41,9 @@ function isDirectory(candidate: string): boolean {
 }
 
 function checkVersion(dir: DataDir): Result<DataDir> {
-  const file = path.join(dir.path, CONFIG_FILE);
-  if (!existsSync(file)) return { ok: true, value: dir };
+  const configName = configFileIn(dir.path);
+  if (configName === null) return { ok: true, value: dir };
+  const file = path.join(dir.path, configName);
   let parsed: unknown;
   try {
     parsed = JSON.parse(readFileSync(file, "utf8"));
@@ -38,7 +52,7 @@ function checkVersion(dir: DataDir): Result<DataDir> {
       ok: false,
       error: {
         code: "data-dir-malformed",
-        message: `${CONFIG_FILE} in ${dir.path} is not valid JSON: ${errorMessage(error)}`,
+        message: `${configName} in ${dir.path} is not valid JSON: ${errorMessage(error)}`,
       },
     };
   }
@@ -49,7 +63,7 @@ function checkVersion(dir: DataDir): Result<DataDir> {
       ok: false,
       error: {
         code: "data-dir-malformed",
-        message: `${CONFIG_FILE} in ${dir.path} has a non-numeric version`,
+        message: `${configName} in ${dir.path} has a non-numeric version`,
       },
     };
   }
@@ -58,7 +72,7 @@ function checkVersion(dir: DataDir): Result<DataDir> {
       ok: false,
       error: {
         code: "data-dir-unsupported",
-        message: `${CONFIG_FILE} in ${dir.path} is version ${version} but this huntline supports up to ${SUPPORTED_DATA_DIR_VERSION}; upgrade huntline`,
+        message: `${configName} in ${dir.path} is version ${version} but this jobship supports up to ${SUPPORTED_DATA_DIR_VERSION}; upgrade jobship`,
       },
     };
   }
@@ -82,7 +96,7 @@ function explicitDir(source: string, value: string, cwd: string): Result<DataDir
 function findUpward(cwd: string): string | null {
   let current = path.resolve(cwd);
   for (;;) {
-    if (existsSync(path.join(current, CONFIG_FILE))) return current;
+    if (configFileIn(current) !== null) return current;
     const parent = path.dirname(current);
     if (parent === current) return null;
     current = parent;
@@ -97,15 +111,15 @@ export function resolveDataDir(
   const flag = readFlagValue(argv, "--data");
   if (!flag.ok) return flag;
   if (flag.value !== undefined) return explicitDir("--data", flag.value, cwd);
-  const home = env["HUNTLINE_HOME"];
-  if (home !== undefined && home !== "") return explicitDir("HUNTLINE_HOME", home, cwd);
+  const home = readSetting(env, "HOME");
+  if (home !== undefined) return explicitDir(home.name, home.value, cwd);
   const found = findUpward(cwd);
   if (found === null) {
     return {
       ok: false,
       error: {
         code: "data-dir-not-found",
-        message: `no --data, no HUNTLINE_HOME and no ${CONFIG_FILE} found upward from ${cwd}`,
+        message: `no --data, no JOBSHIP_HOME and no ${CONFIG_FILE} or ${LEGACY_CONFIG_FILE} found upward from ${cwd}`,
       },
     };
   }

@@ -38,9 +38,9 @@ describe("validateDocument", () => {
     const problems = validateDocument(
       "skill",
       "sample",
-      `${VALID_SKILL}\nAlso \`huntline teleport now\`.\n`,
+      `${VALID_SKILL}\nAlso \`jobship teleport now\`.\n`,
     );
-    expect(problems).toEqual(['sample: unknown CLI command "huntline teleport"']);
+    expect(problems).toEqual(['sample: unknown CLI command "jobship teleport"']);
   });
 
   test("rejects an unknown subcommand of a fixed command", () => {
@@ -49,7 +49,7 @@ describe("validateDocument", () => {
       "sample",
       `${VALID_SKILL}\nAlso \`huntline apply submit\`.\n`,
     );
-    expect(problems).toEqual(['sample: unknown CLI command "huntline apply submit"']);
+    expect(problems).toEqual(['sample: unknown CLI command "jobship apply submit"']);
   });
 
   test("rejects a skill missing the untrusted-content rule", () => {

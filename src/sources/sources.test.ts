@@ -219,7 +219,7 @@ describe("company command", () => {
   const cliPath = path.join(import.meta.dir, "../cli.ts");
 
   beforeEach(() => {
-    dataDir = mkdtempSync(path.join(os.tmpdir(), "huntline-sources-"));
+    dataDir = mkdtempSync(path.join(os.tmpdir(), "jobship-sources-"));
     writeFileSync(path.join(dataDir, "huntline.json"), '{"version":1}\n');
   });
 

@@ -14,7 +14,7 @@ const repoRoot = path.join(import.meta.dir, "..");
 const DEV_VERSION = "0.0.0-dev";
 
 export function binaryName(target: BuildTarget): string {
-  return `huntline-${target.slice("bun-".length)}`;
+  return `jobship-${target.slice("bun-".length)}`;
 }
 
 export function readPluginVersion(root: string = repoRoot): string {
@@ -60,7 +60,7 @@ export async function buildBinary(
   const result = await Bun.build({
     entrypoints: [path.join(repoRoot, "src", "cli.ts")],
     compile: { target, outfile },
-    define: { HUNTLINE_BUILD_VERSION: JSON.stringify(version) },
+    define: { JOBSHIP_BUILD_VERSION: JSON.stringify(version) },
   });
   if (!result.success) {
     throw new Error(`build failed for ${target}:\n${result.logs.map(String).join("\n")}`);

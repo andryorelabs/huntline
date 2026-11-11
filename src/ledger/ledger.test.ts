@@ -11,7 +11,7 @@ import { foldState } from "./state.ts";
 let dir = { path: "" };
 
 beforeEach(() => {
-  dir = { path: mkdtempSync(path.join(os.tmpdir(), "huntline-ledger-")) };
+  dir = { path: mkdtempSync(path.join(os.tmpdir(), "jobship-ledger-")) };
 });
 
 afterEach(() => {

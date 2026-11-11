@@ -101,6 +101,7 @@ function sameName(left: string, right: string): boolean {
   return left.toLowerCase() === right.toLowerCase();
 }
 
+/** The issue key marker is persisted in Linear descriptions, so it keeps its pre-rename spelling (ADR-0005). */
 function marker(key: string): string {
   return `[huntline-key: ${key}]`;
 }

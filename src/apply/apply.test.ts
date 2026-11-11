@@ -11,7 +11,7 @@ const cliPath = path.join(import.meta.dir, "../cli.ts");
 let workDir = "";
 
 beforeEach(() => {
-  workDir = mkdtempSync(path.join(os.tmpdir(), "huntline-apply-"));
+  workDir = mkdtempSync(path.join(os.tmpdir(), "jobship-apply-"));
   writeFileSync(path.join(workDir, "huntline.json"), '{"version":1}\n');
 });
 

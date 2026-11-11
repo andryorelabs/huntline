@@ -9,7 +9,8 @@ import type { CommandContext } from "./commands.ts";
 import { createAtsAdapters } from "../sources/ats.ts";
 import { readCompanies } from "../sources/companies.ts";
 import { sources as registeredSources } from "../sources/index.ts";
-import { loadProfileWithWarnings } from "./data-dir.ts";
+import { CONFIG_FILE, loadProfileWithWarnings } from "./data-dir.ts";
+import { LEGACY_PRODUCT_NAME, PRODUCT_NAME, settingValue } from "./env.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
 import { MARKER } from "./init.ts";
 import { errorMessage, isObject } from "./narrow.ts";
@@ -17,7 +18,7 @@ import { toolStatus } from "./tools.ts";
 import type { DataDir, Profile } from "./types.ts";
 
 const PLUGIN_RECOVERY_ACTION =
-  "claude plugin marketplace add andryorelabs/huntline && claude plugin install huntline@huntline-marketplace";
+  "claude plugin marketplace add andryorelabs/huntline && claude plugin install jobship@jobship-marketplace";
 
 export type DoctorDeps = { readonly fetch?: FetchLike; readonly guardHooks?: unknown };
 
@@ -125,13 +126,13 @@ function atsWithoutCompanies(dir: DataDir, profile: Profile): DoctorWarning[] {
     .map((name) => ({
       code: "ats-without-companies",
       message: `${name} is configured but no company is saved for it`,
-      recoveryAction: `run huntline company add for ${name}`,
+      recoveryAction: `run jobship company add for ${name}`,
     }));
 }
 
 function pluginsFilePath(env: CommandContext["env"]): string {
-  const override = env["HUNTLINE_CLAUDE_PLUGINS_FILE"];
-  if (override !== undefined && override !== "") return override;
+  const override = settingValue(env, "CLAUDE_PLUGINS_FILE");
+  if (override !== undefined) return override;
   const home = env["HOME"] !== undefined && env["HOME"] !== "" ? env["HOME"] : os.homedir();
   return path.join(home, ".claude", "plugins", "installed_plugins.json");
 }
@@ -161,12 +162,13 @@ function probePlugin(env: CommandContext["env"]): PluginProbe {
       warning: pluginWarning(`plugins file ${file} has no plugins object`),
     };
   }
-  if (Object.keys(plugins).some((key) => key.startsWith("huntline@"))) {
+  const prefixes = [`${PRODUCT_NAME}@`, `${LEGACY_PRODUCT_NAME}@`];
+  if (Object.keys(plugins).some((key) => prefixes.some((prefix) => key.startsWith(prefix)))) {
     return { installed: true, warning: null };
   }
   return {
     installed: false,
-    warning: pluginWarning("the huntline plugin is not installed in Claude Code"),
+    warning: pluginWarning("the jobship plugin is not installed in Claude Code"),
   };
 }
 
@@ -199,8 +201,8 @@ export async function runDoctor(
   if (ctx.dataDir === null) {
     return failure(
       "data-dir-not-found",
-      "no data directory: pass --data, set HUNTLINE_HOME or run inside a directory with huntline.json",
-      { recoveryAction: "run huntline init in an empty directory" },
+      `no data directory: pass --data, set JOBSHIP_HOME or run inside a directory with ${CONFIG_FILE}`,
+      { recoveryAction: "run jobship init in an empty directory" },
     );
   }
   const loaded = loadProfileWithWarnings(ctx.dataDir);
@@ -239,7 +241,7 @@ export async function runDoctor(
   if (!selfTest.pass) {
     const failed = selfTest.cases.filter((entry) => !entry.pass).map((entry) => entry.name);
     return failure("guard-self-test-failed", `guard self-test failed: ${failed.join("; ")}`, {
-      recoveryAction: "run huntline guard --self-test and fix the named cases",
+      recoveryAction: "run jobship guard --self-test and fix the named cases",
     });
   }
   if (profile.value.tracker.kind === "linear") {

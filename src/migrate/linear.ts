@@ -8,6 +8,7 @@ import { splitCompanyRole } from "./title.ts";
 import type { ImportResult } from "./types.ts";
 
 const PAGE_SIZE = 100;
+/** Matches the persisted issue key marker, kept in its pre-rename spelling (ADR-0005). */
 const KEY_MARKER = /\[huntline-key: ([^\]]+)\]/;
 
 const ISSUES_QUERY = `query Issues($filter: IssueFilter!, $after: String) {
@@ -192,7 +193,7 @@ export async function importLinear(
   options: LinearImportOptions,
 ): Promise<ImportResult> {
   if (ctx.dataDir === null) {
-    return fail("data-dir-not-found", "no data dir resolved; pass --data or set HUNTLINE_HOME");
+    return fail("data-dir-not-found", "no data dir resolved; pass --data or set JOBSHIP_HOME");
   }
   const apiKey = ctx.env["LINEAR_API_KEY"];
   if (apiKey === undefined || apiKey === "")

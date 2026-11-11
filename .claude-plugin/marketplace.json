@@ -1,9 +1,9 @@
 {
-  "name": "huntline-marketplace",
+  "name": "jobship-marketplace",
   "owner": { "name": "AndryOre" },
   "plugins": [
     {
-      "name": "huntline",
+      "name": "jobship",
       "source": "./",
       "description": "A local-first job-search system: sweeps Sources, gates and dedups Postings, and carries each Lead through an Application while the human presses every Submit and Send."
     }

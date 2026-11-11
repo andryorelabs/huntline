@@ -52,7 +52,7 @@ function deps(overrides: Partial<InstallDeps> = {}): InstallDeps {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(os.tmpdir(), "huntline-tools-"));
+  root = mkdtempSync(path.join(os.tmpdir(), "jobship-tools-"));
   env = { HUNTLINE_CACHE_DIR: path.join(root, "cache"), PATH: path.join(root, "empty-bin") };
   mkdirSync(path.join(root, "empty-bin"));
 });
@@ -84,6 +84,36 @@ describe("installTypst", () => {
     const result = await installTypst(env, deps({ download: failingDownload }));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.message).toContain("brew install typst");
+  });
+});
+
+function placeTypst(cacheRoot: string): string {
+  const binary = path.join(cacheRoot, "tools", `typst-${TYPST_VERSION}`, "typst");
+  mkdirSync(path.dirname(binary), { recursive: true });
+  writeFileSync(binary, "");
+  return binary;
+}
+
+describe("cache dir after the rename", () => {
+  test("JOBSHIP_CACHE_DIR wins over HUNTLINE_CACHE_DIR", () => {
+    const binary = placeTypst(path.join(root, "new-cache"));
+    placeTypst(path.join(root, "cache"));
+    const both = { ...env, JOBSHIP_CACHE_DIR: path.join(root, "new-cache") };
+    expect(resolveTypst(both)).toEqual({ path: binary, source: "cache" });
+  });
+
+  test("defaults to ~/.cache/jobship", () => {
+    const binary = placeTypst(path.join(root, ".cache", "jobship"));
+    expect(resolveTypst({ HOME: root, PATH: env["PATH"] })).toEqual({
+      path: binary,
+      source: "cache",
+    });
+  });
+
+  test("still finds typst a pre-rename install cached under ~/.cache/huntline", () => {
+    const binary = placeTypst(path.join(root, "xdg", "huntline"));
+    const xdgEnv = { XDG_CACHE_HOME: path.join(root, "xdg"), PATH: env["PATH"] };
+    expect(resolveTypst(xdgEnv)).toEqual({ path: binary, source: "cache" });
   });
 });
 

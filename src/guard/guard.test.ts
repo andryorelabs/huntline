@@ -264,7 +264,7 @@ describe("guardDecisionFor", () => {
   });
 });
 
-describe("huntline guard process", () => {
+describe("jobship guard process", () => {
   test("prints exactly one deny object for invalid JSON", () => {
     const { code, decision } = runGuard("nope");
     expect(code).toBe(0);

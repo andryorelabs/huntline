@@ -12,7 +12,7 @@ import { exitCodeFor } from "./envelope.ts";
 import { isObject } from "./narrow.ts";
 
 const RECOVERY =
-  "claude plugin marketplace add andryorelabs/huntline && claude plugin install huntline@huntline-marketplace";
+  "claude plugin marketplace add andryorelabs/huntline && claude plugin install jobship@jobship-marketplace";
 
 let workDir = "";
 
@@ -69,7 +69,7 @@ function pluginsFile(contents: string, index = 0): string {
 }
 
 beforeEach(() => {
-  workDir = mkdtempSync(path.join(os.tmpdir(), "huntline-doctor-"));
+  workDir = mkdtempSync(path.join(os.tmpdir(), "jobship-doctor-"));
 });
 
 afterEach(() => {
@@ -106,7 +106,21 @@ describe("doctor guard readiness", () => {
     expect(warningsOf(envelope)[0]?.recoveryAction).toBe(RECOVERY);
   });
 
-  test("a huntline@ entry means installed and no warning", async () => {
+  test("a jobship@ entry read through JOBSHIP_CLAUDE_PLUGINS_FILE means installed", async () => {
+    const file = pluginsFile(
+      JSON.stringify({ version: 2, plugins: { "jobship@jobship-marketplace": [{}] } }),
+    );
+    const envelope = await runDoctor(
+      withEnv(writeDataDir({ kind: "local" }), {
+        JOBSHIP_CLAUDE_PLUGINS_FILE: file,
+        HUNTLINE_CLAUDE_PLUGINS_FILE: path.join(workDir, "absent.json"),
+      }),
+    );
+    expect(guardOf(envelope)).toEqual({ selfTest: "pass", pluginInstalled: true });
+    expect(warningsOf(envelope)).toEqual([]);
+  });
+
+  test("a legacy huntline@ entry means installed and no warning", async () => {
     const file = pluginsFile(
       JSON.stringify({ version: 2, plugins: { "huntline@acme-market": [{}] } }),
     );

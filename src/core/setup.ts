@@ -16,7 +16,7 @@ export async function runSetup(
   const typst = await ensureTypst(env, deps);
   if (!typst.ok) {
     return failure("cv-tool-missing", typst.error.message, {
-      recoveryAction: "install typst with mise, cargo or brew, then rerun huntline setup",
+      recoveryAction: "install typst with mise, cargo or brew, then rerun jobship setup",
     });
   }
   const status = toolStatus(env, platform);

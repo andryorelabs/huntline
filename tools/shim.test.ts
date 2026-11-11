@@ -17,7 +17,7 @@ import path from "node:path";
 
 import { isObject } from "../src/core/narrow.ts";
 
-const shimSource = path.resolve(import.meta.dir, "../bin/huntline");
+const launcherSource = path.resolve(import.meta.dir, "../bin/jobship");
 const hooksSource = path.resolve(import.meta.dir, "../hooks/hooks.json");
 const clickPayload = JSON.stringify({
   hook_event_name: "PreToolUse",
@@ -28,7 +28,7 @@ const clickPayload = JSON.stringify({
 const version = "9.9.9";
 const platform = process.platform === "darwin" ? "darwin" : "linux";
 const arch = process.arch === "arm64" ? "arm64" : "x64";
-const assetName = `huntline-${platform}-${arch}`;
+const assetName = `jobship-${platform}-${arch}`;
 const fixtureBody = '#!/bin/sh\necho "fixture-binary $*"\n';
 
 let workDir = "";
@@ -51,7 +51,7 @@ function denyReasonOf(stdout: string): string {
 
 function cacheBinary(body: string): void {
   mkdirSync(path.join(cacheDir, version), { recursive: true });
-  const cached = path.join(cacheDir, version, "huntline");
+  const cached = path.join(cacheDir, version, "jobship");
   writeFileSync(cached, body);
   chmodSync(cached, 0o755);
 }
@@ -68,11 +68,14 @@ function sha256(content: string): string {
   return createHash("sha256").update(content).digest("hex");
 }
 
-function publishRelease(options: { checksum?: string; listAsset?: boolean } = {}): void {
+function publishRelease(
+  options: { checksum?: string; listAsset?: boolean; asset?: string } = {},
+): void {
+  const asset = options.asset ?? assetName;
   mkdirSync(releaseDir, { recursive: true });
-  writeFileSync(path.join(releaseDir, assetName), fixtureBody);
+  writeFileSync(path.join(releaseDir, asset), fixtureBody);
   const line =
-    options.listAsset === false ? "" : `${options.checksum ?? sha256(fixtureBody)}  ${assetName}\n`;
+    options.listAsset === false ? "" : `${options.checksum ?? sha256(fixtureBody)}  ${asset}\n`;
   writeFileSync(path.join(releaseDir, "SHA256SUMS"), line);
 }
 
@@ -84,13 +87,13 @@ function runShim(
   stdin: string = "",
   root: string = pluginRoot,
 ): ShimResult {
-  const result = Bun.spawnSync(["sh", path.join(root, "bin/huntline"), ...args], {
+  const result = Bun.spawnSync(["sh", path.join(root, "bin/jobship"), ...args], {
     stdin: Buffer.from(stdin),
     env: {
       PATH: process.env["PATH"] ?? "",
       HOME: workDir,
-      HUNTLINE_CACHE_DIR: cacheDir,
-      HUNTLINE_RELEASE_BASE_URL: `file://${path.join(workDir, "releases")}`,
+      JOBSHIP_CACHE_DIR: cacheDir,
+      JOBSHIP_RELEASE_BASE_URL: `file://${path.join(workDir, "releases")}`,
       ...env,
     },
   });
@@ -102,16 +105,16 @@ function runShim(
 }
 
 beforeEach(() => {
-  workDir = mkdtempSync(path.join(os.tmpdir(), "huntline-shim-"));
+  workDir = mkdtempSync(path.join(os.tmpdir(), "jobship-shim-"));
   pluginRoot = path.join(workDir, "plugin");
   cacheDir = path.join(workDir, "cache");
   releaseDir = path.join(workDir, "releases", `v${version}`);
   mkdirSync(path.join(pluginRoot, "bin"), { recursive: true });
   mkdirSync(path.join(pluginRoot, ".claude-plugin"), { recursive: true });
-  copyFileSync(shimSource, path.join(pluginRoot, "bin/huntline"));
+  copyFileSync(launcherSource, path.join(pluginRoot, "bin/jobship"));
   writeFileSync(
     path.join(pluginRoot, ".claude-plugin/plugin.json"),
-    JSON.stringify({ name: "huntline", version }),
+    JSON.stringify({ name: "jobship", version }),
   );
 });
 
@@ -119,21 +122,21 @@ afterEach(() => {
   rmSync(workDir, { recursive: true, force: true });
 });
 
-describe("bin/huntline shim", () => {
+describe("bin/jobship shim", () => {
   test("downloads, verifies, caches and execs the binary", () => {
     publishRelease();
     const result = runShim(["--version"]);
     expect(result.code).toBe(0);
     expect(result.stdout).toBe("fixture-binary --version\n");
-    expect(existsSync(path.join(cacheDir, version, "huntline"))).toBe(true);
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
   });
 
   test("uses the cached binary without touching the network", () => {
     mkdirSync(path.join(cacheDir, version), { recursive: true });
-    const cached = path.join(cacheDir, version, "huntline");
+    const cached = path.join(cacheDir, version, "jobship");
     writeFileSync(cached, '#!/bin/sh\necho "cached $*"\n');
     chmodSync(cached, 0o755);
-    const result = runShim(["guard"], { HUNTLINE_RELEASE_BASE_URL: "file:///nonexistent" });
+    const result = runShim(["guard"], { JOBSHIP_RELEASE_BASE_URL: "file:///nonexistent" });
     expect(result.code).toBe(0);
     expect(result.stdout).toBe("cached guard\n");
   });
@@ -144,7 +147,7 @@ describe("bin/huntline shim", () => {
     expect(result.code).toBe(1);
     expect(result.stderr).toContain("checksum mismatch");
     expect(result.stdout).toBe("");
-    expect(existsSync(path.join(cacheDir, version, "huntline"))).toBe(false);
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(false);
     expect(readdirSync(path.join(cacheDir, version))).toEqual([]);
   });
 
@@ -153,7 +156,7 @@ describe("bin/huntline shim", () => {
     const result = runShim(["--version"]);
     expect(result.code).toBe(1);
     expect(result.stderr).toContain("no checksum listed");
-    expect(existsSync(path.join(cacheDir, version, "huntline"))).toBe(false);
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(false);
   });
 
   test("a missing release exits non-zero with a one-line reason", () => {
@@ -163,15 +166,116 @@ describe("bin/huntline shim", () => {
     expect(result.stderr).toContain("not found");
   });
 
-  test("HUNTLINE_PREFETCH caches the binary without running it", () => {
+  test("JOBSHIP_PREFETCH caches the binary without running it", () => {
+    publishRelease();
+    const result = runShim([], { JOBSHIP_PREFETCH: "1" });
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("");
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
+  });
+
+  test("JOBSHIP_FROM_SOURCE=1 execs the source entrypoint through bun", () => {
+    const sourceEntry = path.join(pluginRoot, "src/cli.ts");
+    mkdirSync(path.dirname(sourceEntry), { recursive: true });
+    writeFileSync(sourceEntry, 'console.log("from-source", process.argv.slice(2).join(" "));\n');
+    const result = runShim(["init"], {
+      JOBSHIP_FROM_SOURCE: "1",
+      PATH: `${path.dirname(process.execPath)}:${process.env["PATH"] ?? ""}`,
+    });
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("from-source init\n");
+  });
+
+  test("defaults to the release URL and reads its checksums first", () => {
+    const fakeBin = path.join(workDir, "fake-bin");
+    mkdirSync(fakeBin, { recursive: true });
+    const curlLog = path.join(workDir, "curl.log");
+    writeFileSync(
+      path.join(fakeBin, "curl"),
+      `#!/bin/sh\nfor arg in "$@"; do echo "$arg" >> "${curlLog}"; done\nexit 22\n`,
+    );
+    chmodSync(path.join(fakeBin, "curl"), 0o755);
+    const result = Bun.spawnSync(["sh", path.join(pluginRoot, "bin/jobship"), "--version"], {
+      env: {
+        PATH: `${fakeBin}:${process.env["PATH"] ?? ""}`,
+        HOME: workDir,
+        JOBSHIP_CACHE_DIR: cacheDir,
+      },
+    });
+    expect(result.exitCode).toBe(1);
+    expect(Bun.file(curlLog).text()).resolves.toContain(
+      `https://github.com/andryorelabs/huntline/releases/download/v${version}/SHA256SUMS\n`,
+    );
+  });
+
+  test("falls back to a release that only ships the pre-rename asset name", () => {
+    publishRelease({ asset: `huntline-${platform}-${arch}` });
+    const result = runShim(["--version"]);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("fixture-binary --version\n");
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
+  });
+});
+
+function runWithOnlyEnv(args: string[], env: Record<string, string>): ShimResult {
+  const result = Bun.spawnSync(["sh", path.join(pluginRoot, "bin/jobship"), ...args], {
+    env: { PATH: process.env["PATH"] ?? "", HOME: workDir, ...env },
+  });
+  return {
+    code: result.exitCode,
+    stdout: result.stdout.toString(),
+    stderr: result.stderr.toString(),
+  };
+}
+
+function runLegacy(shim: string, args: string[], stdin: string = ""): ShimResult {
+  const result = Bun.spawnSync([shim, ...args], {
+    stdin: Buffer.from(stdin),
+    env: { PATH: process.env["PATH"] ?? "", HOME: workDir, JOBSHIP_CACHE_DIR: cacheDir },
+  });
+  return {
+    code: result.exitCode,
+    stdout: result.stdout.toString(),
+    stderr: result.stderr.toString(),
+  };
+}
+
+describe("bin/jobship legacy HUNTLINE_* settings", () => {
+  const unusedReleases = `file://${path.join(os.tmpdir(), "jobship-no-releases")}`;
+
+  test("HUNTLINE_CACHE_DIR and HUNTLINE_RELEASE_BASE_URL still apply", () => {
+    publishRelease();
+    const result = runWithOnlyEnv(["--version"], {
+      HUNTLINE_CACHE_DIR: cacheDir,
+      HUNTLINE_RELEASE_BASE_URL: `file://${path.join(workDir, "releases")}`,
+    });
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("fixture-binary --version\n");
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
+  });
+
+  test("JOBSHIP_CACHE_DIR and JOBSHIP_RELEASE_BASE_URL win over their legacy twins", () => {
+    publishRelease();
+    const result = runWithOnlyEnv(["--version"], {
+      JOBSHIP_CACHE_DIR: cacheDir,
+      HUNTLINE_CACHE_DIR: path.join(workDir, "legacy-cache"),
+      JOBSHIP_RELEASE_BASE_URL: `file://${path.join(workDir, "releases")}`,
+      HUNTLINE_RELEASE_BASE_URL: unusedReleases,
+    });
+    expect(result.code).toBe(0);
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
+    expect(existsSync(path.join(workDir, "legacy-cache"))).toBe(false);
+  });
+
+  test("HUNTLINE_PREFETCH still caches without running", () => {
     publishRelease();
     const result = runShim([], { HUNTLINE_PREFETCH: "1" });
     expect(result.code).toBe(0);
     expect(result.stdout).toBe("");
-    expect(existsSync(path.join(cacheDir, version, "huntline"))).toBe(true);
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
   });
 
-  test("HUNTLINE_FROM_SOURCE=1 execs the source entrypoint through bun", () => {
+  test("HUNTLINE_FROM_SOURCE=1 still execs the source entrypoint", () => {
     const sourceEntry = path.join(pluginRoot, "src/cli.ts");
     mkdirSync(path.dirname(sourceEntry), { recursive: true });
     writeFileSync(sourceEntry, 'console.log("from-source", process.argv.slice(2).join(" "));\n');
@@ -182,42 +286,70 @@ describe("bin/huntline shim", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toBe("from-source init\n");
   });
+});
 
-  test("defaults to the huntline release URL and asset name", () => {
-    const fakeBin = path.join(workDir, "fake-bin");
-    mkdirSync(fakeBin, { recursive: true });
-    const curlLog = path.join(workDir, "curl.log");
-    writeFileSync(
-      path.join(fakeBin, "curl"),
-      `#!/bin/sh\nfor arg in "$@"; do echo "$arg" >> "${curlLog}"; done\nexit 22\n`,
-    );
-    chmodSync(path.join(fakeBin, "curl"), 0o755);
-    const result = Bun.spawnSync(["sh", path.join(pluginRoot, "bin/huntline"), "--version"], {
-      env: {
-        PATH: `${fakeBin}:${process.env["PATH"] ?? ""}`,
-        HOME: workDir,
-        HUNTLINE_CACHE_DIR: cacheDir,
-      },
-    });
-    expect(result.exitCode).toBe(1);
-    expect(Bun.file(curlLog).text()).resolves.toContain(
-      `https://github.com/andryorelabs/huntline/releases/download/v${version}/${assetName}\n`,
-    );
+describe("bin/huntline legacy shim", () => {
+  const legacyShimSource = path.resolve(import.meta.dir, "../bin/huntline");
+
+  function installShim(root: string = pluginRoot): string {
+    const shim = path.join(root, "bin/huntline");
+    copyFileSync(legacyShimSource, shim);
+    chmodSync(shim, 0o755);
+    chmodSync(path.join(root, "bin/jobship"), 0o755);
+    return shim;
+  }
+
+  test("forwards to jobship and writes one deprecation line to stderr only", () => {
+    cacheBinary('#!/bin/sh\necho "cached $*"\n');
+    const result = runLegacy(installShim(), ["doctor", "--data", "x"]);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("cached doctor --data x\n");
+    expect(result.stderr.trim().split("\n")).toHaveLength(1);
+    expect(result.stderr).toContain("deprecated");
+    expect(result.stderr).toContain("jobship");
+  });
+
+  test("keeps the guard's stdout byte-identical to jobship's", () => {
+    cacheBinary("#!/bin/sh\ncat\n");
+    const result = runLegacy(installShim(), ["guard"], clickPayload);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe(`${clickPayload}\n`);
+  });
+
+  test("forwards through a symlink on PATH", () => {
+    cacheBinary('#!/bin/sh\necho "linked $*"\n');
+    const shim = installShim();
+    const linkDir = path.join(workDir, "link-bin");
+    mkdirSync(linkDir);
+    symlinkSync(shim, path.join(linkDir, "huntline"));
+    const result = runLegacy(path.join(linkDir, "huntline"), ["--version"]);
+    expect(result.stdout).toBe("linked --version\n");
+  });
+
+  test("without a jobship launcher the guard still denies", () => {
+    const shim = installShim();
+    rmSync(path.join(pluginRoot, "bin/jobship"));
+    const guard = runLegacy(shim, ["guard"], clickPayload);
+    expect(guard.code).toBe(0);
+    expect(denyReasonOf(guard.stdout)).toContain("launcher is missing");
+    const other = runLegacy(shim, ["doctor"]);
+    expect(other.code).toBe(1);
+    expect(other.stdout).toBe("");
   });
 });
 
-describe("bin/huntline as the PreToolUse guard", () => {
-  const unreachable = { HUNTLINE_RELEASE_BASE_URL: "file:///nonexistent/releases" };
+describe("bin/jobship as the PreToolUse guard", () => {
+  const unreachable = { JOBSHIP_RELEASE_BASE_URL: "file:///nonexistent/releases" };
 
-  test("HUNTLINE_PREFETCH in the environment never skips the guard", () => {
+  test("JOBSHIP_PREFETCH in the environment never skips the guard", () => {
     mkdirSync(path.join(cacheDir, version), { recursive: true });
-    const cached = path.join(cacheDir, version, "huntline");
+    const cached = path.join(cacheDir, version, "jobship");
     writeFileSync(
       cached,
       `#!/bin/sh\nprintf '%s\\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"cached deny"}}'\n`,
     );
     chmodSync(cached, 0o755);
-    const result = runShim(["guard"], { ...unreachable, HUNTLINE_PREFETCH: "1" }, clickPayload);
+    const result = runShim(["guard"], { ...unreachable, JOBSHIP_PREFETCH: "1" }, clickPayload);
     expect(result.code).toBe(0);
     expect(denyReasonOf(result.stdout)).toBe("cached deny");
   });
@@ -226,7 +358,7 @@ describe("bin/huntline as the PreToolUse guard", () => {
     const result = runShim(["guard"], unreachable, clickPayload);
     expect(result.code).toBe(0);
     expect(denyReasonOf(result.stdout)).toContain("not found");
-    expect(existsSync(path.join(cacheDir, version, "huntline"))).toBe(false);
+    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(false);
   });
 
   test("guard --record keeps exiting 1 with an empty stdout", () => {
@@ -275,7 +407,7 @@ describe("bin/huntline as the PreToolUse guard", () => {
     const oddRoot = path.join(workDir, 'pl"ug\\in\tx\ny');
     mkdirSync(path.join(oddRoot, "bin"), { recursive: true });
     mkdirSync(path.join(oddRoot, ".claude-plugin"), { recursive: true });
-    copyFileSync(shimSource, path.join(oddRoot, "bin/huntline"));
+    copyFileSync(launcherSource, path.join(oddRoot, "bin/jobship"));
     writeFileSync(path.join(oddRoot, ".claude-plugin/plugin.json"), "{}");
     const result = runShim(["guard"], {}, clickPayload, oddRoot);
     expect(result.code).toBe(0);
@@ -335,10 +467,27 @@ describe("hooks/hooks.json", () => {
         (hook) =>
           hook["type"] === "command" &&
           typeof hook["command"] === "string" &&
-          hook["command"].includes("HUNTLINE_PREFETCH=1") &&
-          hook["command"].includes("bin/huntline"),
+          hook["command"].includes("JOBSHIP_PREFETCH=1") &&
+          hook["command"].includes("bin/jobship"),
       ),
     ).toBe(true);
+  });
+
+  const commandsFor = (event: string): string[] =>
+    entriesFor(event).flatMap((entry) => {
+      const nested: unknown = entry["hooks"];
+      return Array.isArray(nested)
+        ? nested.filter(isObject).map((hook) => String(hook["command"]))
+        : [];
+    });
+
+  test("registers the Guard through the jobship launcher", () => {
+    expect(commandsFor("PreToolUse")).toEqual(['"${CLAUDE_PLUGIN_ROOT}/bin/jobship" guard']);
+    expect(commandsFor("PostToolUse")).toEqual([
+      '"${CLAUDE_PLUGIN_ROOT}/bin/jobship" guard --record',
+    ]);
+    const all = [...commandsFor("SessionStart"), ...commandsFor("PreToolUse")];
+    expect(all.some((command) => /huntline/i.test(command))).toBe(false);
   });
 
   test("the PreToolUse matcher skips dash and catches Gmail sends in any case", () => {

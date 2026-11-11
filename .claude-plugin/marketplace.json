@@ -8,7 +8,11 @@
     {
       "name": "jobship",
       "source": "./",
-      "description": "A job-search plugin for Claude Code: sweeps Sources, scores fit against the Profile, builds a Tailored CV from Fact bank facts and assists the form, while the human presses every Submit and Send."
+      "description": "A job-search plugin for Claude Code: sweeps Sources, scores fit against the Profile, builds a Tailored CV from Fact bank facts and assists the form, while the human presses every Submit and Send.",
+      "author": { "name": "Andry Orellana", "email": "hello@andryore.dev" },
+      "homepage": "https://github.com/andryorelabs/jobship",
+      "repository": "https://github.com/andryorelabs/jobship",
+      "license": "MIT"
     }
   ]
 }

@@ -19,6 +19,9 @@ const PAIRS: ContrastPair[] = [
   { foreground: "fg", background: "bg", minimum: BODY_TEXT },
   { foreground: "fg", background: "surface", minimum: BODY_TEXT },
   { foreground: "accent-text", background: "bg", minimum: ACCENT_TEXT },
+  { foreground: "accent-text", background: "surface", minimum: ACCENT_TEXT },
+  { foreground: "muted", background: "surface", minimum: ACCENT_TEXT },
+  { foreground: "info", background: "surface", minimum: ACCENT_TEXT },
   { foreground: "on-accent", background: "accent", minimum: ACCENT_TEXT },
   { foreground: "muted", background: "bg", minimum: ACCENT_TEXT },
   { foreground: "ok", background: "bg", minimum: ACCENT_TEXT },
@@ -88,15 +91,16 @@ describe("findContrastFailures", () => {
     const css = `
       :root { --bg: #0c1015; --surface: #151a20; --fg: #eaeff5; --muted: #979fab;
         --accent: #297cef; --accent-text: #1f4f99; --on-accent: #0b0f0d;
-        --ok: #68ca80; --warn: #e6ac3d; --error: #fe7f78; --info: #377ee3; }
+        --ok: #68ca80; --warn: #e6ac3d; --error: #fe7f78; --info: #3b84ea; }
       .light { --bg: #f7faff; --surface: #eaf1fa; --fg: #5c646f; --muted: #5c646f;
         --accent: #297cef; --accent-text: #145ec1; --on-accent: #0b0f0d;
         --ok: #057836; --warn: #825b01; --error: #b02a2d; --info: #145ec1; }
     `;
     const failures = findContrastFailures(css);
-    expect(failures).toHaveLength(3);
+    expect(failures).toHaveLength(4);
     expect(failures[0]).toStartWith("dark: accent-text on bg is ");
-    expect(failures[1]).toStartWith("light: fg on bg is 5.72:1, needs 7:1");
-    expect(failures[2]).toStartWith("light: fg on surface is ");
+    expect(failures[1]).toStartWith("dark: accent-text on surface is ");
+    expect(failures[2]).toStartWith("light: fg on bg is 5.72:1, needs 7:1");
+    expect(failures[3]).toStartWith("light: fg on surface is ");
   });
 });

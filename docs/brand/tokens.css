@@ -14,6 +14,10 @@
  * #4590fd (3.01:1 on the light bg) on light. White on the accent is only
  * 4.02:1, so labels on an accent fill use --on-accent (near-black, 4.80:1).
  *
+ * Dark --accent-text is #3b84ea, a step lighter than the #377ee3 of the colour
+ * research, so accent text also reaches 4.5:1 on the surface colour (4.73:1;
+ * #377ee3 gave 4.38:1).
+ *
  * --info has no value of its own in the research: it reuses --accent-text,
  * because info and the Cobalt accent share ANSI slots 4 and 12.
  *
@@ -46,13 +50,13 @@
   --fg: #eaeff5;
   --muted: #979fab;
   --accent: #297cef;
-  --accent-text: #377ee3;
+  --accent-text: #3b84ea;
   --accent-shape: #297cef;
   --on-accent: #0b0f0d;
   --ok: #68ca80;
   --warn: #e6ac3d;
   --error: #fe7f78;
-  --info: #377ee3;
+  --info: #3b84ea;
 }
 
 .light {

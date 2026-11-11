@@ -1,10 +1,18 @@
 # jobship
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/og/cover.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/brand/og/cover-light.png">
+  <img src="docs/brand/og/cover-light.png" alt="jobship: search less, decide better. A local-first job-search system for Claude Code." width="100%">
+</picture>
+
 [![CI](https://github.com/andryorelabs/huntline/actions/workflows/ci.yml/badge.svg)](https://github.com/andryorelabs/huntline/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/andryorelabs/huntline)](https://github.com/andryorelabs/huntline/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Local-first job-search system for Claude Code: a plugin plus a CLI that sweeps job sources, filters and deduplicates in code, builds CVs only from verified facts, assists form filling in your own browser, and syncs replies from your inbox. You press Submit.
+Search less. Decide better.
+
+Even a small chance of moving forward takes many applications, and nobody can read every Posting by hand all day, so jobship does the analysis from your Profile and the data you give it, and you make the final decision.
 
 ## Install
 
@@ -94,3 +102,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). Report vulner
 ## License
 
 [MIT](LICENSE)
+
+---
+
+jobship is not affiliated with or endorsed by Anthropic.

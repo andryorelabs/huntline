@@ -1,6 +1,6 @@
 {
   "name": "jobship",
   "version": "0.2.0",
-  "description": "A local-first job-search system: sweeps Sources, gates and dedups Postings, and carries each Lead through an Application while the human presses every Submit and Send.",
+  "description": "A job-search plugin for Claude Code: sweeps Sources, scores fit against the Profile, builds a Tailored CV from Fact bank facts and assists the form, while the human presses every Submit and Send.",
   "license": "MIT"
 }

@@ -84,3 +84,42 @@ describe("repo tooling", () => {
     }
   });
 });
+
+function copyLine(heading: string): string {
+  const copy = readFileSync(path.join(root, "docs/brand/copy.md"), "utf8");
+  const match = new RegExp(`^## ${heading}\\n\\n\`\`\`text\\n([^\\n]+)\\n\`\`\``, "m").exec(copy);
+  if (match?.[1] === undefined) throw new Error(`docs/brand/copy.md has no "${heading}" block`);
+  return match[1];
+}
+
+describe("brand copy on the manifests", () => {
+  test("package.json description equals the copy.md package description", () => {
+    expect(readJson("package.json")["description"], "package.json description").toBe(
+      copyLine("package description"),
+    );
+  });
+
+  test("package.json author is the org and keywords include jobship", () => {
+    const manifest = readJson("package.json");
+    expect(manifest["author"], "package.json author").toBe("andryorelabs");
+    expect(JSON.stringify(manifest["keywords"]), "package.json keywords").toContain('"jobship"');
+  });
+
+  test("plugin.json description equals the copy.md plugin description", () => {
+    expect(readJson(".claude-plugin/plugin.json")["description"], "plugin.json description").toBe(
+      copyLine("plugin description"),
+    );
+  });
+
+  test("marketplace.json descriptions equal the plugin description and the owner is the org", () => {
+    const marketplace = readJson(".claude-plugin/marketplace.json");
+    const line = copyLine("plugin description");
+    expect(marketplace["owner"], "marketplace.json owner").toEqual({ name: "andryorelabs" });
+    expect(JSON.stringify(marketplace["plugins"]), "marketplace.json plugin description").toContain(
+      JSON.stringify(line),
+    );
+    expect(JSON.stringify(marketplace["metadata"]), "marketplace.json metadata").toContain(
+      JSON.stringify(line),
+    );
+  });
+});

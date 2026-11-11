@@ -9,6 +9,7 @@
     "cli",
     "cv",
     "job-search",
+    "jobship",
     "local-first",
     "typescript"
   ],
@@ -17,7 +18,7 @@
     "url": "https://github.com/andryorelabs/huntline/issues"
   },
   "license": "MIT",
-  "author": "Andry Orellana",
+  "author": "andryorelabs",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/andryorelabs/huntline.git"

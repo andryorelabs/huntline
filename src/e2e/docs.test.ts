@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { COMMANDS } from "../core/commands.ts";
 
@@ -137,5 +137,40 @@ describe("README.md", () => {
     for (const match of readme.matchAll(/\]\((docs\/[^)]+|GLOSSARY\.md)\)/g)) {
       expect(() => read((match[1] ?? "").split("#")[0] ?? "")).not.toThrow();
     }
+  });
+});
+
+function copyLine(heading: string): string {
+  const match = new RegExp(`^## ${heading}\\n\\n\`\`\`text\\n([^\\n]+)\\n\`\`\``, "m").exec(
+    read("docs/brand/copy.md"),
+  );
+  if (match?.[1] === undefined) throw new Error(`docs/brand/copy.md has no "${heading}" block`);
+  return match[1];
+}
+
+describe("README brand kit", () => {
+  const readme = read("README.md");
+
+  test("README.md opens with a picture switching both covers by color scheme", () => {
+    expect(readme, "README.md picture").toContain("<picture>");
+    expect(readme, "README.md dark cover").toContain("docs/brand/og/cover.png");
+    expect(readme, "README.md light cover").toContain("docs/brand/og/cover-light.png");
+    expect(readme, "README.md color scheme").toContain("prefers-color-scheme");
+    expect(readme.indexOf("<picture>"), "README.md picture position").toBeLessThan(
+      readme.indexOf("[![CI]"),
+    );
+    for (const cover of ["cover.png", "cover-light.png"]) {
+      expect(existsSync(path.join(REPO_ROOT, "docs/brand/og", cover)), cover).toBe(true);
+    }
+  });
+
+  test("README.md carries the brand line, plain line and non-affiliation notice", () => {
+    for (const heading of ["brand line", "plain line", "non-affiliation notice"]) {
+      expect(readme, `README.md ${heading}`).toContain(copyLine(heading));
+    }
+  });
+
+  test("README.md no longer carries the old intro sentence", () => {
+    expect(readme, "README.md intro").not.toContain("a plugin plus a CLI that sweeps job sources");
   });
 });

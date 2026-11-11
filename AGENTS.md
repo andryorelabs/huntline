@@ -43,3 +43,11 @@ Decisions live in [docs/adr/](docs/adr/README.md). Read those touching your area
 ## Code comments
 
 JSDoc only (`/** */`). No `//` comments, except tool directives (`oxlint-disable`, `@ts-expect-error`).
+
+## Quirks
+
+- Read `JOBSHIP_*` variables only through `src/core/env.ts`; `bin/jobship` mirrors the rule in shell. Name each new one in [docs/configuration.md](docs/configuration.md) or `bun run test` fails.
+- Every Markdown file under `docs/` must be linked from [docs/README.md](docs/README.md), except `docs/agents/`, `docs/adr/` and `docs/brand/`.
+- The retired project names are banned outside ADRs, `CHANGELOG.md`, the `docs/brand` research files and tests that assert their absence; `tools/docs/old-names.test.ts` lists them. A reintroduced legacy name needs an ADR (see the [ADR index](docs/adr/README.md), ADR-0006).
+- Public copy (slogan, descriptions) comes from `docs/brand/copy.md`; do not reword it.
+- Repository settings live in `.github/`; change them there, not in the web UI ([docs/development.md](docs/development.md#repository-settings)).

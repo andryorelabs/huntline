@@ -1,6 +1,8 @@
 # Rename huntline to jobship, with legacy compatibility
 
-Superseded by [ADR-0006](0006-drop-huntline-compatibility.md): the legacy names are gone.
+Status: Superseded by ADR-0006
+Date: 2026-11-11
+Revised: 2026-11-11 superseded by [ADR-0006](0006-drop-huntline-compatibility.md); the legacy names are gone.
 
 The code is named `jobship`: the launcher, the plugin, the package, the env vars, the data dir marker and the cache dir. Every `huntline` name an existing install depends on keeps working as a fallback until the removal rule below is met.
 

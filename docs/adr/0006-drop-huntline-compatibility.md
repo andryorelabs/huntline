@@ -1,5 +1,8 @@
 # Drop the huntline compatibility
 
+Status: Accepted
+Date: 2026-11-11
+
 Supersedes [ADR-0005](0005-rename-huntline-to-jobship.md). The code knows one name, `jobship`: no `HUNTLINE_*` fallbacks, no `huntline.json` marker, no `bin/huntline` shim.
 
 ## Context

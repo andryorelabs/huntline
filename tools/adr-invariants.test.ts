@@ -26,3 +26,29 @@ describe("ADR index", () => {
     expect(numbers).toEqual(numbers.map((_, position) => position + 1));
   });
 });
+
+describe("ADR form", () => {
+  const REQUIRED_SECTIONS = ["## Context", "## Decision", "## Consequences"];
+
+  test("a template exists", () => {
+    expect(readdirSync(ADR_DIRECTORY)).toContain("template.md");
+  });
+
+  for (const name of adrFiles) {
+    const text = readFileSync(path.join(ADR_DIRECTORY, name), "utf8");
+
+    test(`${name} has Status and Date header lines`, () => {
+      expect(text).toMatch(/^Status: \S.*$/m);
+      expect(text).toMatch(/^Date: \d{4}-\d{2}-\d{2}$/m);
+    });
+
+    test(`${name} has Context, Decision and Consequences sections`, () => {
+      const missing = REQUIRED_SECTIONS.filter((section) => !text.includes(`\n${section}\n`));
+      expect(missing).toEqual([]);
+    });
+  }
+
+  test("the index has Status and Superseded or amended by columns", () => {
+    expect(index).toMatch(/^\| #\s+\| Title\s+\| Status\s+\| Superseded or amended by\s+\|$/m);
+  });
+});

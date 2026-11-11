@@ -207,8 +207,8 @@ describe("linear tracker", () => {
     await tracker.find("greenhouse:1001");
     const lookup = calls.find((call) => call.operation === "FindIssue");
     const marker = String(lookup?.variables["marker"]);
-    expect(marker).toBe("[huntline-key: greenhouse:1001]");
-    expect("[huntline-key: greenhouse:10012]".includes(marker)).toBe(false);
+    expect(marker).toBe("[jobship-key: greenhouse:1001]");
+    expect("[jobship-key: greenhouse:10012]".includes(marker)).toBe(false);
   });
 
   test("a fresh adapter reuses the idempotency map", async () => {

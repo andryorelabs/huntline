@@ -24,7 +24,6 @@
     "url": "git+https://github.com/andryorelabs/jobship.git"
   },
   "bin": {
-    "huntline": "bin/huntline",
     "jobship": "bin/jobship"
   },
   "type": "module",

@@ -28,7 +28,7 @@ Linux and macOS only (x64 and arm64). Windows is unsupported and WSL is untested
 From Claude Code, in an empty directory such as `~/job-search`:
 
 1. Run `/jobship:init` to scaffold the data dir.
-2. Fill every `TODO(huntline):` marker in the generated files (Profile, Fact bank, Bullets, Never-claim list, Answer bank).
+2. Fill every `TODO(jobship):` marker in the generated files (Profile, Fact bank, Bullets, Never-claim list, Answer bank).
 3. Run `/jobship:doctor`. It lists the remaining markers until you are done and reports `"ok":true` when the data dir is valid.
 4. Use the skills (`sweep`, `score`, `tailor-cv`, `apply`, `inbox`, `outreach`, `interview`).
 

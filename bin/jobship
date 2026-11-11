@@ -40,7 +40,7 @@ while [ -L "$self_path" ]; do
 done
 plugin_root=$(cd "$(dirname "$self_path")/.." && pwd) || fail "cannot resolve plugin root"
 
-if [ "${JOBSHIP_FROM_SOURCE:-${HUNTLINE_FROM_SOURCE:-}}" = "1" ] && command -v bun >/dev/null 2>&1; then
+if [ "${JOBSHIP_FROM_SOURCE:-}" = "1" ] && command -v bun >/dev/null 2>&1; then
   exec bun "$plugin_root/src/cli.ts" "$@"
 fi
 
@@ -49,7 +49,7 @@ manifest="$plugin_root/.claude-plugin/plugin.json"
 version=$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$manifest" | head -n 1)
 [ -n "$version" ] || fail "no version in $manifest"
 
-cache_root=${JOBSHIP_CACHE_DIR:-${HUNTLINE_CACHE_DIR:-${XDG_CACHE_HOME:-${HOME:-}/.cache}/jobship}}
+cache_root=${JOBSHIP_CACHE_DIR:-${XDG_CACHE_HOME:-${HOME:-}/.cache}/jobship}
 cached_binary="$cache_root/$version/jobship"
 
 if [ ! -x "$cached_binary" ]; then
@@ -64,8 +64,7 @@ if [ ! -x "$cached_binary" ]; then
     *) fail "unsupported architecture $(uname -m)" ;;
   esac
   asset="jobship-$os-$arch"
-  legacy_asset="huntline-$os-$arch"
-  base_url=${JOBSHIP_RELEASE_BASE_URL:-${HUNTLINE_RELEASE_BASE_URL:-https://github.com/andryorelabs/jobship/releases/download}}
+  base_url=${JOBSHIP_RELEASE_BASE_URL:-https://github.com/andryorelabs/jobship/releases/download}
   release_url="$base_url/v$version"
   curl_protocol_flags=""
   case "$release_url" in
@@ -88,10 +87,6 @@ if [ ! -x "$cached_binary" ]; then
   curl -fsL $curl_protocol_flags "$release_url/SHA256SUMS" -o "$staging/SHA256SUMS" || fail "SHA256SUMS not found at $release_url"
 
   expected=$(checksum_for "$asset")
-  if [ -z "$expected" ]; then
-    expected=$(checksum_for "$legacy_asset")
-    [ -z "$expected" ] || asset=$legacy_asset
-  fi
   [ -n "$expected" ] || fail "no checksum listed for $asset"
 
   curl -fsL $curl_protocol_flags "$release_url/$asset" -o "$staging/$asset" || fail "release asset $asset not found at $release_url"
@@ -104,7 +99,7 @@ if [ ! -x "$cached_binary" ]; then
   trap - EXIT
 fi
 
-if [ "$guard_mode" = "0" ] && [ "${JOBSHIP_PREFETCH:-${HUNTLINE_PREFETCH:-}}" = "1" ]; then
+if [ "$guard_mode" = "0" ] && [ "${JOBSHIP_PREFETCH:-}" = "1" ]; then
   exit 0
 fi
 

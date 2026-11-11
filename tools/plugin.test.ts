@@ -21,9 +21,8 @@ describe("plugin manifest", () => {
     expect(JSON.stringify(marketplace)).not.toContain("version");
   });
 
-  test("the launcher and the legacy shim exist and are executable", () => {
+  test("the launcher exists and is executable", () => {
     expect(statSync(path.join(root, "bin/jobship")).mode & 0o111).not.toBe(0);
-    expect(statSync(path.join(root, "bin/huntline")).mode & 0o111).not.toBe(0);
   });
 
   test("init and doctor commands wrap the CLI", () => {
@@ -74,7 +73,7 @@ describe("repo tooling", () => {
 
   test("every template named by init exists", () => {
     for (const name of [
-      "huntline.json.tmpl",
+      "jobship.json.tmpl",
       "profile.yaml",
       "facts.yaml",
       "bullets.yaml",

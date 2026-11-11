@@ -37,7 +37,7 @@ function errorOf(result: CliResult): { code: string; message: string } {
 
 function writeValidDataDir(dir: string, profileOverrides: Record<string, unknown> = {}): void {
   mkdirSync(dir, { recursive: true });
-  writeFileSync(path.join(dir, "huntline.json"), '{"version":1}\n');
+  writeFileSync(path.join(dir, "jobship.json"), '{"version":1}\n');
   writeFileSync(
     path.join(dir, "profile.yaml"),
     JSON.stringify({
@@ -84,10 +84,10 @@ describe("doctor", () => {
     expect(errorOf(result).message).toContain("JOBSHIP_HOME");
   });
 
-  test("HUNTLINE_HOME and upward search resolve the data dir", () => {
+  test("JOBSHIP_HOME and upward search resolve the data dir", () => {
     const fixture = path.join(workDir, "fixture");
     writeValidDataDir(fixture);
-    expect(runCli(["doctor"], { env: { HUNTLINE_HOME: fixture } }).code).toBe(0);
+    expect(runCli(["doctor"], { env: { JOBSHIP_HOME: fixture } }).code).toBe(0);
     const nested = path.join(fixture, "deep");
     mkdirSync(nested);
     expect(runCli(["doctor"], { cwd: nested }).code).toBe(0);
@@ -123,7 +123,7 @@ describe("doctor", () => {
   test("remaining markers exit 1 listing each file and line", () => {
     const fixture = path.join(workDir, "fixture");
     writeValidDataDir(fixture);
-    writeFileSync(path.join(fixture, "facts.yaml"), "# TODO(huntline): fill\nfacts: []\n");
+    writeFileSync(path.join(fixture, "facts.yaml"), "# TODO(jobship): fill\nfacts: []\n");
     const result = runCli(["doctor", "--data", fixture]);
     expect(result.code).toBe(1);
     expect(errorOf(result).code).toBe("todo-markers");
@@ -207,14 +207,10 @@ describe("init", () => {
     expect(readFileSync(path.join(target, "jobship.json"), "utf8")).toContain("version");
   });
 
-  test("scaffolds into JOBSHIP_HOME, falling back to HUNTLINE_HOME", () => {
-    const newHome = path.join(workDir, "new-home");
-    const oldHome = path.join(workDir, "old-home");
-    const env = { JOBSHIP_HOME: newHome, HUNTLINE_HOME: oldHome };
-    expect(runCli(["init"], { env }).code).toBe(0);
-    expect(readFileSync(path.join(newHome, "jobship.json"), "utf8")).toContain("version");
-    expect(runCli(["init"], { env: { HUNTLINE_HOME: oldHome } }).code).toBe(0);
-    expect(readFileSync(path.join(oldHome, "jobship.json"), "utf8")).toContain("version");
+  test("scaffolds into JOBSHIP_HOME", () => {
+    const home = path.join(workDir, "new-home");
+    expect(runCli(["init"], { env: { JOBSHIP_HOME: home } }).code).toBe(0);
+    expect(readFileSync(path.join(home, "jobship.json"), "utf8")).toContain("version");
   });
 });
 
@@ -292,7 +288,7 @@ describe("data dir failures", () => {
 
   test("a missing data dir fails with the not-found cause", () => {
     const result = runCli(["ledger", "list"]);
-    expect(errorOf(result).message).toContain("huntline.json");
+    expect(errorOf(result).message).toContain("jobship.json");
   });
 });
 

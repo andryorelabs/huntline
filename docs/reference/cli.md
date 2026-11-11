@@ -7,7 +7,7 @@ Every command prints exactly one JSON envelope on stdout.
 {"ok":false,"error":{"code":"usage","message":"...","recoverable":false,"recoveryAction":"..."}}
 ```
 
-`--data <dir>` selects the data dir; otherwise `JOBSHIP_HOME`, then the nearest `jobship.json` upward from the working directory. The legacy `HUNTLINE_HOME` and `huntline.json` are still accepted; see [ADR-0005](../adr/0005-rename-huntline-to-jobship.md). `jobship --version` prints the version.
+`--data <dir>` selects the data dir; otherwise `JOBSHIP_HOME`, then the nearest `jobship.json` upward from the working directory. `jobship --version` prints the version.
 
 ## Exit codes
 
@@ -22,7 +22,7 @@ Every command prints exactly one JSON envelope on stdout.
 
 ### `jobship init`
 
-Scaffolds `jobship.json`, `profile.yaml`, `facts.yaml`, `bullets.yaml` and `never-claim.yaml` in the working directory with `TODO(huntline):` markers. Refuses to overwrite (`already-exists`, exit 1).
+Scaffolds `jobship.json`, `profile.yaml`, `facts.yaml`, `bullets.yaml` and `never-claim.yaml` in the working directory with `TODO(jobship):` markers. Refuses to overwrite (`already-exists`, exit 1).
 
 ### `jobship doctor`
 

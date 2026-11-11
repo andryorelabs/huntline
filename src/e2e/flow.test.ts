@@ -110,7 +110,7 @@ function ok(args: string[]): Record<string, unknown> {
 }
 
 function writeDataDir(): void {
-  writeFileSync(path.join(dataDir, "huntline.json"), '{"version":1}\n');
+  writeFileSync(path.join(dataDir, "jobship.json"), '{"version":1}\n');
   writeFileSync(
     path.join(dataDir, "profile.yaml"),
     JSON.stringify({
@@ -370,7 +370,7 @@ describe("end-to-end flow with the local tracker", () => {
   });
 
   test("a malformed Profile exits 2 and markers exit 1", () => {
-    writeFileSync(path.join(dataDir, "facts.yaml"), "# TODO(huntline): fill\nfacts: []\n");
+    writeFileSync(path.join(dataDir, "facts.yaml"), "# TODO(jobship): fill\nfacts: []\n");
     const markers = runCli(["doctor"]);
     expect(markers.code).toBe(1);
     expect(errorCodeOf(markers)).toBe("todo-markers");

@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import answersTemplate from "../../templates/answers.json.tmpl" with { type: "text" };
 import bulletsTemplate from "../../templates/bullets.yaml" with { type: "text" };
-import configTemplate from "../../templates/huntline.json.tmpl" with { type: "text" };
+import configTemplate from "../../templates/jobship.json.tmpl" with { type: "text" };
 import factsTemplate from "../../templates/facts.yaml" with { type: "text" };
 import neverClaimTemplate from "../../templates/never-claim.yaml" with { type: "text" };
 import profileTemplate from "../../templates/profile.yaml" with { type: "text" };
@@ -28,7 +28,7 @@ const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
 };
 
 /** The placeholder marker the bundled templates still carry; doctor counts what remains. */
-export const MARKER = "TODO(huntline):";
+export const MARKER = "TODO(jobship):";
 
 function readDirectoryFlag(argv: readonly string[]): string | undefined {
   const index = argv.indexOf("--data");

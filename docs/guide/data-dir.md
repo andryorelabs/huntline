@@ -5,8 +5,8 @@ All personal data lives in one directory that is never part of this repository.
 ## Resolution order
 
 1. `--data <dir>` on the command line.
-2. The `JOBSHIP_HOME` environment variable (the legacy `HUNTLINE_HOME` is still read when it is unset).
-3. The nearest directory, searching upward from the working directory, that contains `jobship.json` (or the legacy `huntline.json`).
+2. The `JOBSHIP_HOME` environment variable.
+3. The nearest directory, searching upward from the working directory, that contains `jobship.json`.
 
 If none resolves, commands that need data exit 2 with `data-dir-not-found`.
 
@@ -32,7 +32,7 @@ If none resolves, commands that need data exit 2 with `data-dir-not-found`.
 
 ## Markers
 
-Templates contain `TODO(huntline):` markers. `doctor` exits 1 and lists each file and line until every marker is removed.
+Templates contain `TODO(jobship):` markers. `doctor` exits 1 and lists each file and line until every marker is removed.
 
 ## Writes
 

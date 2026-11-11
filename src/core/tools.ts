@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { LEGACY_PRODUCT_NAME, PRODUCT_NAME, settingValue } from "./env.ts";
+import { PRODUCT_NAME, settingValue } from "./env.ts";
 import { errorMessage } from "./narrow.ts";
 import type { Result } from "./types.ts";
 
@@ -71,20 +71,13 @@ function currentPlatform(): PlatformInfo {
 }
 
 function cacheRoot(env: ToolEnv): string {
-  return settingValue(env, "CACHE_DIR") ?? defaultCacheRoot(env, PRODUCT_NAME);
+  return settingValue(env, "CACHE_DIR") ?? defaultCacheRoot(env);
 }
 
-function defaultCacheRoot(env: ToolEnv, product: string): string {
+function defaultCacheRoot(env: ToolEnv): string {
   const xdg = env["XDG_CACHE_HOME"];
-  if (xdg !== undefined && xdg !== "") return path.join(xdg, product);
-  return path.join(env["HOME"] ?? os.homedir(), ".cache", product);
-}
-
-/** Where a pre-rename install cached typst, searched only when no cache dir is set. */
-function legacyCachedTypstPath(env: ToolEnv): string | null {
-  if (settingValue(env, "CACHE_DIR") !== undefined) return null;
-  const legacyRoot = defaultCacheRoot(env, LEGACY_PRODUCT_NAME);
-  return path.join(legacyRoot, "tools", `typst-${TYPST_VERSION}`, "typst");
+  if (xdg !== undefined && xdg !== "") return path.join(xdg, PRODUCT_NAME);
+  return path.join(env["HOME"] ?? os.homedir(), ".cache", PRODUCT_NAME);
 }
 
 function toolsRoot(env: ToolEnv): string {
@@ -102,10 +95,8 @@ function onPath(name: string, env: ToolEnv): string | null {
 export function resolveTypst(env: ToolEnv): { path: string; source: "path" | "cache" } | null {
   const found = onPath("typst", env);
   if (found !== null) return { path: found, source: "path" };
-  const cached = [cachedTypstPath(env), legacyCachedTypstPath(env)].find(
-    (candidate): candidate is string => candidate !== null && existsSync(candidate),
-  );
-  return cached === undefined ? null : { path: cached, source: "cache" };
+  const cached = cachedTypstPath(env);
+  return existsSync(cached) ? { path: cached, source: "cache" } : null;
 }
 
 export function pdftotextInstallHint(platform: PlatformInfo): string {

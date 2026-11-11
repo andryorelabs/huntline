@@ -18,24 +18,16 @@ describe("readSetting", () => {
     });
   });
 
-  test.each(SETTINGS)("HUNTLINE_%s is honoured as a fallback", (suffix) => {
-    expect(readSetting({ [`HUNTLINE_${suffix}`]: "old" }, suffix)).toEqual({
-      name: `HUNTLINE_${suffix}`,
-      value: "old",
-    });
+  test("an empty value counts as unset", () => {
+    expect(settingValue({ JOBSHIP_HOME: "" }, "HOME")).toBeUndefined();
   });
 
-  test.each(SETTINGS)("JOBSHIP_%s wins over its HUNTLINE_ twin", (suffix) => {
-    const env = { [`JOBSHIP_${suffix}`]: "new", [`HUNTLINE_${suffix}`]: "old" };
-    expect(settingValue(env, suffix)).toBe("new");
+  test("the pre-rename HUNTLINE_ names are not read", () => {
+    expect(readSetting({ HUNTLINE_HOME: "/old" }, "HOME")).toBeUndefined();
   });
 
-  test("an empty value counts as unset, so the legacy twin still applies", () => {
-    expect(settingValue({ JOBSHIP_HOME: "", HUNTLINE_HOME: "/legacy" }, "HOME")).toBe("/legacy");
-  });
-
-  test("neither set gives undefined", () => {
+  test("nothing set gives undefined", () => {
     expect(readSetting({ HOME: "/home/someone" }, "HOME")).toBeUndefined();
-    expect(settingValue({ HUNTLINE_HOME: "" }, "HOME")).toBeUndefined();
+    expect(settingValue({}, "HOME")).toBeUndefined();
   });
 });

@@ -32,10 +32,10 @@ function parseDocument(source: string): ParsedDocument {
 
 function extractCliReferences(body: string): string[][] {
   const references: string[][] = [];
-  for (const span of body.matchAll(/`([^`\n]*\b(?:jobship|huntline)\s[^`\n]*)`/g)) {
+  for (const span of body.matchAll(/`([^`\n]*\bjobship\s[^`\n]*)`/g)) {
     const text = span[1] ?? "";
     const tokens = text
-      .slice(text.search(/\b(?:jobship|huntline)\s/))
+      .slice(text.search(/\bjobship\s/))
       .split(/\s+/)
       .slice(1);
     const words: string[] = [];

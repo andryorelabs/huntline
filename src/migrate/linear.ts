@@ -9,7 +9,7 @@ import type { ImportResult } from "./types.ts";
 
 const PAGE_SIZE = 100;
 /** Matches the persisted issue key marker, kept in its pre-rename spelling (ADR-0005). */
-const KEY_MARKER = /\[huntline-key: ([^\]]+)\]/;
+const KEY_MARKER = /\[jobship-key: ([^\]]+)\]/;
 
 const ISSUES_QUERY = `query Issues($filter: IssueFilter!, $after: String) {
   issues(filter: $filter, first: ${PAGE_SIZE}, after: $after) {

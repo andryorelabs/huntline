@@ -15,8 +15,6 @@ import { errorMessage } from "./core/narrow.ts";
 import { runSetup } from "./core/setup.ts";
 
 declare const JOBSHIP_BUILD_VERSION: string | undefined;
-/** The pre-rename build define, honoured as a fallback. See ADR-0005. */
-declare const HUNTLINE_BUILD_VERSION: string | undefined;
 
 const MODULE_LOADERS: Readonly<Record<string, () => Promise<CommandModule>>> = {
   "src/sweep/command.ts": () => import("./sweep/command.ts"),
@@ -42,7 +40,6 @@ function withoutDataFlag(argv: readonly string[]): string[] {
 
 function buildVersion(): string {
   if (typeof JOBSHIP_BUILD_VERSION === "string") return JOBSHIP_BUILD_VERSION;
-  if (typeof HUNTLINE_BUILD_VERSION === "string") return HUNTLINE_BUILD_VERSION;
   return "0.0.0-dev";
 }
 

@@ -19,7 +19,7 @@ let workDir = "";
 function writeDataDir(tracker: Record<string, unknown>): CommandContext {
   const dir = path.join(workDir, "data");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(path.join(dir, "huntline.json"), '{"version":1}\n');
+  writeFileSync(path.join(dir, "jobship.json"), '{"version":1}\n');
   writeFileSync(
     path.join(dir, "profile.yaml"),
     JSON.stringify({
@@ -87,7 +87,7 @@ describe("doctor guard readiness", () => {
 
   test("a missing plugins file warns with the recovery action and still succeeds", async () => {
     const ctx = withEnv(writeDataDir({ kind: "local" }), {
-      HUNTLINE_CLAUDE_PLUGINS_FILE: path.join(workDir, "absent.json"),
+      JOBSHIP_CLAUDE_PLUGINS_FILE: path.join(workDir, "absent.json"),
     });
     const envelope = await runDoctor(ctx);
     expect(envelope.ok).toBe(true);
@@ -96,10 +96,10 @@ describe("doctor guard readiness", () => {
     expect(warning?.recoveryAction).toBe(RECOVERY);
   });
 
-  test("a plugins file without a huntline entry warns", async () => {
+  test("a plugins file without a jobship entry warns", async () => {
     const file = pluginsFile(JSON.stringify({ version: 2, plugins: { "other@market": [{}] } }));
     const envelope = await runDoctor(
-      withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }),
+      withEnv(writeDataDir({ kind: "local" }), { JOBSHIP_CLAUDE_PLUGINS_FILE: file }),
     );
     expect(envelope.ok).toBe(true);
     expect(guardOf(envelope)["pluginInstalled"]).toBe(false);
@@ -113,22 +113,20 @@ describe("doctor guard readiness", () => {
     const envelope = await runDoctor(
       withEnv(writeDataDir({ kind: "local" }), {
         JOBSHIP_CLAUDE_PLUGINS_FILE: file,
-        HUNTLINE_CLAUDE_PLUGINS_FILE: path.join(workDir, "absent.json"),
       }),
     );
     expect(guardOf(envelope)).toEqual({ selfTest: "pass", pluginInstalled: true });
     expect(warningsOf(envelope)).toEqual([]);
   });
 
-  test("a legacy huntline@ entry means installed and no warning", async () => {
+  test("a huntline@ entry is not the jobship plugin", async () => {
     const file = pluginsFile(
       JSON.stringify({ version: 2, plugins: { "huntline@acme-market": [{}] } }),
     );
     const envelope = await runDoctor(
-      withEnv(writeDataDir({ kind: "local" }), { HUNTLINE_CLAUDE_PLUGINS_FILE: file }),
+      withEnv(writeDataDir({ kind: "local" }), { JOBSHIP_CLAUDE_PLUGINS_FILE: file }),
     );
-    expect(guardOf(envelope)).toEqual({ selfTest: "pass", pluginInstalled: true });
-    expect(warningsOf(envelope)).toEqual([]);
+    expect(guardOf(envelope)["pluginInstalled"]).toBe(false);
   });
 
   test("a malformed plugins file warns instead of crashing", async () => {
@@ -137,7 +135,7 @@ describe("doctor guard readiness", () => {
       pluginsFile(contents, index),
     );
     const envelopes = await Promise.all(
-      files.map((file) => runDoctor(withEnv(ctx, { HUNTLINE_CLAUDE_PLUGINS_FILE: file }))),
+      files.map((file) => runDoctor(withEnv(ctx, { JOBSHIP_CLAUDE_PLUGINS_FILE: file }))),
     );
     for (const envelope of envelopes) {
       expect(envelope.ok).toBe(true);
@@ -151,7 +149,7 @@ describe("doctor guard readiness", () => {
     mkdirSync(path.join(workDir, ".claude/plugins"), { recursive: true });
     writeFileSync(
       path.join(workDir, ".claude/plugins/installed_plugins.json"),
-      JSON.stringify({ plugins: { "huntline@acme-market": [] } }),
+      JSON.stringify({ plugins: { "jobship@acme-market": [] } }),
     );
     expect(guardOf(await runDoctor(ctx))["pluginInstalled"]).toBe(true);
   });

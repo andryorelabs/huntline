@@ -174,3 +174,39 @@ describe("README brand kit", () => {
     expect(readme, "README.md intro").not.toContain("a plugin plus a CLI that sweeps job sources");
   });
 });
+
+const ABSENCE_TESTS = new Set([
+  "src/core/doctor.test.ts",
+  "src/core/env.test.ts",
+  "src/e2e/docs.test.ts",
+  "tools/shim.test.ts",
+]);
+
+/** Tests that assert the old name is gone mention it on purpose. */
+describe("pre-rename name", () => {
+  test("code, templates, skills, commands and hooks no longer mention huntline", () => {
+    const result = Bun.spawnSync(
+      [
+        "git",
+        "grep",
+        "-il",
+        "huntline",
+        "--",
+        "src",
+        "bin",
+        "templates",
+        "tools",
+        "skills",
+        "commands",
+        "agents",
+        "hooks",
+      ],
+      { cwd: REPO_ROOT },
+    );
+    const hits = result.stdout
+      .toString()
+      .split("\n")
+      .filter((file) => file !== "" && !ABSENCE_TESTS.has(file));
+    expect(hits).toEqual([]);
+  });
+});

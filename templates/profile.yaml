@@ -1,21 +1,21 @@
-# TODO(huntline): list the regions you can work from, for example LATAM or EU.
+# TODO(jobship): list the regions you can work from, for example LATAM or EU.
 regions: []
-# TODO(huntline): keep only the contract types you accept.
+# TODO(jobship): keep only the contract types you accept.
 contractTypes:
   - full-time
   - contract
-# TODO(huntline): choose remote-only, hybrid or any.
+# TODO(jobship): choose remote-only, hybrid or any.
 remote: remote-only
 stack:
-  # TODO(huntline): technologies a Posting should mention.
+  # TODO(jobship): technologies a Posting should mention.
   include: []
-  # TODO(huntline): technologies that rule a Posting out.
+  # TODO(jobship): technologies that rule a Posting out.
   exclude: []
-# TODO(huntline): set a floor such as {amount: 60000, currency: USD, period: year}, or keep null.
+# TODO(jobship): set a floor such as {amount: 60000, currency: USD, period: year}, or keep null.
 salaryFloor: null
 excludedCompanies: []
 outreachDailyCap: 5
-# TODO(huntline): list sources to sweep. Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`), getonboard, himalayas, remoteok, hn.
+# TODO(jobship): list sources to sweep. Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`), getonboard, himalayas, remoteok, hn.
 sources: []
 tracker:
   kind: local

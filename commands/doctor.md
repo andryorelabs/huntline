@@ -7,7 +7,7 @@ directory. `jobship` is on PATH in plugin sessions.
 
 Then summarize the result:
 
-- Failures first, each with the fix the output suggests (exit 1 means `TODO(huntline):`
+- Failures first, each with the fix the output suggests (exit 1 means `TODO(jobship):`
   markers remain, exit 2 means a missing or malformed Profile).
 - If it printed `"ok":true`, say the setup is healthy.
 

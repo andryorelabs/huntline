@@ -50,43 +50,26 @@ describe("envelope", () => {
 });
 
 describe("resolveDataDir", () => {
-  test("--data wins over HUNTLINE_HOME and the upward search", () => {
+  test("--data wins over JOBSHIP_HOME and the upward search", () => {
     const flagDir = path.join(workDir, "flag");
     const homeDir = path.join(workDir, "home");
     mkdirSync(flagDir);
     mkdirSync(homeDir);
-    writeFileSync(path.join(workDir, "huntline.json"), "{}");
+    writeFileSync(path.join(workDir, "jobship.json"), "{}");
     const result = resolveDataDir(
       ["doctor", "--data", flagDir],
-      { HUNTLINE_HOME: homeDir },
+      { JOBSHIP_HOME: homeDir },
       workDir,
     );
     expect(result).toEqual({ ok: true, value: { path: flagDir } });
   });
 
-  test("HUNTLINE_HOME wins over the upward search", () => {
+  test("JOBSHIP_HOME wins over the upward search", () => {
     const homeDir = path.join(workDir, "home");
     mkdirSync(homeDir);
-    writeFileSync(path.join(workDir, "huntline.json"), "{}");
-    const result = resolveDataDir([], { HUNTLINE_HOME: homeDir }, workDir);
+    writeFileSync(path.join(workDir, "jobship.json"), "{}");
+    const result = resolveDataDir([], { JOBSHIP_HOME: homeDir }, workDir);
     expect(result).toEqual({ ok: true, value: { path: homeDir } });
-  });
-
-  test("finds the nearest huntline.json upward", () => {
-    const nested = path.join(workDir, "a", "b");
-    mkdirSync(nested, { recursive: true });
-    writeFileSync(path.join(workDir, "a", "huntline.json"), "{}");
-    const result = resolveDataDir([], {}, nested);
-    expect(result).toEqual({ ok: true, value: { path: path.join(workDir, "a") } });
-  });
-
-  test("JOBSHIP_HOME wins over a legacy HUNTLINE_HOME", () => {
-    const newDir = path.join(workDir, "new");
-    const oldDir = path.join(workDir, "old");
-    mkdirSync(newDir);
-    mkdirSync(oldDir);
-    const result = resolveDataDir([], { JOBSHIP_HOME: newDir, HUNTLINE_HOME: oldDir }, workDir);
-    expect(result).toEqual({ ok: true, value: { path: newDir } });
   });
 
   test("finds the nearest jobship.json upward", () => {
@@ -97,16 +80,10 @@ describe("resolveDataDir", () => {
     expect(result).toEqual({ ok: true, value: { path: path.join(workDir, "a") } });
   });
 
-  test("a legacy huntline.json is still version-checked in place", () => {
-    writeFileSync(path.join(workDir, "huntline.json"), '{"version":99}');
+  test("a jobship.json with an unsupported version is rejected", () => {
+    writeFileSync(path.join(workDir, "jobship.json"), '{"version":99}');
     const result = resolveDataDir([], {}, workDir);
-    expect(result.ok ? "" : result.error.message).toContain("huntline.json");
-  });
-
-  test("jobship.json is read before a legacy huntline.json in the same dir", () => {
-    writeFileSync(path.join(workDir, "jobship.json"), '{"version":1}');
-    writeFileSync(path.join(workDir, "huntline.json"), '{"version":99}');
-    expect(resolveDataDir([], {}, workDir)).toEqual({ ok: true, value: { path: workDir } });
+    expect(result.ok ? "" : result.error.message).toContain("jobship.json");
   });
 
   test("reports data-dir-not-found and usage errors", () => {
@@ -122,7 +99,7 @@ describe("resolveDataDir", () => {
 function versionOf(content: string): string {
   const dir = path.join(workDir, "versioned");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(path.join(dir, "huntline.json"), content);
+  writeFileSync(path.join(dir, "jobship.json"), content);
   const result = resolveDataDir(["--data", dir], {}, workDir);
   return result.ok ? "ok" : result.error.code;
 }
@@ -227,7 +204,7 @@ describe("fs", () => {
   });
 
   test("withLock reclaims a lock whose holder process is dead", async () => {
-    const lockPath = path.join(workDir, ".huntline.lock");
+    const lockPath = path.join(workDir, ".jobship.lock");
     mkdirSync(lockPath);
     writeFileSync(
       path.join(lockPath, "holder.json"),
@@ -237,7 +214,7 @@ describe("fs", () => {
   });
 
   test("concurrent withLock callers reclaiming one dead lock never overlap", async () => {
-    const lockPath = path.join(workDir, ".huntline.lock");
+    const lockPath = path.join(workDir, ".jobship.lock");
     mkdirSync(lockPath);
     writeFileSync(
       path.join(lockPath, "holder.json"),

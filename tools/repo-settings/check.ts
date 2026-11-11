@@ -4,8 +4,8 @@ import { compareSettings, formatDifference, isJsonValue, isRepositorySettings } 
 import type { JsonValue, RepoSettings } from "./compare.ts";
 import { readLiveSettings } from "./live.ts";
 import type { GhApi } from "./live.ts";
+import { REPO_ROOT, resolveRepository } from "./repository.ts";
 
-const REPO_ROOT = path.join(import.meta.dir, "..", "..");
 const RULESETS_DIRECTORY = path.join(REPO_ROOT, ".github", "rulesets");
 const SETTINGS_FILE = path.join(REPO_ROOT, ".github", "repo-settings.json");
 
@@ -50,19 +50,6 @@ const runGhApi: GhApi = (endpoint) => {
     stderr: result.stderr.toString(),
   };
 };
-
-/** Resolves `owner/name` of the current repository through `gh`. */
-function resolveRepository(): string {
-  const result = Bun.spawnSync(
-    ["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"],
-    { stdout: "pipe", stderr: "pipe", cwd: REPO_ROOT },
-  );
-  const name = result.stdout.toString().trim();
-  if (result.exitCode !== 0 || name === "") {
-    throw new Error(`gh repo view failed: ${result.stderr.toString().trim() || "no output"}`);
-  }
-  return name;
-}
 
 /** Diffs live settings against the files; exit 0 for no drift, 1 for drift or unreadable. */
 function main(): number {

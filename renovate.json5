@@ -26,7 +26,7 @@
   vulnerabilityAlerts: {
     enabled: true,
     assignees: ["AndryOre"],
-    labels: ["security"],
+    labels: ["dependencies"],
   },
 
   lockFileMaintenance: {
@@ -69,6 +69,7 @@
     {
       groupName: "github-actions",
       matchManagers: ["github-actions"],
+      addLabels: ["github-actions"],
     },
     {
       matchPackageNames: ["bun"],
@@ -91,7 +92,13 @@
     },
     {
       groupName: "oxc",
-      matchDepNames: ["oxlint", "oxlint-tsgolint", "oxfmt", "typescript7"],
+      matchDepNames: ["oxlint", "oxlint-tsgolint", "oxfmt", "@oxlint/plugins"],
+      rangeStrategy: "pin",
+      automerge: false,
+    },
+    {
+      groupName: "typescript7",
+      matchDepNames: ["typescript7"],
       rangeStrategy: "pin",
       automerge: false,
     },

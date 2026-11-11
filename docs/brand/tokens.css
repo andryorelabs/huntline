@@ -1,0 +1,71 @@
+/**
+ * jobship brand tokens, palette "Cobalt" (see docs/brand/README.md and the P2
+ * section of docs/brand/color-research.md).
+ *
+ * Dark is the default theme (:root). Add the class "light" to a container for
+ * the light theme. Each block is complete on its own.
+ *
+ * Contrast, recomputed with tools/brand/palette.ts and checked by
+ * tools/brand/tokens-contrast.test.ts:
+ *   body text (fg on bg and on surface) is at least 7:1;
+ *   accent text, muted and status colours on bg, and on-accent on accent are at least 4.5:1.
+ *
+ * --accent-shape is the flat fill of the mark: the accent on dark, the lighter
+ * #4590fd (3.01:1 on the light bg) on light. White on the accent is only
+ * 4.02:1, so labels on an accent fill use --on-accent (near-black, 4.80:1).
+ *
+ * --info has no value of its own in the research: it reuses --accent-text,
+ * because info and the Cobalt accent share ANSI slots 4 and 12.
+ *
+ * 16-colour ANSI mapping. Terminals choose their own RGB for each slot, so the
+ * mapping names the slot that carries each meaning, never a hex. 24-bit output
+ * (ESC[38;2;r;g;bm) may use the hex values below; NO_COLOR turns colour off.
+ *
+ * slot  name            meaning
+ * 0     black           ground (dark theme)
+ * 1     red             error only
+ * 2     green           ok and success
+ * 3     yellow          warn
+ * 4     blue            accent and info (Cobalt has its own slot)
+ * 5     magenta         unused (purple is avoided)
+ * 6     cyan            unused (cyan is avoided)
+ * 7     white           body text
+ * 8     bright black    muted
+ * 9     bright red      error, emphasised
+ * 10    bright green    ok, emphasised
+ * 11    bright yellow   warn, emphasised
+ * 12    bright blue     accent and info, emphasised
+ * 13    bright magenta  unused
+ * 14    bright cyan     unused
+ * 15    bright white    headings and strong text
+ */
+
+:root {
+  --bg: #0c1015;
+  --surface: #151a20;
+  --fg: #eaeff5;
+  --muted: #979fab;
+  --accent: #297cef;
+  --accent-text: #377ee3;
+  --accent-shape: #297cef;
+  --on-accent: #0b0f0d;
+  --ok: #68ca80;
+  --warn: #e6ac3d;
+  --error: #fe7f78;
+  --info: #377ee3;
+}
+
+.light {
+  --bg: #f7faff;
+  --surface: #eaf1fa;
+  --fg: #181b1f;
+  --muted: #5c646f;
+  --accent: #297cef;
+  --accent-text: #145ec1;
+  --accent-shape: #4590fd;
+  --on-accent: #0b0f0d;
+  --ok: #057836;
+  --warn: #825b01;
+  --error: #b02a2d;
+  --info: #145ec1;
+}

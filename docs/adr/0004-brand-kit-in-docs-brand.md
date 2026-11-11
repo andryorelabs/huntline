@@ -1,5 +1,8 @@
 # The brand kit lives in docs/brand
 
+Status: Accepted
+Date: 2026-11-11
+
 Name, slogan, palette, typography, mark, cover and banner are recorded in `docs/brand/`, and its decisions table is the source of truth. Voice, tokens, logos, fonts, rasters and the brandbook are generated or written from that table and never change a pick.
 
 ## Context

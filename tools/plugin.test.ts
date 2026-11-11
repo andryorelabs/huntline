@@ -38,7 +38,7 @@ describe("repo tooling", () => {
   test("selfCheck runs check and test", () => {
     const config = readJson("emet.config.json");
     expect(JSON.stringify(config["commands"])).toContain(
-      '"selfCheck":["bun run check","bun test"]',
+      '"selfCheck":["bun run check","bun run test"]',
     );
   });
 

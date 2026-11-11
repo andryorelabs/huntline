@@ -48,7 +48,9 @@ function decide(stdin: string, repoRoot: string): string | null {
   if (command === undefined) {
     return null;
   }
-  return decideRm(command, repoRoot) === "deny" ? denyOutput(DENY_REASON) : null;
+  const cwd = (payload as { cwd?: unknown }).cwd;
+  const decision = decideRm(command, repoRoot, typeof cwd === "string" ? cwd : repoRoot);
+  return decision === "deny" ? denyOutput(DENY_REASON) : null;
 }
 
 const output = decide(await Bun.stdin.text(), process.env["CLAUDE_PROJECT_DIR"] ?? process.cwd());

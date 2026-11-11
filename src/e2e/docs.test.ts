@@ -175,6 +175,120 @@ describe("README brand kit", () => {
   });
 });
 
+describe("README anatomy", () => {
+  const readme = read("README.md");
+
+  test("the top block is centered and ordered: H1, cover, slogan, badges, links", () => {
+    const positions = [
+      readme.indexOf('<div align="center">'),
+      readme.indexOf("# jobship"),
+      readme.indexOf("<picture>"),
+      readme.indexOf(`**${copyLine("brand line")}**`),
+      readme.indexOf("[![CI]"),
+      readme.indexOf("[Install](docs/guide/install.md) ·"),
+    ];
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect(positions).toEqual(positions.toSorted((a, b) => a - b));
+  });
+
+  test("badges are CI, Release, License, OpenSSF Scorecard in that order", () => {
+    const badges = [...readme.matchAll(/^\[!\[([^\]]+)\]/gm)].map((match) => match[1]);
+    expect(badges).toEqual(["CI", "Release", "License: MIT", "OpenSSF Scorecard"]);
+  });
+
+  test("sections follow the standard order", () => {
+    const headings = [...readme.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
+    expect(headings).toEqual([
+      "What it is",
+      "Install",
+      "Quickstart",
+      "How it works",
+      "Safety model",
+      "Requirements",
+      "Documentation",
+      "Contributing",
+      "License",
+    ]);
+  });
+
+  test("the last lines are the credit line then the non-affiliation notice", () => {
+    const lines = readme.trimEnd().split("\n");
+    expect(lines.slice(-3)).toEqual([
+      "Built by [AndryOre](https://andryore.dev)",
+      "",
+      copyLine("non-affiliation notice"),
+    ]);
+  });
+});
+
+describe("CHANGELOG.md", () => {
+  const changelog = read("CHANGELOG.md");
+  const repository = "https://github.com/andryorelabs/jobship";
+
+  test("states SemVer and keeps Unreleased", () => {
+    expect(changelog).toContain("Semantic Versioning");
+    expect(changelog).toContain("## [Unreleased]");
+  });
+
+  test("every released section has a link reference", () => {
+    const versions = [...changelog.matchAll(/^## \[(\d+\.\d+\.\d+)\]/gm)].map(
+      (match) => match[1] ?? "",
+    );
+    expect(versions.length).toBeGreaterThan(0);
+    for (const version of versions) {
+      expect(changelog, `link reference for ${version}`).toMatch(
+        new RegExp(`^\\[${version.replaceAll(".", "\\.")}\\]: ${repository}/`, "m"),
+      );
+    }
+    expect(changelog).toMatch(new RegExp(`^\\[Unreleased\\]: ${repository}/compare/`, "m"));
+  });
+});
+
+describe("community files", () => {
+  test("the community files exist", () => {
+    for (const file of [".github/SUPPORT.md", ".gitattributes", "llms.txt"]) {
+      expect(existsSync(path.join(REPO_ROOT, file)), file).toBe(true);
+    }
+    expect(read(".gitattributes")).toContain("* text=auto eol=lf");
+    expect(read(".gitattributes")).toContain("linguist-generated");
+  });
+
+  test("the pull request template has its sections and the title format", () => {
+    const template = read(".github/PULL_REQUEST_TEMPLATE.md");
+    const headings = [...template.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
+    expect(headings).toEqual([
+      "Description",
+      "Related issue",
+      "Type of change",
+      "Breaking change",
+      "Checklist",
+    ]);
+    expect(template).toContain("`type: <gitmoji> lowercase subject`");
+  });
+
+  test("CONTRIBUTING.md lists one default gitmoji per type", () => {
+    const contributing = read("CONTRIBUTING.md");
+    const defaults: Record<string, string> = {
+      feat: "✨",
+      fix: "🐛",
+      docs: "📝",
+      refactor: "♻️",
+      perf: "⚡️",
+      test: "✅",
+      build: "📦",
+      ci: "👷",
+      chore: "🔧",
+      deps: "⬆️",
+      release: "🔖",
+      revert: "⏪",
+    };
+    for (const [type, gitmoji] of Object.entries(defaults)) {
+      expect(contributing, type).toContain(`| \`${type}\``);
+      expect(contributing, type).toContain(`| ${gitmoji}`);
+    }
+  });
+});
+
 const ABSENCE_TESTS = new Set([
   "src/core/doctor.test.ts",
   "src/core/env.test.ts",

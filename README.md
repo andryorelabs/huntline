@@ -1,3 +1,5 @@
+<div align="center">
+
 # jobship
 
 <picture>
@@ -6,11 +8,18 @@
   <img src="docs/brand/og/cover-light.png" alt="jobship: search less, decide better. A local-first job-search system for Claude Code." width="100%">
 </picture>
 
+**Search less. Decide better.**
+
 [![CI](https://github.com/andryorelabs/jobship/actions/workflows/ci.yml/badge.svg)](https://github.com/andryorelabs/jobship/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/andryorelabs/jobship)](https://github.com/andryorelabs/jobship/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/andryorelabs/jobship/badge)](https://scorecard.dev/viewer/?uri=github.com/andryorelabs/jobship)
 
-Search less. Decide better.
+[Install](docs/guide/install.md) · [Documentation](docs/README.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+</div>
+
+## What it is
 
 Even a small chance of moving forward takes many applications, and nobody can read every Posting by hand all day, so jobship does the analysis from your Profile and the data you give it, and you make the final decision.
 
@@ -103,6 +112,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). Report vulner
 
 [MIT](LICENSE)
 
----
+Built by [AndryOre](https://andryore.dev)
 
 jobship is not affiliated with or endorsed by Anthropic.

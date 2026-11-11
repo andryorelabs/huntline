@@ -8,7 +8,24 @@ This repository uses [bun](https://bun.sh) only. Run `bun install --frozen-lockf
 
 ## Branches and commits
 
-Work happens on feature branches; never push directly to `main`. Commits and PR titles use Conventional Commits in English with a bullet-point body. Gitmoji is recommended: `feat: ✨ add user authentication`. Hooks run formatting, lint and commitlint locally.
+Work happens on feature branches; never push directly to `main`. Commits and PR titles use Conventional Commits in English with a bullet-point body. The title format is `type: <gitmoji> lowercase subject`, for example `feat: ✨ add user authentication`. Hooks run formatting, lint and commitlint locally.
+
+Default gitmoji per type:
+
+| Type       | Gitmoji |
+| ---------- | ------- |
+| `feat`     | ✨      |
+| `fix`      | 🐛      |
+| `docs`     | 📝      |
+| `refactor` | ♻️      |
+| `perf`     | ⚡️      |
+| `test`     | ✅      |
+| `build`    | 📦      |
+| `ci`       | 👷      |
+| `chore`    | 🔧      |
+| `deps`     | ⬆️      |
+| `release`  | 🔖      |
+| `revert`   | ⏪      |
 
 ## Merging
 

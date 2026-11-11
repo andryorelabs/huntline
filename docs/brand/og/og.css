@@ -1,0 +1,126 @@
+/**
+ * Shared layout of the covers and social previews, style "Slogan and
+ * terminal". Colours come only from ../tokens.css (the class "light" on body
+ * selects the light theme) and fonts only from ../brandbook/fonts.css.
+ * bun run brand:export screenshots each page at the canvas size set here.
+ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "IBM Plex Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.canvas--cover {
+  width: 1280px;
+  height: 440px;
+}
+
+.canvas--social {
+  width: 1280px;
+  height: 640px;
+}
+
+.lockup {
+  position: absolute;
+  left: 80px;
+  display: block;
+  width: auto;
+  height: 56px;
+}
+
+.slogan {
+  position: absolute;
+  left: 80px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.slogan span {
+  display: block;
+}
+
+.slogan .accent {
+  color: var(--accent-text);
+}
+
+.terminal {
+  position: absolute;
+  width: 580px;
+  padding: 26px 30px;
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--fg);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.75;
+}
+
+.terminal > div {
+  white-space: pre;
+}
+
+.terminal .accent {
+  color: var(--accent-text);
+}
+
+.terminal .muted {
+  color: var(--muted);
+}
+
+.plain-line {
+  position: absolute;
+  right: 80px;
+  left: 80px;
+  color: var(--muted);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.canvas--cover .lockup {
+  top: 70px;
+}
+
+.canvas--cover .slogan {
+  top: 190px;
+  font-size: 68px;
+}
+
+.canvas--cover .terminal {
+  top: 70px;
+  right: 70px;
+  height: 300px;
+  padding-top: 30px;
+}
+
+.canvas--social .lockup {
+  top: 80px;
+}
+
+.canvas--social .slogan {
+  top: 214px;
+  font-size: 76px;
+}
+
+.canvas--social .terminal {
+  top: 80px;
+  right: 80px;
+  height: 312px;
+  padding-top: 40px;
+  font-size: 22px;
+}
+
+.canvas--social .plain-line {
+  bottom: 64px;
+}

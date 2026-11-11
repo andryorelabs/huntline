@@ -9,6 +9,7 @@ import { resolveDataDir } from "./core/data-dir.ts";
 import { readSetting } from "./core/env.ts";
 import { runDoctor } from "./core/doctor.ts";
 import { exitCodeFor, failure, printEnvelope, success, type Envelope } from "./core/envelope.ts";
+import { writeBanner } from "./core/banner.ts";
 import { runInit } from "./core/init.ts";
 import { errorMessage } from "./core/narrow.ts";
 import { runSetup } from "./core/setup.ts";
@@ -119,6 +120,10 @@ if (import.meta.main) {
     envelope = await dispatch(process.argv.slice(2), process.env, process.cwd());
   } catch (error) {
     envelope = failure("internal", errorMessage(error), { recoverable: false });
+  }
+  const [firstArg] = process.argv.slice(2);
+  if (firstArg === undefined || firstArg === "--help" || firstArg === "help") {
+    writeBanner(process.stderr, process.env);
   }
   printEnvelope(envelope);
   process.exitCode = exitCodeFor(envelope);

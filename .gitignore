@@ -3,7 +3,9 @@ dist/
 .scratch/
 .emet/*
 !.emet/tickets/
+.claude/worktrees/
 .env
+.env.keys
 .env.*
 *.log
 .DS_Store

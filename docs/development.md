@@ -40,15 +40,13 @@ Repository settings live as code, not as clicks:
 
 `bun run repo-settings:check` reads the live values with `gh api`, diffs them against those files, prints each difference and exits non-zero when there is any. It needs an authenticated `gh`.
 
-To apply the files to the repository, a maintainer with admin rights runs:
+To change a setting:
 
-```sh
-gh api --method PATCH repos/andryorelabs/jobship --input .github/repo-settings.json
-gh api --method POST repos/andryorelabs/jobship/rulesets --input .github/rulesets/main.json
-gh api --method POST repos/andryorelabs/jobship/rulesets --input .github/rulesets/tags.json
-```
+1. Edit the JSON files in a pull request.
+2. Run `bun tools/repo-settings/apply.ts`. It needs an admin `gh` login and prints each call it makes. It applies every key and both rulesets through the right endpoints.
+3. Run `bun run repo-settings:check`. It must exit 0.
 
-To change a ruleset that already exists, send a `PUT` to `repos/andryorelabs/jobship/rulesets/<id>` with the same file. Find the id with `gh api repos/andryorelabs/jobship/rulesets`. Then run `bun run repo-settings:check` and expect no differences. Edit the JSON in a pull request first; never change a setting only in the web UI.
+Live settings are never edited in the web UI. Drift is fixed by re-applying the files.
 
 ## Releasing
 

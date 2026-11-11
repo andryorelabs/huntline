@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    // The launcher is run by path as the package bin, nothing imports it.
+    "bin/*",
+    // The CLI entry point is named by the launcher and the binary build, not imported.
+    "src/cli.ts",
+    // Test files are run by `bun test`, nothing imports them.
+    "src/**/*.test.ts",
+    // The end-to-end fetch stub is loaded with `bun --preload`, never imported.
+    "src/e2e/stub-fetch.preload.ts",
+    // Build and dev scripts, their tests and the Claude hook entry point are run by path.
+    "tools/**/*.ts",
+  ],
+  // The source the CLI ships and the scripts that build and check it.
+  "project": ["src/**/*.ts", "tools/**/*.ts"],
+  "ignoreDependencies": [
+    // Run by path (node_modules/typescript7/bin/tsc), never imported.
+    "typescript7",
+  ],
+}

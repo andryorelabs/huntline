@@ -18,7 +18,7 @@
     "url": "https://github.com/andryorelabs/jobship/issues"
   },
   "license": "MIT",
-  "author": "andryorelabs",
+  "author": "Andry Orellana <hello@andryore.dev>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/andryorelabs/jobship.git"
@@ -29,33 +29,36 @@
   "type": "module",
   "scripts": {
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run knip && bun run lint:docs",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "node_modules/typescript7/bin/tsc --noEmit -p tsconfig.json",
     "lint": "oxlint --type-aware --deny-warnings",
-    "format": "oxfmt",
+    "format:write": "oxfmt",
     "format:check": "oxfmt --check",
-    "fix": "bun run format && bun run lint --fix",
+    "fix": "bun run format:write && bun run lint --fix",
     "knip": "knip",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
     "build": "bun tools/build-binaries.ts",
-    "ci:local": "bun install --frozen-lockfile && bun run check && bun run test:coverage && bun x --no-install commitlint --from origin/main --to HEAD",
+    "ci:local": "bun install --frozen-lockfile && bun run check && bun run test:coverage && bun run lint:commits",
     "prepare": "husky",
     "lint:docs": "bun tools/lint-docs.ts",
+    "lint:commits": "bun x --no-install commitlint --from origin/main --to HEAD",
+    "repo-settings:check": "bun tools/repo-settings/check.ts",
     "brand:export": "bun tools/brand/brand-export.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
+    "@oxlint/plugins": "1.92.0",
     "@types/bun": "^1.4.4",
     "husky": "^9.1.7",
     "knip": "^6.44.1",
     "lint-staged": "^17.6.0",
     "oxfmt": "0.75.0",
-    "oxlint": "^1.92.0",
+    "oxlint": "1.92.0",
     "oxlint-tsgolint": "7.0.2005",
     "playwright": "^1.65.0",
     "sharp": "^0.35.5",
-    "typescript": "^7.0.2"
+    "typescript7": "npm:typescript@7.0.2"
   },
   "engines": {
     "bun": "1.4.4"

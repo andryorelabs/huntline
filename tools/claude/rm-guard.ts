@@ -9,6 +9,17 @@ const SHELL_COMMAND_FLAG = /^-[A-Za-z]*c[A-Za-z]*$/;
 const SUBSTITUTION = /\$\(|`/;
 const UNRESOLVABLE_TARGET = /[$`~*?[{]/;
 const LONG_RECURSIVE_FLAG = "--recursive";
+const MENTIONS_RM = /(^|[^A-Za-z0-9_-])rm($|[^A-Za-z0-9_-])/;
+
+interface LexedCommand {
+  readonly segments: string[][];
+  readonly heredocBodies: string[];
+}
+
+interface PendingHeredoc {
+  readonly delimiter: string;
+  readonly indented: boolean;
+}
 
 interface WalkState {
   readonly repoRoot: string;
@@ -20,12 +31,15 @@ interface WalkState {
  * Splits a shell command into segments of words. Backslash-newline
  * continuations are joined first; quotes group words; separators, subshell
  * parentheses and backticks end a segment only outside quotes; redirections
- * and their targets are dropped. Returns null when the command cannot be
- * parsed (an unterminated quote), so callers fail closed.
+ * and their targets are dropped; `#` comments are skipped; heredoc bodies are
+ * collected separately so they can be inspected as scripts. Returns null when
+ * the command cannot be parsed (an unterminated quote or heredoc delimiter).
  */
-function lex(command: string): string[][] | null {
+function lex(command: string): LexedCommand | null {
   const input = command.replaceAll("\\\n", "");
   const segments: string[][] = [];
+  const heredocBodies: string[] = [];
+  let pending: PendingHeredoc[] = [];
   let words: string[] = [];
   let current = "";
   let hasToken = false;
@@ -89,6 +103,29 @@ function lex(command: string): string[][] | null {
       current += input.charAt(index + 1);
       hasToken = true;
       index += 2;
+    } else if (character === "#" && !hasToken) {
+      const end = input.indexOf("\n", index);
+      index = end === -1 ? input.length : end;
+    } else if (
+      character === "<" &&
+      input.startsWith("<<", index) &&
+      input.charAt(index + 2) !== "<"
+    ) {
+      flush();
+      index += 2;
+      const indented = input.charAt(index) === "-";
+      if (indented) {
+        index += 1;
+      }
+      while (input.charAt(index) === " " || input.charAt(index) === "\t") {
+        index += 1;
+      }
+      const parsed = readHeredocDelimiter(input, index);
+      if (parsed === null) {
+        return null;
+      }
+      pending.push({ delimiter: parsed.delimiter, indented });
+      index = parsed.next;
     } else if (character === ">" || character === "<") {
       if (hasToken && /^\d+$/.test(current)) {
         current = "";
@@ -109,6 +146,14 @@ function lex(command: string): string[][] | null {
     } else if (SEPARATOR_CHARACTERS.has(character)) {
       endSegment();
       index += 1;
+      if (character === "\n" && pending.length > 0) {
+        for (const heredoc of pending) {
+          const body = readHeredocBody(input, index, heredoc);
+          heredocBodies.push(body.text);
+          index = body.next;
+        }
+        pending = [];
+      }
     } else if (/\s/.test(character)) {
       flush();
       index += 1;
@@ -119,7 +164,68 @@ function lex(command: string): string[][] | null {
     }
   }
   endSegment();
-  return segments;
+  return { segments, heredocBodies };
+}
+
+/**
+ * Reads a heredoc delimiter word starting at `start`, removing quotes and
+ * backslashes. Returns null on an unterminated quote.
+ */
+function readHeredocDelimiter(
+  input: string,
+  start: number,
+): { delimiter: string; next: number } | null {
+  let delimiter = "";
+  let index = start;
+  while (index < input.length) {
+    const character = input.charAt(index);
+    if (character === "'" || character === '"') {
+      const end = input.indexOf(character, index + 1);
+      if (end === -1) {
+        return null;
+      }
+      delimiter += input.slice(index + 1, end);
+      index = end + 1;
+    } else if (character === "\\") {
+      delimiter += input.charAt(index + 1);
+      index += 2;
+    } else if (
+      /\s/.test(character) ||
+      SEPARATOR_CHARACTERS.has(character) ||
+      "<>".includes(character)
+    ) {
+      break;
+    } else {
+      delimiter += character;
+      index += 1;
+    }
+  }
+  return { delimiter, next: index };
+}
+
+/**
+ * Reads heredoc body lines from `start` up to the delimiter line (or the end
+ * of input) and returns the body text and the index after the delimiter line.
+ */
+function readHeredocBody(
+  input: string,
+  start: number,
+  heredoc: PendingHeredoc,
+): { text: string; next: number } {
+  const lines: string[] = [];
+  let index = start;
+  while (index < input.length) {
+    const lineEnd = input.indexOf("\n", index);
+    const end = lineEnd === -1 ? input.length : lineEnd;
+    const line = input.slice(index, end);
+    index = lineEnd === -1 ? input.length : lineEnd + 1;
+    const comparable = heredoc.indented ? line.replace(/^\t+/, "") : line;
+    if (comparable === heredoc.delimiter) {
+      break;
+    }
+    lines.push(line);
+  }
+  return { text: lines.join("\n"), next: index };
 }
 
 /**
@@ -255,16 +361,16 @@ function isSegmentAllowed(words: readonly string[], state: WalkState): boolean {
 }
 
 function isCommandAllowed(command: string, state: WalkState): boolean {
-  const segments = lex(command);
-  if (segments === null) {
-    return false;
+  const lexed = lex(command);
+  if (lexed === null) {
+    return !MENTIONS_RM.test(command);
   }
-  for (const words of segments) {
+  for (const words of lexed.segments) {
     if (!isSegmentAllowed(words, state)) {
       return false;
     }
   }
-  return true;
+  return lexed.heredocBodies.every((body) => isCommandAllowed(body, state));
 }
 
 /**

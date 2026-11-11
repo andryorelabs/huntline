@@ -68,6 +68,12 @@ describe("decideRm", () => {
     "rm -rf 'unterminated",
     'rm -rf "unterminated',
     "rm -rf build; rm -rf /etc > /dev/null",
+    "bash <<'EOF'\nrm -rf /etc\nEOF",
+    "bash <<EOF\nrm -rf /etc\nEOF\n",
+    "sh <<-EOF\n\trm -rf /etc\n\tEOF",
+    "cat <<'EOF' | bash\nrm -rf /etc\nEOF",
+    "ls # fine\nrm -rf /etc",
+    "echo it's; rm -rf /etc",
   ])("denies %s", (command) => {
     expect(decideRm(command, repoRoot)).toBe("deny");
   });
@@ -94,6 +100,11 @@ describe("decideRm", () => {
     "eval 'echo hi'",
     "rm --rec build",
     "rm -rf build \\\n  dist",
+    "git commit -m \"$(cat <<'EOF'\nfix: don't block commits\n\n- it's fine\nEOF\n)\"",
+    "cat > notes.md <<'EOF'\nit's a note\nEOF",
+    "ls # don't mind this",
+    "echo a#b",
+    "cat <<EOF\nrm is a command\nEOF",
   ])("allows %s", (command) => {
     expect(decideRm(command, repoRoot)).toBe("allow");
   });

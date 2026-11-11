@@ -87,6 +87,19 @@ describe("readLiveSettings", () => {
     expect(() => readLiveSettings(gh, "andryorelabs/jobship")).toThrow("vulnerability-alerts");
   });
 
+  test("throws when private-vulnerability-reporting answers 403", () => {
+    const gh = fakeGh({
+      [`${BASE}/private-vulnerability-reporting`]: {
+        ok: false,
+        stdout: "",
+        stderr: "gh: Resource not accessible (HTTP 403)",
+      },
+    });
+    expect(() => readLiveSettings(gh, "andryorelabs/jobship")).toThrow(
+      "private-vulnerability-reporting",
+    );
+  });
+
   test("throws when the repository payload is not JSON", () => {
     expect(() =>
       readLiveSettings(fakeGh({ [BASE]: ok("not json") }), "andryorelabs/jobship"),

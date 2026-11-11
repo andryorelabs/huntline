@@ -11,6 +11,7 @@
     "cli",
     "cv",
     "job-search",
+    "jobship",
     "local-first"
   ],
   "allow_squash_merge": true,

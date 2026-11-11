@@ -62,7 +62,7 @@ describe("repo tooling", () => {
   test("CI runs check and test, and release verifies the tag against plugin.json", () => {
     const ci = readFileSync(path.join(root, ".github/workflows/ci.yml"), "utf8");
     expect(ci).toContain("run: bun run check");
-    expect(ci).toContain("run: bun test");
+    expect(ci).toContain("run: bun run test");
     const release = readFileSync(path.join(root, ".github/workflows/release.yml"), "utf8");
     expect(release).toContain("SHA256SUMS");
     expect(release).toContain(".claude-plugin/plugin.json");

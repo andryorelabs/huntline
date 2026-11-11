@@ -7,7 +7,7 @@ jobship follows the cross-repo standard v1 for repository settings, workflows, s
 
 ## Context
 
-The maintainer keeps several repositories that share one standard, written in the [aokit](https://github.com/andryorelabs/aokit) standards pages, with brand rules in [andryore-web](https://github.com/andryorelabs/andryore-web). jobship had drifted: no repository settings as code, inconsistent script names, no ADR header or section rules, and no docs index test. Bringing it in line makes the repositories predictable for the maintainer and for agents.
+The maintainer keeps several repositories that share one standard, written in the [aokit](https://github.com/andryorelabs/aokit/tree/main/docs/standards) standards pages, with brand rules in [andryore-web](https://github.com/andryorelabs/andryore-web/blob/main/docs/brand/README.md). jobship had drifted: no repository settings as code, inconsistent script names, no ADR header or section rules, and no docs index test. Bringing it in line makes the repositories predictable for the maintainer and for agents.
 
 ## Decision
 

@@ -305,6 +305,7 @@ const ABSENCE_TESTS = new Set([
   "src/core/doctor.test.ts",
   "src/core/env.test.ts",
   "src/e2e/docs.test.ts",
+  "tools/docs/old-names.test.ts",
   "tools/shim.test.ts",
 ]);
 

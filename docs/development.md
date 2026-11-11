@@ -2,7 +2,7 @@
 
 How to work on jobship. Terms follow [GLOSSARY.md](../GLOSSARY.md). Contributor rules are in [CONTRIBUTING.md](../CONTRIBUTING.md) and agent rules in [AGENTS.md](../AGENTS.md).
 
-jobship follows the cross-repo standard v1 recorded in [ADR-0007](adr/0007-adopt-cross-repo-standard-v1.md). The standards pages live in the [aokit](https://github.com/andryorelabs/aokit) repository, and the brand rules in [andryore-web](https://github.com/andryorelabs/andryore-web).
+jobship follows the cross-repo standard v1 recorded in [ADR-0007](adr/0007-adopt-cross-repo-standard-v1.md). The standards pages live in the [aokit](https://github.com/andryorelabs/aokit/tree/main/docs/standards) repository, and the brand rules in [andryore-web](https://github.com/andryorelabs/andryore-web/blob/main/docs/brand/README.md).
 
 ## Setup
 

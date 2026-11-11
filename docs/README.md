@@ -20,6 +20,11 @@
 - [Product](../PRODUCT.md)
 - [Governance](../GOVERNANCE.md)
 
+## Brand
+
+- [Brand kit](brand/README.md)
+- [Design](design/README.md)
+
 ## Decisions
 
 - [Architecture decision records](adr/README.md)

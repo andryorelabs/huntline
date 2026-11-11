@@ -244,6 +244,18 @@ describe("CHANGELOG.md", () => {
   });
 });
 
+describe("GLOSSARY.md and ROADMAP.md", () => {
+  test("GLOSSARY.md has Language, Relationships and Flagged ambiguities in order", () => {
+    const headings = [...read("GLOSSARY.md").matchAll(/^## (.+)$/gm)].map((match) => match[1]);
+    expect(headings).toEqual(["Language", "Relationships", "Flagged ambiguities"]);
+  });
+
+  test("ROADMAP.md has Now, Next and Later in order", () => {
+    const headings = [...read("ROADMAP.md").matchAll(/^## (.+)$/gm)].map((match) => match[1]);
+    expect(headings).toEqual(["Now", "Next", "Later"]);
+  });
+});
+
 describe("community files", () => {
   test("the community files exist", () => {
     for (const file of [".github/SUPPORT.md", ".gitattributes", "llms.txt"]) {

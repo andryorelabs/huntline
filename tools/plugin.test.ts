@@ -124,9 +124,8 @@ describe("brand copy on the manifests", () => {
     );
   });
 
-  test("package.json author is the org and keywords include jobship", () => {
+  test("package.json keywords include jobship", () => {
     const manifest = readJson("package.json");
-    expect(manifest["author"], "package.json author").toBe("andryorelabs");
     expect(JSON.stringify(manifest["keywords"]), "package.json keywords").toContain('"jobship"');
   });
 

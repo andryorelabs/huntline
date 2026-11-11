@@ -227,7 +227,7 @@ describe("fs", () => {
   });
 
   test("withLock reclaims a lock whose holder process is dead", async () => {
-    const lockPath = path.join(workDir, ".jobship.lock");
+    const lockPath = path.join(workDir, ".huntline.lock");
     mkdirSync(lockPath);
     writeFileSync(
       path.join(lockPath, "holder.json"),
@@ -237,7 +237,7 @@ describe("fs", () => {
   });
 
   test("concurrent withLock callers reclaiming one dead lock never overlap", async () => {
-    const lockPath = path.join(workDir, ".jobship.lock");
+    const lockPath = path.join(workDir, ".huntline.lock");
     mkdirSync(lockPath);
     writeFileSync(
       path.join(lockPath, "holder.json"),

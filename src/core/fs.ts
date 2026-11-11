@@ -12,7 +12,8 @@ import {
 import path from "node:path";
 import { errnoCode, isObject } from "./narrow.ts";
 
-const LOCK_DIRECTORY_NAME = ".jobship.lock";
+/** Kept as `.huntline.lock` on purpose: old and new binaries must share one lock on the same data dir (ADR-0005). */
+const LOCK_DIRECTORY_NAME = ".huntline.lock";
 const HOLDERLESS_GRACE_MS = 10_000;
 const LOCK_TIMEOUT_MS = 15_000;
 const LOCK_POLL_MS = 20;

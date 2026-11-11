@@ -23,6 +23,13 @@ A local-first job-search system for Claude Code: a plugin plus a CLI. It sweeps 
 - Fear of a tool that sends something unread.
 - Scattered state with no trail of what happened.
 
+## Core message
+
+- **The problem:** a search needs many applications for even a small chance of moving forward, and reading every Posting by hand all day is not possible.
+- **The job the tool does:** it sweeps Sources, scores fit against the Profile, builds a Tailored CV from Fact bank facts and assists the form, so the analysis is done for the human.
+- **The human's part:** the final decision, and pressing Submit. The time saved goes to deciding, not sifting.
+- **Guard rails:** copy may say the tool does the sifting, scoring and tailoring. It never says the tool applies, submits or sends, and it promises no outcome such as interviews or offers, and gives no number the CLI does not back.
+
 ## Promise (internal)
 
 The promise stays internal and never appears in public copy: **I can hand off the repetitive parts and still stand behind every word I send.**
@@ -39,7 +46,7 @@ huntline runs on Claude Code and copy may say so descriptively, for example "plu
 
 ## Visual world
 
-- A cool, restrained palette with a single accent, chosen in the decisions table of `docs/brand/README.md`.
+- A cool palette with a single cobalt accent, chosen in the decisions table of `docs/brand/README.md`. Solid, soft-cornered shapes in that one accent, like the sibling marks.
 - Terminal first: the palette must work in 16 ANSI colours, and then in the README.
 - The mark stays legible at 16 px and can be read as a line or trail.
 - Light and dark both work. Nothing depends on remote fonts or images.

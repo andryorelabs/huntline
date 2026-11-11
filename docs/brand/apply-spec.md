@@ -31,14 +31,14 @@ Tests in `src/e2e/docs.test.ts` and `tools/plugin.test.ts` read copy.md and fail
 
 The coordinator fills the date after each step is done.
 
-| Step              | What                                                                                   | Status  | Date |
-| ----------------- | -------------------------------------------------------------------------------------- | ------- | ---- |
-| GitHub About      | Set the About description to the copy.md `GitHub About` line                           | pending |      |
-| Topics            | Set topics from the `package.json` keywords                                            | pending |      |
-| Homepage          | Set the homepage URL in repository Settings                                            | pending |      |
-| Social preview    | Upload `docs/brand/og/social-preview.png` (1280x640) in repository Settings            | pending |      |
-| Repository rename | Rename `andryorelabs/huntline` to `andryorelabs/jobship`, then flip the old URLs below | pending |      |
-| CLI help line     | Use the copy.md `CLI help line` in the `src/` usage text (follow-up, changes `src/`)   | pending |      |
+| Step              | What                                                                                   | Status  | Date                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------- |
+| GitHub About      | Set the About description to the copy.md `GitHub About` line                           | done    | 2026-11-11                                                                            |
+| Topics            | Set topics from the `package.json` keywords                                            | done    | 2026-11-11                                                                            |
+| Homepage          | Set the homepage URL in repository Settings                                            | skipped | 2026-11-11, no site exists yet                                                        |
+| Social preview    | Upload `docs/brand/og/social-preview.png` (1280x640) in repository Settings            | done    | 2026-11-11                                                                            |
+| Repository rename | Rename `andryorelabs/huntline` to `andryorelabs/jobship`, then flip the old URLs below | pending |                                                                                       |
+| CLI help line     | Use the copy.md `CLI help line` in the `src/` usage text (follow-up, changes `src/`)   | skipped | 2026-11-11, the usage text is part of the stdout JSON envelope, which must not change |
 
 Files that still contain `andryorelabs/huntline` (from `git grep -n andryorelabs/huntline`):
 

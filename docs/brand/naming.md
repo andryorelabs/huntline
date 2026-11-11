@@ -22,8 +22,10 @@ One English word, friendly, memorable, with a job cue, free on npm and GitHub, l
 | GitHub        | repository and account free                                      |
 | Domains       | `.dev` free, `.com` taken                                        |
 | Collisions    | only 0-star JobShip repositories; Jobshift is the near neighbour |
-| Trademark     | web search only; USPTO and TMview not queried; not legal advice  |
+| Trademark     | web search 2026-11-11, no JOBSHIP record found; not legal advice |
 
 ## Open
 
 A trademark search in software classes before any public launch.
+
+Web search on 2026-11-11 found no JOBSHIP record. Near neighbours: JOBSLIP (US 99075216), JSHIP (US 87888401), MYJOBSHIFT, and JOB JEMS (AU 2566989, classes 9, 35 and 42, registered 2026-03-03). USPTO, EUIPO, TMview and WIPO were not queried directly; search them for the exact term in classes 9, 35 and 42.

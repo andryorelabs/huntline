@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { BANNER_ANSI, BANNER_TEXT, writeBanner } from "./banner.ts";
+import { BANNER_ANSI, BANNER_TEXT, writeBanner, writeBannerForArgs } from "./banner.ts";
 
 const terminalDir = path.join(import.meta.dir, "../../docs/brand/terminal");
 const cliPath = path.join(import.meta.dir, "../cli.ts");
@@ -81,6 +81,29 @@ describe("writeBanner", () => {
     };
     expect(() => writeBanner(stream, {})).not.toThrow();
   });
+});
+
+const tty = () => {
+  const chunks: string[] = [];
+  return { isTTY: true, write: (chunk: string) => chunks.push(chunk), chunks };
+};
+
+describe("writeBannerForArgs", () => {
+  for (const args of [[], ["--help"], ["help"], ["help", "extra"]]) {
+    test(`${JSON.stringify(args)} writes the banner on a TTY`, () => {
+      const stream = tty();
+      writeBannerForArgs(args, stream, {});
+      expect(stream.chunks).toEqual([BANNER_ANSI]);
+    });
+  }
+
+  for (const args of [["doctor"], ["--version"], ["guard"], ["sweep", "--help"], ["--data", "x"]]) {
+    test(`${JSON.stringify(args)} never writes the banner`, () => {
+      const stream = tty();
+      writeBannerForArgs(args, stream, {});
+      expect(stream.chunks).toEqual([]);
+    });
+  }
 });
 
 describe("help CLI output", () => {

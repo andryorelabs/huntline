@@ -23,3 +23,18 @@ export function writeBanner(
     return;
   }
 }
+
+/**
+ * Writes the banner for no-args, `--help` and `help` invocations only, judged
+ * by the first argument after the program name.
+ */
+export function writeBannerForArgs(
+  args: readonly string[],
+  stream: { isTTY?: boolean; write(chunk: string): unknown },
+  env: Record<string, string | undefined>,
+): void {
+  const [firstArg] = args;
+  if (firstArg === undefined || firstArg === "--help" || firstArg === "help") {
+    writeBanner(stream, env);
+  }
+}

@@ -4,11 +4,12 @@ import path from "node:path";
 const CHANGELOG_PATH = path.join(import.meta.dir, "..", "..", "CHANGELOG.md");
 const SECTION_HEADING = /^## \[([^\]]+)\]/;
 const LINK_REFERENCE = /^\[[^\]]+\]: /;
+const HEADING = /^\s*#{1,6}(\s|$)/;
 
 /**
  * Returns the body of the `CHANGELOG.md` section for a release tag, without its heading.
- * The tag may carry a leading `v`. Throws when the section is missing or has no content,
- * so a release is never published with empty notes.
+ * The tag may carry a leading `v`. Throws when the section is missing or has no content
+ * beyond headings and blank lines, so a release is never published with empty notes.
  */
 export function extractChangelogSection(changelog: string, tag: string): string {
   const version = tag.replace(/^v/, "");
@@ -21,8 +22,9 @@ export function extractChangelogSection(changelog: string, tag: string): string 
   }
   const rest = lines.slice(start + 1);
   const end = rest.findIndex((line) => SECTION_HEADING.test(line) || LINK_REFERENCE.test(line));
-  const body = (end === -1 ? rest : rest.slice(0, end)).join("\n").trim();
-  if (body === "") {
+  const sectionLines = end === -1 ? rest : rest.slice(0, end);
+  const body = sectionLines.join("\n").trim();
+  if (!sectionLines.some((line) => line.trim() !== "" && !HEADING.test(line))) {
     throw new Error(`CHANGELOG.md section for ${tag} is empty`);
   }
   return body;

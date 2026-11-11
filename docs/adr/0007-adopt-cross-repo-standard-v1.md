@@ -17,8 +17,8 @@ The maintainer keeps several repositories that share one standard, written in th
 - Rules that do not apply to jobship, with reasons:
   - A product site: the repository README and `docs/` are the only public surface.
   - npm publishing: jobship ships as a Claude Code plugin and compiled release binaries, not as an npm package.
-  - `FUNDING.yml`: the project takes no sponsorship.
-  - `.node-version`: the runtime is bun, pinned by the lockfile and CI.
+  - `FUNDING.yml`: the standard keeps `FUNDING.yml` only in andryore-web.
+  - `.node-version`: nothing in this repo runs under Node, and the bun version is pinned by `packageManager` and `engines` in `package.json` (not by the lockfile).
   - A separate lint-docs workflow: `lint:docs` already runs inside `check` and the existing CI job.
   - `.git-blame-ignore-revs`: there is no mass-reformat commit to hide.
   - The `$schema` URL in `emet.config.json`: it waits for the emet release that publishes the schema.

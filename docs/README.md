@@ -1,10 +1,10 @@
-# huntline documentation
+# jobship documentation
 
 ## Guides
 
 - [Install](guide/install.md)
 - [Data dir layout](guide/data-dir.md)
-- [Adopting huntline with your own data](guide/adopting.md)
+- [Adopting jobship with your own data](guide/adopting.md)
 - [Tailored CVs](guide/cv.md)
 - [Safety model](guide/safety.md)
 - [Dogfooding checklist](guide/dogfooding.md)

@@ -39,4 +39,4 @@ unless you ask to stay anonymous when you report.
 
 ## What counts as a vulnerability here
 
-huntline's no-submit rule and the Guard are security boundaries. Report privately anything that lets a Posting, email or web page make huntline submit a form, send a message, bypass the Guard, or leak data from your data dir.
+jobship's no-submit rule and the Guard are security boundaries. Report privately anything that lets a Posting, email or web page make jobship submit a form, send a message, bypass the Guard, or leak data from your data dir.

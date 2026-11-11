@@ -30,7 +30,7 @@ describe("plugin manifest", () => {
     for (const name of ["init", "doctor"]) {
       const body = readFileSync(path.join(root, "commands", `${name}.md`), "utf8");
       expect(body.startsWith("---\ndescription: ")).toBe(true);
-      expect(body).toContain(`huntline ${name}`);
+      expect(body).toContain(`jobship ${name}`);
     }
   });
 });

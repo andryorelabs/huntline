@@ -11,7 +11,7 @@ function read(relative: string): string {
 
 function documentedCommands(markdown: string): Set<string> {
   const names = new Set<string>();
-  for (const match of markdown.matchAll(/^### `huntline ([a-z ]+)`$/gm)) {
+  for (const match of markdown.matchAll(/^### `jobship ([a-z ]+)`$/gm)) {
     if (match[1] !== undefined) names.add(match[1]);
   }
   return names;
@@ -84,7 +84,7 @@ describe("onboarding docs", () => {
     ]) {
       expect(install).toContain(`\`${name}\``);
     }
-    expect(install).toContain("huntline company add");
+    expect(install).toContain("jobship company add");
   });
 
   test("documents browser MCP setup, status --set and --help", () => {
@@ -122,9 +122,9 @@ describe("README.md", () => {
     expect(readme.indexOf("## Install")).toBeGreaterThan(-1);
     expect(readme.indexOf("## Install")).toBeLessThan(readme.indexOf("## Quickstart"));
     expect(readme).toContain("claude plugin marketplace add andryorelabs/huntline");
-    expect(readme).toContain("claude plugin install huntline@huntline-marketplace");
-    expect(readme).toContain("/huntline:init");
-    expect(readme).toContain("/huntline:doctor");
+    expect(readme).toContain("claude plugin install jobship@jobship-marketplace");
+    expect(readme).toContain("/jobship:init");
+    expect(readme).toContain("/jobship:doctor");
     expect(readme).toContain("Windows is unsupported");
   });
 

@@ -1,12 +1,12 @@
 # Troubleshooting
 
-## `huntline doctor` exits 1
+## `jobship doctor` exits 1
 
 It lists the remaining `TODO(huntline):` markers in your data dir. Fill each one, then run it again; it exits 0 with `{"ok":true,...}` when the data dir is valid.
 
 ## `cv build` cannot find Typst or `pdftotext`
 
-`huntline setup` downloads a checksum-verified Typst. `pdftotext` comes from poppler: see [poppler](guide/install.md#poppler) for apt, brew, dnf and pacman.
+`jobship setup` downloads a checksum-verified Typst. `pdftotext` comes from poppler: see [poppler](guide/install.md#poppler) for apt, brew, dnf and pacman.
 
 ## The `apply` or `browser-source` skill cannot reach the browser
 
@@ -18,7 +18,7 @@ They need the Gmail MCP server ([setup](guide/install.md#gmail-mcp)). Without it
 
 ## `sweep` reports an ATS Source as misconfigured
 
-ATS Sources need saved companies. Run `huntline company add <careers-url>`, for example `huntline company add https://jobs.ashbyhq.com/acme`. Valid Source names are listed in [Sources](guide/install.md#sources).
+ATS Sources need saved companies. Run `jobship company add <careers-url>`, for example `jobship company add https://jobs.ashbyhq.com/acme`. Valid Source names are listed in [Sources](guide/install.md#sources).
 
 ## The launcher fails or the Guard denies everything
 
@@ -26,4 +26,4 @@ The launcher needs Linux or macOS, `curl`, and `sha256sum` or `shasum`. When it 
 
 ## The Guard denied an action
 
-Submit-like clicks on browser tools and Gmail `send_message`, `reply` and `forward` are denied on purpose. Do those yourself. Malformed hook input is also denied; run `huntline guard --self-test` to check the Guard still agrees with `hooks/hooks.json`. See the [safety model](guide/safety.md).
+Submit-like clicks on browser tools and Gmail `send_message`, `reply` and `forward` are denied on purpose. Do those yourself. Malformed hook input is also denied; run `jobship guard --self-test` to check the Guard still agrees with `hooks/hooks.json`. See the [safety model](guide/safety.md).

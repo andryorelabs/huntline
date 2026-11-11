@@ -12,8 +12,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: huntline version
-      description: Output of `huntline --version`
+      label: jobship version
+      description: Output of `jobship --version`
     validations:
       required: true
   - type: input

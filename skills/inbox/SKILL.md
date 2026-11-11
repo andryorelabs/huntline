@@ -5,7 +5,7 @@ description: Sweep Gmail for replies to applications, classify them, and record 
 
 # Inbox
 
-Classify application-related emails through the Gmail MCP, then record them with `huntline inbox propose` and `huntline inbox apply`.
+Classify application-related emails through the Gmail MCP, then record them with `jobship inbox propose` and `jobship inbox apply`.
 
 ## Rules
 
@@ -19,8 +19,8 @@ Classify application-related emails through the Gmail MCP, then record them with
 1. Search Gmail for recent mail about applications (for example unread mail from the last 14 days, excluding newsletters). Read each candidate thread.
 2. Classify each message as exactly one of `rejection`, `interview`, `info-request`, `offer`, `other`. Judge only from the text; when unsure use `other`.
 3. Write a JSON array to a scratch file, one object per message: `{"messageId", "threadId", "from", "subject", "classification"}`. Copy `from` verbatim including the display name. Do not include email bodies.
-4. Run `huntline inbox propose --emails <file>`. It matches each email to an Application by thread, then by company in the sender domain, sender name or subject. ATS vendor domains (Greenhouse, Lever, Ashby, Workable and similar) never match a company by themselves. Message ids already recorded are skipped.
+4. Run `jobship inbox propose --emails <file>`. It matches each email to an Application by thread, then by company in the sender domain, sender name or subject. ATS vendor domains (Greenhouse, Lever, Ashby, Workable and similar) never match a company by themselves. Message ids already recorded are skipped.
 5. Show the human the batch: each item with its match, band and `confirmed` flag. Only `confirmed` items are applied; unconfirmed and ambiguous items are listed for the human to resolve (for example by naming the Application) and are never guessed.
-6. After the human approves, run `huntline inbox apply <batchPath>`. If it fails with `batch-changed`, the batch file was edited after proposal: do not retry, run `inbox propose` again and show the new batch.
+6. After the human approves, run `jobship inbox apply <batchPath>`. If it fails with `batch-changed`, the batch file was edited after proposal: do not retry, run `inbox propose` again and show the new batch.
 7. Re-running `inbox apply` on the same batch is safe; it applies nothing twice.
 8. Report what was applied and which emails need the human, such as interview invitations to answer or info requests. Draft nothing and send nothing.

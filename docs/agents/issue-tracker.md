@@ -1,7 +1,7 @@
 <!-- emet:begin -->
 # Issue tracker: GitHub Issues
 
-`/emet` talks to GitHub Issues in huntline via the `gh` CLI — never the
+`/emet` talks to GitHub Issues in jobship via the `gh` CLI — never the
 GitHub MCP server. Every operation below is a literal `gh` invocation; there is
 no adapter layer to keep in sync with `gh`'s own flags.
 

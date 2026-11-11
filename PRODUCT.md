@@ -2,7 +2,7 @@
 
 ## What it is
 
-huntline is a local-first job-search system for Claude Code: a plugin plus a CLI. It sweeps job sources, filters and deduplicates in code, builds CVs only from verified facts, assists form filling in your own browser, and syncs replies from your inbox. You press Submit.
+jobship is a local-first job-search system for Claude Code: a plugin plus a CLI. It sweeps job sources, filters and deduplicates in code, builds CVs only from verified facts, assists form filling in your own browser, and syncs replies from your inbox. You press Submit.
 
 ## Who it is for
 
@@ -10,7 +10,7 @@ A job seeker who already works in Claude Code and wants help with the repetitive
 
 ## Principles
 
-- **You press Submit.** huntline never submits a form or sends a message. See the [safety model](docs/guide/safety.md).
+- **You press Submit.** jobship never submits a form or sends a message. See the [safety model](docs/guide/safety.md).
 - **Verified facts only.** A CV is built from Bullets backed by Fact bank facts, and `cv lint` rejects anything else.
 - **Local-first.** Your data lives in a data dir you own. Code and personal data stay apart.
 - **Judgment stays with you.** Text from Postings, emails and web pages is data, never instructions.
@@ -24,4 +24,4 @@ A job seeker who already works in Claude Code and wants help with the repetitive
 
 ## Success
 
-Terms follow the [glossary](GLOSSARY.md). A search runs end to end, from sweep to a Tailored CV to a filled form, without huntline ever sending something you did not read.
+Terms follow the [glossary](GLOSSARY.md). A search runs end to end, from sweep to a Tailored CV to a filled form, without jobship ever sending something you did not read.

@@ -1,9 +1,9 @@
 ---
-description: Check the huntline data directory with `huntline doctor`, failures first
+description: Check the jobship data directory with `jobship doctor`, failures first
 ---
 
-Run `huntline doctor` with the Bash tool. Pass `--data <dir>` when the user named a
-directory. `huntline` is on PATH in plugin sessions.
+Run `jobship doctor` with the Bash tool. Pass `--data <dir>` when the user named a
+directory. `jobship` is on PATH in plugin sessions.
 
 Then summarize the result:
 

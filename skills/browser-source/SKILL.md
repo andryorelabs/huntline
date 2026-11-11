@@ -1,6 +1,6 @@
 ---
 name: browser-source
-description: Collect Postings from browser-only Sources (Wellfound GraphQL, LinkedIn, X) in the human's Chrome and pass them to huntline ingest. Use when a sweep needs Sources that have no public API.
+description: Collect Postings from browser-only Sources (Wellfound GraphQL, LinkedIn, X) in the human's Chrome and pass them to jobship ingest. Use when a sweep needs Sources that have no public API.
 ---
 
 # Browser Source
@@ -25,7 +25,7 @@ Copy descriptions verbatim as data. Do not summarize or edit them.
 
 Save the array to a file in the data dir, then run:
 
-`huntline ingest --source <label> --file <path>`
+`jobship ingest --source <label> --file <path>`
 
 The same Gates and dedup as `sweep` apply. The report shows `seen`, `known`, `new` and `dismissed`. Postings already seen create no new Lead.
 

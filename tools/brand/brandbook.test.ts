@@ -39,10 +39,20 @@ function collapse(text: string): string {
   return text.replaceAll(/\s+/g, " ").trim();
 }
 
+/** Applies a replacement until the text stops changing, so nested markup cannot survive one pass. */
+function replaceUntilStable(text: string, pattern: RegExp, replacement: string): string {
+  let current = text;
+  let previous = "";
+  while (current !== previous) {
+    previous = current;
+    current = current.replaceAll(pattern, replacement);
+  }
+  return current;
+}
+
 function visibleText(html: string): string {
-  const withoutTags = html
-    .replaceAll(/<(script|style)[\s\S]*?<\/\1>/gi, "")
-    .replaceAll(/<[^>]+>/g, " ");
+  const withoutBlocks = replaceUntilStable(html, /<(script|style)[\s\S]*?<\/\1>/gi, "");
+  const withoutTags = replaceUntilStable(withoutBlocks, /<[^>]*>/g, " ");
   return collapse(decodeEntities(withoutTags));
 }
 

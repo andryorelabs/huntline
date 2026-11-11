@@ -37,23 +37,7 @@ The coordinator fills the date after each step is done.
 | Topics            | Set topics from the `package.json` keywords                                            | done    | 2026-11-11                                                                            |
 | Homepage          | Set the homepage URL in repository Settings                                            | skipped | 2026-11-11, no site exists yet                                                        |
 | Social preview    | Upload `docs/brand/og/social-preview.png` (1280x640) in repository Settings            | done    | 2026-11-11                                                                            |
-| Repository rename | Rename `andryorelabs/huntline` to `andryorelabs/jobship`, then flip the old URLs below | pending |                                                                                       |
+| Repository rename | Rename `andryorelabs/huntline` to `andryorelabs/jobship`, then flip the old URLs below | done    | 2026-11-11                                                                            |
 | CLI help line     | Use the copy.md `CLI help line` in the `src/` usage text (follow-up, changes `src/`)   | skipped | 2026-11-11, the usage text is part of the stdout JSON envelope, which must not change |
 
-Files that still contain `andryorelabs/huntline` (from `git grep -n andryorelabs/huntline`):
-
-- `.github/ISSUE_TEMPLATE/config.yml`
-- `.github/SECURITY.md`
-- `README.md`
-- `bin/jobship`
-- `docs/adr/0005-rename-huntline-to-jobship.md`
-- `docs/brand/naming-candidates.md` (a historical note; leave as written)
-- `docs/guide/dogfooding.md`
-- `docs/guide/install.md`
-- `docs/reference/cli.md`
-- `package.json`
-- `schema/profile.schema.json`
-- `src/core/doctor.test.ts`
-- `src/core/doctor.ts`
-- `src/e2e/docs.test.ts`
-- `tools/shim.test.ts`
+The old URLs were flipped to `andryorelabs/jobship` on 2026-11-11. `git grep -n andryorelabs/huntline` now returns only history: ADR-0005, `naming-candidates.md` and this file.

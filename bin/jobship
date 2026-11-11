@@ -65,7 +65,7 @@ if [ ! -x "$cached_binary" ]; then
   esac
   asset="jobship-$os-$arch"
   legacy_asset="huntline-$os-$arch"
-  base_url=${JOBSHIP_RELEASE_BASE_URL:-${HUNTLINE_RELEASE_BASE_URL:-https://github.com/andryorelabs/huntline/releases/download}}
+  base_url=${JOBSHIP_RELEASE_BASE_URL:-${HUNTLINE_RELEASE_BASE_URL:-https://github.com/andryorelabs/jobship/releases/download}}
   release_url="$base_url/v$version"
   curl_protocol_flags=""
   case "$release_url" in

@@ -204,7 +204,7 @@ describe("bin/jobship shim", () => {
     });
     expect(result.exitCode).toBe(1);
     expect(Bun.file(curlLog).text()).resolves.toContain(
-      `https://github.com/andryorelabs/huntline/releases/download/v${version}/SHA256SUMS\n`,
+      `https://github.com/andryorelabs/jobship/releases/download/v${version}/SHA256SUMS\n`,
     );
   });
 

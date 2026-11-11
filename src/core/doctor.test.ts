@@ -12,7 +12,7 @@ import { exitCodeFor } from "./envelope.ts";
 import { isObject } from "./narrow.ts";
 
 const RECOVERY =
-  "claude plugin marketplace add andryorelabs/huntline && claude plugin install jobship@jobship-marketplace";
+  "claude plugin marketplace add andryorelabs/jobship && claude plugin install jobship@jobship-marketplace";
 
 let workDir = "";
 

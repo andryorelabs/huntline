@@ -220,7 +220,7 @@ describe("company command", () => {
 
   beforeEach(() => {
     dataDir = mkdtempSync(path.join(os.tmpdir(), "jobship-sources-"));
-    writeFileSync(path.join(dataDir, "huntline.json"), '{"version":1}\n');
+    writeFileSync(path.join(dataDir, "jobship.json"), '{"version":1}\n');
   });
 
   afterEach(() => {

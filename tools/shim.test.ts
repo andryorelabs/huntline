@@ -208,133 +208,16 @@ describe("bin/jobship shim", () => {
     );
   });
 
-  test("falls back to a release that only ships the pre-rename asset name", () => {
-    publishRelease({ asset: `huntline-${platform}-${arch}` });
-    const result = runShim(["--version"]);
-    expect(result.code).toBe(0);
-    expect(result.stdout).toBe("fixture-binary --version\n");
-    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
-  });
-});
-
-function runWithOnlyEnv(args: string[], env: Record<string, string>): ShimResult {
-  const result = Bun.spawnSync(["sh", path.join(pluginRoot, "bin/jobship"), ...args], {
-    env: { PATH: process.env["PATH"] ?? "", HOME: workDir, ...env },
-  });
-  return {
-    code: result.exitCode,
-    stdout: result.stdout.toString(),
-    stderr: result.stderr.toString(),
-  };
-}
-
-function runLegacy(shim: string, args: string[], stdin: string = ""): ShimResult {
-  const result = Bun.spawnSync([shim, ...args], {
-    stdin: Buffer.from(stdin),
-    env: { PATH: process.env["PATH"] ?? "", HOME: workDir, JOBSHIP_CACHE_DIR: cacheDir },
-  });
-  return {
-    code: result.exitCode,
-    stdout: result.stdout.toString(),
-    stderr: result.stderr.toString(),
-  };
-}
-
-describe("bin/jobship legacy HUNTLINE_* settings", () => {
-  const unusedReleases = `file://${path.join(os.tmpdir(), "jobship-no-releases")}`;
-
-  test("HUNTLINE_CACHE_DIR and HUNTLINE_RELEASE_BASE_URL still apply", () => {
-    publishRelease();
-    const result = runWithOnlyEnv(["--version"], {
-      HUNTLINE_CACHE_DIR: cacheDir,
-      HUNTLINE_RELEASE_BASE_URL: `file://${path.join(workDir, "releases")}`,
-    });
-    expect(result.code).toBe(0);
-    expect(result.stdout).toBe("fixture-binary --version\n");
-    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
-  });
-
-  test("JOBSHIP_CACHE_DIR and JOBSHIP_RELEASE_BASE_URL win over their legacy twins", () => {
-    publishRelease();
-    const result = runWithOnlyEnv(["--version"], {
-      JOBSHIP_CACHE_DIR: cacheDir,
-      HUNTLINE_CACHE_DIR: path.join(workDir, "legacy-cache"),
-      JOBSHIP_RELEASE_BASE_URL: `file://${path.join(workDir, "releases")}`,
-      HUNTLINE_RELEASE_BASE_URL: unusedReleases,
-    });
-    expect(result.code).toBe(0);
-    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
-    expect(existsSync(path.join(workDir, "legacy-cache"))).toBe(false);
-  });
-
-  test("HUNTLINE_PREFETCH still caches without running", () => {
-    publishRelease();
-    const result = runShim([], { HUNTLINE_PREFETCH: "1" });
-    expect(result.code).toBe(0);
-    expect(result.stdout).toBe("");
-    expect(existsSync(path.join(cacheDir, version, "jobship"))).toBe(true);
-  });
-
-  test("HUNTLINE_FROM_SOURCE=1 still execs the source entrypoint", () => {
+  test("JOBSHIP_FROM_SOURCE=1 execs the source entrypoint", () => {
     const sourceEntry = path.join(pluginRoot, "src/cli.ts");
     mkdirSync(path.dirname(sourceEntry), { recursive: true });
     writeFileSync(sourceEntry, 'console.log("from-source", process.argv.slice(2).join(" "));\n');
     const result = runShim(["init"], {
-      HUNTLINE_FROM_SOURCE: "1",
+      JOBSHIP_FROM_SOURCE: "1",
       PATH: `${path.dirname(process.execPath)}:${process.env["PATH"] ?? ""}`,
     });
     expect(result.code).toBe(0);
     expect(result.stdout).toBe("from-source init\n");
-  });
-});
-
-describe("bin/huntline legacy shim", () => {
-  const legacyShimSource = path.resolve(import.meta.dir, "../bin/huntline");
-
-  function installShim(root: string = pluginRoot): string {
-    const shim = path.join(root, "bin/huntline");
-    copyFileSync(legacyShimSource, shim);
-    chmodSync(shim, 0o755);
-    chmodSync(path.join(root, "bin/jobship"), 0o755);
-    return shim;
-  }
-
-  test("forwards to jobship and writes one deprecation line to stderr only", () => {
-    cacheBinary('#!/bin/sh\necho "cached $*"\n');
-    const result = runLegacy(installShim(), ["doctor", "--data", "x"]);
-    expect(result.code).toBe(0);
-    expect(result.stdout).toBe("cached doctor --data x\n");
-    expect(result.stderr.trim().split("\n")).toHaveLength(1);
-    expect(result.stderr).toContain("deprecated");
-    expect(result.stderr).toContain("jobship");
-  });
-
-  test("keeps the guard's stdout byte-identical to jobship's", () => {
-    cacheBinary("#!/bin/sh\ncat\n");
-    const result = runLegacy(installShim(), ["guard"], clickPayload);
-    expect(result.code).toBe(0);
-    expect(result.stdout).toBe(`${clickPayload}\n`);
-  });
-
-  test("forwards through a symlink on PATH", () => {
-    cacheBinary('#!/bin/sh\necho "linked $*"\n');
-    const shim = installShim();
-    const linkDir = path.join(workDir, "link-bin");
-    mkdirSync(linkDir);
-    symlinkSync(shim, path.join(linkDir, "huntline"));
-    const result = runLegacy(path.join(linkDir, "huntline"), ["--version"]);
-    expect(result.stdout).toBe("linked --version\n");
-  });
-
-  test("without a jobship launcher the guard still denies", () => {
-    const shim = installShim();
-    rmSync(path.join(pluginRoot, "bin/jobship"));
-    const guard = runLegacy(shim, ["guard"], clickPayload);
-    expect(guard.code).toBe(0);
-    expect(denyReasonOf(guard.stdout)).toContain("launcher is missing");
-    const other = runLegacy(shim, ["doctor"]);
-    expect(other.code).toBe(1);
-    expect(other.stdout).toBe("");
   });
 });
 

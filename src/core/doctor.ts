@@ -10,7 +10,7 @@ import { createAtsAdapters } from "../sources/ats.ts";
 import { readCompanies } from "../sources/companies.ts";
 import { sources as registeredSources } from "../sources/index.ts";
 import { CONFIG_FILE, loadProfileWithWarnings } from "./data-dir.ts";
-import { LEGACY_PRODUCT_NAME, PRODUCT_NAME, settingValue } from "./env.ts";
+import { PRODUCT_NAME, settingValue } from "./env.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
 import { MARKER } from "./init.ts";
 import { errorMessage, isObject } from "./narrow.ts";
@@ -162,8 +162,7 @@ function probePlugin(env: CommandContext["env"]): PluginProbe {
       warning: pluginWarning(`plugins file ${file} has no plugins object`),
     };
   }
-  const prefixes = [`${PRODUCT_NAME}@`, `${LEGACY_PRODUCT_NAME}@`];
-  if (Object.keys(plugins).some((key) => prefixes.some((prefix) => key.startsWith(prefix)))) {
+  if (Object.keys(plugins).some((key) => key.startsWith(`${PRODUCT_NAME}@`))) {
     return { installed: true, warning: null };
   }
   return {

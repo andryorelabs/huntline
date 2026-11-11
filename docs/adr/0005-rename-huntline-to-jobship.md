@@ -1,10 +1,12 @@
 # Rename huntline to jobship, with legacy compatibility
 
+Superseded by [ADR-0006](0006-drop-huntline-compatibility.md): the legacy names are gone.
+
 The code is named `jobship`: the launcher, the plugin, the package, the env vars, the data dir marker and the cache dir. Every `huntline` name an existing install depends on keeps working as a fallback until the removal rule below is met.
 
 ## Context
 
-The maintainer picked `jobship` on 2026-11-11 (decisions table in [docs/brand/README.md](../brand/README.md), [ADR-0004](0004-brand-kit-in-docs-brand.md)). Installs already exist: data dirs marked by `huntline.json`, shells exporting `HUNTLINE_HOME`, typst cached under `~/.cache/huntline`, a `huntline` launcher on PATH, published releases whose assets are named `huntline-<os>-<arch>`, and Linear issues carrying `[huntline-key: …]` markers. A hard rename would strand all of them, and the event log ([ADR-0001](0001-event-log-is-the-source-of-truth.md)) must stay readable in place.
+The maintainer picked `jobship` on 2026-11-11 (decisions table in [docs/brand/README.md](../brand/README.md), [ADR-0004](0004-brand-kit-in-docs-brand.md)). Installs already exist: data dirs marked by `huntline.json`, shells exporting `HUNTLINE_HOME`, typst cached under `~/.cache/huntline`, a `huntline` launcher on PATH, published releases whose assets are named `huntline-<os>-<arch>`, and Linear issues carrying `[jobship-key: …]` markers. A hard rename would strand all of them, and the event log ([ADR-0001](0001-event-log-is-the-source-of-truth.md)) must stay readable in place.
 
 ## Decision
 
@@ -16,7 +18,7 @@ The maintainer picked `jobship` on 2026-11-11 (decisions table in [docs/brand/RE
   - `doctor` treats a `jobship@` or a `huntline@` plugin entry as installed.
 - `bin/huntline` is a shim: it writes one deprecation line to stderr, never to stdout, and execs `bin/jobship` with the same arguments, so the stdout JSON envelope and the Guard's hook output are unchanged. If `bin/jobship` is missing, `huntline guard` prints a deny ([ADR-0002](0002-the-guard-fails-closed.md)).
 - The Guard is registered through `bin/jobship` in `hooks/hooks.json`.
-- Persisted formats keep their spelling: the `[huntline-key: …]` marker in Linear issues and the `TODO(huntline):` marker in the bundled templates. Changing them would duplicate tracker issues or miss unfilled markers in existing data dirs.
+- Persisted formats keep their spelling: the `[jobship-key: …]` marker in Linear issues and the `TODO(jobship):` marker in the bundled templates. Changing them would duplicate tracker issues or miss unfilled markers in existing data dirs.
 - GitHub URLs (release downloads, the marketplace source, the schema `$id`, package metadata) named `andryorelabs/huntline` until the repository was renamed to `andryorelabs/jobship` on 2026-11-11; GitHub redirects the old path, so links and installs that still use it keep working.
 
 ## Consequences

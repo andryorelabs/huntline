@@ -12,7 +12,7 @@ let workDir = "";
 
 beforeEach(() => {
   workDir = mkdtempSync(path.join(os.tmpdir(), "jobship-apply-"));
-  writeFileSync(path.join(workDir, "huntline.json"), '{"version":1}\n');
+  writeFileSync(path.join(workDir, "jobship.json"), '{"version":1}\n');
 });
 
 afterEach(() => {

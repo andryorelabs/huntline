@@ -329,7 +329,7 @@ describe("review regressions", () => {
   });
 
   test("two separate processes appending concurrently both land", async () => {
-    writeFileSync(path.join(dir.path, "huntline.json"), '{"version":1}\n');
+    writeFileSync(path.join(dir.path, "jobship.json"), '{"version":1}\n');
     const spawn = (text: string) =>
       Bun.spawn(
         [

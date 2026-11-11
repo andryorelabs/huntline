@@ -9,7 +9,7 @@ plugin sessions.
 Then summarize the result:
 
 - Files written, one line each.
-- Every `TODO(huntline):` marker left in them (run `rg -n 'TODO\(huntline\):' <dir>`),
+- Every `TODO(jobship):` marker left in them (run `rg -n 'TODO\(jobship\):' <dir>`),
   with its file and line, so the user knows what to fill in.
 
 If the command fails, show its error output and stop. Never retry with `--force`

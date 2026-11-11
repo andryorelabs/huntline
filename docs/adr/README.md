@@ -11,3 +11,4 @@ Decisions that are hard to reverse, surprising without context, and the result o
 | 0003 | [Code and personal data live apart](0003-code-and-personal-data-live-apart.md)              |
 | 0004 | [The brand kit lives in docs/brand](0004-brand-kit-in-docs-brand.md)                        |
 | 0005 | [Rename huntline to jobship, with legacy compatibility](0005-rename-huntline-to-jobship.md) |
+| 0006 | [Drop the huntline compatibility](0006-drop-huntline-compatibility.md)                      |

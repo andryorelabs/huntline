@@ -174,7 +174,7 @@ describe("lintCv", () => {
 
   test("flags repeated phrases, unbacked numbers and placeholders", () => {
     const text =
-      "Improved the checkout API quickly. Improved the checkout API again. Served 5000 users. TODO(huntline): fix";
+      "Improved the checkout API quickly. Improved the checkout API again. Served 5000 users. TODO(jobship): fix";
     const rules = lintCv(text, ctx()).map((finding) => finding.rule);
     expect(rules).toContain("repeated-phrase");
     expect(rules).toContain("unbacked-number");

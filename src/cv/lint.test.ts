@@ -17,7 +17,7 @@ describe("placeholder rule", () => {
 
   test("still flags TODO markers", () => {
     expect(rulesFor("TODO: fill", "x")).toContain("placeholder");
-    expect(rulesFor("TODO(huntline) fill", "x")).toContain("placeholder");
+    expect(rulesFor("TODO(jobship) fill", "x")).toContain("placeholder");
   });
 });
 

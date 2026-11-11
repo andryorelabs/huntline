@@ -29,14 +29,15 @@ interface WalkState {
 
 /**
  * Splits a shell command into segments of words. Backslash-newline
- * continuations are joined first; quotes group words; separators, subshell
+ * continuations are joined outside comments and single quotes, as the shell
+ * does; quotes group words; separators, subshell
  * parentheses and backticks end a segment only outside quotes; redirections
  * and their targets are dropped; `#` comments are skipped; heredoc bodies are
  * collected separately so they can be inspected as scripts. Returns null when
  * the command cannot be parsed (an unterminated quote or heredoc delimiter).
  */
 function lex(command: string): LexedCommand | null {
-  const input = command.replaceAll("\\\n", "");
+  const input = command;
   const segments: string[][] = [];
   const heredocBodies: string[] = [];
   let pending: PendingHeredoc[] = [];
@@ -84,7 +85,9 @@ function lex(command: string): LexedCommand | null {
           break;
         }
         const escaped = input.charAt(index + 1);
-        if (inner === "\\" && '"\\$`'.includes(escaped) && escaped !== "") {
+        if (inner === "\\" && escaped === "\n") {
+          index += 2;
+        } else if (inner === "\\" && '"\\$`'.includes(escaped) && escaped !== "") {
           current += escaped;
           index += 2;
         } else {
@@ -100,8 +103,10 @@ function lex(command: string): LexedCommand | null {
       if (index + 1 >= input.length) {
         return null;
       }
-      current += input.charAt(index + 1);
-      hasToken = true;
+      if (input.charAt(index + 1) !== "\n") {
+        current += input.charAt(index + 1);
+        hasToken = true;
+      }
       index += 2;
     } else if (character === "#" && !hasToken) {
       const end = input.indexOf("\n", index);

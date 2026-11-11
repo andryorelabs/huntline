@@ -74,6 +74,9 @@ describe("decideRm", () => {
     "cat <<'EOF' | bash\nrm -rf /etc\nEOF",
     "ls # fine\nrm -rf /etc",
     "echo it's; rm -rf /etc",
+    "echo hi # note \\\nrm -rf /etc",
+    "rm -rf \\\n/etc",
+    'rm -rf "/e\\\ntc"',
   ])("denies %s", (command) => {
     expect(decideRm(command, repoRoot)).toBe("deny");
   });

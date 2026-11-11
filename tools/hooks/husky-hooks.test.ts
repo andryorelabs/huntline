@@ -12,6 +12,9 @@ describe("findDirectToolCalls", () => {
     "bunx tsc",
     "knip",
     "oxfmt .",
+    "bun run lint && oxlint --fix",
+    "bun run lint; knip",
+    "bun run typecheck || tsc",
   ])("flags %s", (line) => {
     expect(findDirectToolCalls(line)).toHaveLength(1);
   });

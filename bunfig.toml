@@ -2,4 +2,4 @@
 coverage = true
 coverageSkipTestFiles = true
 coverageReporter = ["text"]
-coveragePathIgnorePatterns = ["**/fixtures/**", "**/*fixture*.ts"]
+coveragePathIgnorePatterns = ["**/fixtures/**", "**/*fixture*.ts", "tools/build-binaries.ts"]

@@ -14,14 +14,15 @@ function readJson(relative: string): Record<string, unknown> {
 describe("plugin manifest", () => {
   test("plugin.json carries the version and marketplace.json lists the plugin", () => {
     const manifest = readJson(".claude-plugin/plugin.json");
-    expect(manifest["name"]).toBe("huntline");
+    expect(manifest["name"]).toBe("jobship");
     expect(manifest["version"]).toMatch(/^\d+\.\d+\.\d+/);
     const marketplace = readJson(".claude-plugin/marketplace.json");
-    expect(JSON.stringify(marketplace["plugins"])).toContain('"name":"huntline"');
+    expect(JSON.stringify(marketplace["plugins"])).toContain('"name":"jobship"');
     expect(JSON.stringify(marketplace)).not.toContain("version");
   });
 
-  test("the shim exists and is executable", () => {
+  test("the launcher and the legacy shim exist and are executable", () => {
+    expect(statSync(path.join(root, "bin/jobship")).mode & 0o111).not.toBe(0);
     expect(statSync(path.join(root, "bin/huntline")).mode & 0o111).not.toBe(0);
   });
 
@@ -67,7 +68,7 @@ describe("repo tooling", () => {
     expect(release).toContain("SHA256SUMS");
     expect(release).toContain(".claude-plugin/plugin.json");
     for (const target of ["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64"]) {
-      expect(release).toContain(`huntline-${target}`);
+      expect(release).toContain(`jobship-${target}`);
     }
   });
 

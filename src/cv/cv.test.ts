@@ -61,7 +61,7 @@ function ctx() {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(os.tmpdir(), "huntline-cv-"));
+  root = mkdtempSync(path.join(os.tmpdir(), "jobship-cv-"));
   dir = { path: root };
   for (const file of ["facts.yaml", "bullets.yaml", "never-claim.yaml"]) {
     cpSync(path.join(examples, file), path.join(root, file));

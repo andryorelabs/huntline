@@ -4,9 +4,10 @@ Decisions that are hard to reverse, surprising without context, and the result o
 
 ## Index
 
-| #    | Title                                                                            |
-| ---- | -------------------------------------------------------------------------------- |
-| 0001 | [The event log is the source of truth](0001-event-log-is-the-source-of-truth.md) |
-| 0002 | [The Guard fails closed](0002-the-guard-fails-closed.md)                         |
-| 0003 | [Code and personal data live apart](0003-code-and-personal-data-live-apart.md)   |
-| 0004 | [The brand kit lives in docs/brand](0004-brand-kit-in-docs-brand.md)             |
+| #    | Title                                                                                       |
+| ---- | ------------------------------------------------------------------------------------------- |
+| 0001 | [The event log is the source of truth](0001-event-log-is-the-source-of-truth.md)            |
+| 0002 | [The Guard fails closed](0002-the-guard-fails-closed.md)                                    |
+| 0003 | [Code and personal data live apart](0003-code-and-personal-data-live-apart.md)              |
+| 0004 | [The brand kit lives in docs/brand](0004-brand-kit-in-docs-brand.md)                        |
+| 0005 | [Rename huntline to jobship, with legacy compatibility](0005-rename-huntline-to-jobship.md) |

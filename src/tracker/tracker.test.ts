@@ -15,7 +15,7 @@ const API_KEY = "lin_api_synthetic_secret_key";
 let dir = { path: "" };
 
 beforeEach(() => {
-  dir = { path: mkdtempSync(path.join(os.tmpdir(), "huntline-tracker-")) };
+  dir = { path: mkdtempSync(path.join(os.tmpdir(), "jobship-tracker-")) };
 });
 
 afterEach(() => {

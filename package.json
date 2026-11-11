@@ -1,5 +1,5 @@
 {
-  "name": "huntline",
+  "name": "jobship",
   "private": true,
   "description": "Local-first job-search system for Claude Code: a plugin plus a CLI. You press Submit.",
   "keywords": [
@@ -21,6 +21,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/andryorelabs/huntline.git"
+  },
+  "bin": {
+    "huntline": "bin/huntline",
+    "jobship": "bin/jobship"
   },
   "type": "module",
   "scripts": {

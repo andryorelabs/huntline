@@ -6,12 +6,15 @@ import {
   type CommandModule,
 } from "./core/commands.ts";
 import { resolveDataDir } from "./core/data-dir.ts";
+import { readSetting } from "./core/env.ts";
 import { runDoctor } from "./core/doctor.ts";
 import { exitCodeFor, failure, printEnvelope, success, type Envelope } from "./core/envelope.ts";
 import { runInit } from "./core/init.ts";
 import { errorMessage } from "./core/narrow.ts";
 import { runSetup } from "./core/setup.ts";
 
+declare const JOBSHIP_BUILD_VERSION: string | undefined;
+/** The pre-rename build define, honoured as a fallback. See ADR-0005. */
 declare const HUNTLINE_BUILD_VERSION: string | undefined;
 
 const MODULE_LOADERS: Readonly<Record<string, () => Promise<CommandModule>>> = {
@@ -37,11 +40,13 @@ function withoutDataFlag(argv: readonly string[]): string[] {
 }
 
 function buildVersion(): string {
-  return typeof HUNTLINE_BUILD_VERSION === "string" ? HUNTLINE_BUILD_VERSION : "0.0.0-dev";
+  if (typeof JOBSHIP_BUILD_VERSION === "string") return JOBSHIP_BUILD_VERSION;
+  if (typeof HUNTLINE_BUILD_VERSION === "string") return HUNTLINE_BUILD_VERSION;
+  return "0.0.0-dev";
 }
 
 const USAGE_LINES: readonly string[] = [
-  "usage: huntline <command> [flags]",
+  "usage: jobship <command> [flags]",
   "global flags: --data <dir>, --version, --help",
 ];
 
@@ -78,9 +83,7 @@ export async function dispatch(
   if (first === "init") return runInit(argv.slice(1), cwd, env);
   if (first === "setup") return runSetup(env);
   if (first === "doctor") {
-    const homeOverride = env["HUNTLINE_HOME"];
-    const hasExplicitSource =
-      argv.includes("--data") || (homeOverride !== undefined && homeOverride !== "");
+    const hasExplicitSource = argv.includes("--data") || readSetting(env, "HOME") !== undefined;
     if (!dataDir.ok && hasExplicitSource) {
       return failure(dataDir.error.code, dataDir.error.message);
     }
@@ -89,7 +92,7 @@ export async function dispatch(
   const command = resolveCommand(withoutDataFlag(argv));
   if (command === null) {
     return failure("unknown-command", `unknown command "${argv.slice(0, 2).join(" ")}"`, {
-      recoveryAction: "run huntline without arguments to see the version, or see the README",
+      recoveryAction: "run jobship without arguments to see the version, or see the README",
     });
   }
   const unknownFlag = findUnknownFlag(command.path, command.rest);

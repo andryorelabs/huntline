@@ -190,7 +190,7 @@ async function statusCommand(
 
 export async function run(argv: string[], ctx: CommandContext): Promise<Envelope<unknown>> {
   if (ctx.dataDir === null) {
-    return failure("data-dir-not-found", "no data dir resolved; pass --data or set HUNTLINE_HOME");
+    return failure("data-dir-not-found", "no data dir resolved; pass --data or set JOBSHIP_HOME");
   }
   const [command, ...rest] = argv;
   if (command === "events") return eventsCommand(rest, ctx.dataDir);

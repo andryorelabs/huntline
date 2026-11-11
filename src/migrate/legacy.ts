@@ -392,7 +392,7 @@ export function importLegacy(ctx: CommandContext, dir: string): Promise<ImportRe
       ok: false,
       error: {
         code: "data-dir-not-found",
-        message: "no data dir resolved; pass --data or set HUNTLINE_HOME",
+        message: "no data dir resolved; pass --data or set JOBSHIP_HOME",
       },
     });
   }

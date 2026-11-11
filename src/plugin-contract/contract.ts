@@ -32,10 +32,10 @@ function parseDocument(source: string): ParsedDocument {
 
 function extractCliReferences(body: string): string[][] {
   const references: string[][] = [];
-  for (const span of body.matchAll(/`([^`\n]*\bhuntline\s[^`\n]*)`/g)) {
+  for (const span of body.matchAll(/`([^`\n]*\b(?:jobship|huntline)\s[^`\n]*)`/g)) {
     const text = span[1] ?? "";
     const tokens = text
-      .slice(text.search(/\bhuntline\s/))
+      .slice(text.search(/\b(?:jobship|huntline)\s/))
       .split(/\s+/)
       .slice(1);
     const words: string[] = [];
@@ -54,10 +54,10 @@ function unknownCommandProblem(words: readonly string[]): string | null {
   const known =
     BUILTIN_COMMANDS.has(first) ||
     Object.keys(COMMANDS).some((name) => name.split(" ")[0] === first);
-  if (!known) return `unknown CLI command "huntline ${first}"`;
+  if (!known) return `unknown CLI command "jobship ${first}"`;
   const allowed = FIXED_SUBCOMMANDS[first];
   if (allowed !== undefined && second !== undefined && !allowed.includes(second)) {
-    return `unknown CLI command "huntline ${first} ${second}"`;
+    return `unknown CLI command "jobship ${first} ${second}"`;
   }
   return null;
 }

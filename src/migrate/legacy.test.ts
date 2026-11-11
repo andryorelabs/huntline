@@ -68,7 +68,7 @@ async function stateOf(prefix: string): Promise<string | null> {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(os.tmpdir(), "huntline-legacy-"));
+  root = mkdtempSync(path.join(os.tmpdir(), "jobship-legacy-"));
   legacyDir = path.join(root, "legacy");
   const dataPath = path.join(root, "data");
   mkdirSync(dataPath);

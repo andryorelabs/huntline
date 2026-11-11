@@ -13,7 +13,7 @@ import { CONTRACT_TYPES } from "./types.ts";
 let workDir = "";
 
 beforeEach(() => {
-  workDir = mkdtempSync(path.join(os.tmpdir(), "huntline-core-"));
+  workDir = mkdtempSync(path.join(os.tmpdir(), "jobship-core-"));
 });
 
 afterEach(() => {
@@ -78,6 +78,35 @@ describe("resolveDataDir", () => {
     writeFileSync(path.join(workDir, "a", "huntline.json"), "{}");
     const result = resolveDataDir([], {}, nested);
     expect(result).toEqual({ ok: true, value: { path: path.join(workDir, "a") } });
+  });
+
+  test("JOBSHIP_HOME wins over a legacy HUNTLINE_HOME", () => {
+    const newDir = path.join(workDir, "new");
+    const oldDir = path.join(workDir, "old");
+    mkdirSync(newDir);
+    mkdirSync(oldDir);
+    const result = resolveDataDir([], { JOBSHIP_HOME: newDir, HUNTLINE_HOME: oldDir }, workDir);
+    expect(result).toEqual({ ok: true, value: { path: newDir } });
+  });
+
+  test("finds the nearest jobship.json upward", () => {
+    const nested = path.join(workDir, "a", "b");
+    mkdirSync(nested, { recursive: true });
+    writeFileSync(path.join(workDir, "a", "jobship.json"), "{}");
+    const result = resolveDataDir([], {}, nested);
+    expect(result).toEqual({ ok: true, value: { path: path.join(workDir, "a") } });
+  });
+
+  test("a legacy huntline.json is still version-checked in place", () => {
+    writeFileSync(path.join(workDir, "huntline.json"), '{"version":99}');
+    const result = resolveDataDir([], {}, workDir);
+    expect(result.ok ? "" : result.error.message).toContain("huntline.json");
+  });
+
+  test("jobship.json is read before a legacy huntline.json in the same dir", () => {
+    writeFileSync(path.join(workDir, "jobship.json"), '{"version":1}');
+    writeFileSync(path.join(workDir, "huntline.json"), '{"version":99}');
+    expect(resolveDataDir([], {}, workDir)).toEqual({ ok: true, value: { path: workDir } });
   });
 
   test("reports data-dir-not-found and usage errors", () => {

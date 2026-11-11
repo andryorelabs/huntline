@@ -30,7 +30,7 @@ export async function recordScore(
   score: ScoreInput,
 ): Promise<Result<void>> {
   if (ctx.dataDir === null) {
-    return fail("data-dir-not-found", "no data dir resolved; pass --data or set HUNTLINE_HOME");
+    return fail("data-dir-not-found", "no data dir resolved; pass --data or set JOBSHIP_HOME");
   }
   const problem = validate(score);
   if (problem !== null) return fail("usage", problem);

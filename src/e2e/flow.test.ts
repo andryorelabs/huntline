@@ -184,7 +184,7 @@ function writeJson(name: string, value: unknown): string {
 }
 
 beforeEach(() => {
-  workDir = mkdtempSync(path.join(os.tmpdir(), "huntline-e2e-"));
+  workDir = mkdtempSync(path.join(os.tmpdir(), "jobship-e2e-"));
   dataDir = path.join(workDir, "data");
   binDir = path.join(workDir, "bin");
   mkdirSync(dataDir);

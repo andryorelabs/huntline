@@ -52,7 +52,7 @@ function write(relative: string, content: string): void {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(os.tmpdir(), "huntline-migrate-"));
+  root = mkdtempSync(path.join(os.tmpdir(), "jobship-migrate-"));
   legacyDir = path.join(root, "legacy");
   const dataPath = path.join(root, "data");
   mkdirSync(dataPath);

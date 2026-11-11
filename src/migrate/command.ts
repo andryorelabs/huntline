@@ -25,7 +25,7 @@ export async function run(argv: string[], ctx: CommandContext): Promise<Envelope
   const [action, ...rest] = argv;
   if (action !== "legacy" && action !== "linear") return usage(USAGE);
   if (ctx.dataDir === null) {
-    return failure("data-dir-not-found", "no data dir resolved; pass --data or set HUNTLINE_HOME");
+    return failure("data-dir-not-found", "no data dir resolved; pass --data or set JOBSHIP_HOME");
   }
   if (action === "legacy") {
     const [dir] = rest;

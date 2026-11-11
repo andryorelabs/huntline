@@ -13,15 +13,15 @@ import {
 
 describe("build-binaries helpers", () => {
   test("binaryName drops the bun- prefix", () => {
-    expect(binaryName("bun-darwin-arm64")).toBe("huntline-darwin-arm64");
+    expect(binaryName("bun-darwin-arm64")).toBe("jobship-darwin-arm64");
   });
 
   test("builds cover linux and macos on x64 and arm64", () => {
     expect([...TARGETS].map(binaryName).toSorted()).toEqual([
-      "huntline-darwin-arm64",
-      "huntline-darwin-x64",
-      "huntline-linux-arm64",
-      "huntline-linux-x64",
+      "jobship-darwin-arm64",
+      "jobship-darwin-x64",
+      "jobship-linux-arm64",
+      "jobship-linux-x64",
     ]);
   });
 
@@ -43,7 +43,7 @@ describe("build-binaries helpers", () => {
   });
 
   test("readPluginVersion reads plugin.json and falls back to the dev version", () => {
-    const root = mkdtempSync(path.join(os.tmpdir(), "huntline-version-"));
+    const root = mkdtempSync(path.join(os.tmpdir(), "jobship-version-"));
     try {
       expect(readPluginVersion(root)).toBe("0.0.0-dev");
       mkdirSync(path.join(root, ".claude-plugin"));
@@ -64,7 +64,7 @@ describe.skipIf(process.platform !== "linux" || process.arch !== "x64")(
     let binary = "";
 
     beforeAll(async () => {
-      workdir = mkdtempSync(path.join(os.tmpdir(), "huntline-binary-"));
+      workdir = mkdtempSync(path.join(os.tmpdir(), "jobship-binary-"));
       binary = await buildBinary("bun-linux-x64", path.join(workdir, "out"), "0.2.0");
       chmodSync(binary, 0o755);
     }, 120_000);

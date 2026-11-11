@@ -24,7 +24,7 @@ function writeProfile(
   sources: string[],
   tracker: Record<string, unknown> = { kind: "local" },
 ): void {
-  writeFileSync(path.join(root, "huntline.json"), '{"version":1}\n');
+  writeFileSync(path.join(root, "jobship.json"), '{"version":1}\n');
   writeFileSync(
     path.join(root, "profile.yaml"),
     JSON.stringify({
@@ -42,7 +42,7 @@ function writeProfile(
 }
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(os.tmpdir(), "huntline-sweep-"));
+  root = mkdtempSync(path.join(os.tmpdir(), "jobship-sweep-"));
 });
 
 afterEach(() => {
@@ -407,7 +407,7 @@ describe("sweep configuration", () => {
       source: "greenhouse",
       status: "misconfigured",
     });
-    expect(result.value.sources[0]?.warnings.join(" ")).toContain("huntline company add");
+    expect(result.value.sources[0]?.warnings.join(" ")).toContain("jobship company add");
     expect(result.value.empty).toEqual([]);
     expect(result.value.misconfigured).toEqual(["greenhouse"]);
   });

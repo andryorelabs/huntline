@@ -53,7 +53,7 @@ function fail<T>(code: string, message: string): Result<T> {
 
 function prepare(ctx: CommandContext): Result<Prepared> {
   if (ctx.dataDir === null) {
-    return fail("data-dir-not-found", "no data dir resolved; pass --data or set HUNTLINE_HOME");
+    return fail("data-dir-not-found", "no data dir resolved; pass --data or set JOBSHIP_HOME");
   }
   const profile = loadProfile(ctx.dataDir);
   if (!profile.ok) return profile;
@@ -156,7 +156,7 @@ async function fetchSource(
       source,
       postings: [],
       errors: [],
-      warnings: [`${source}: no companies saved; run huntline company add <url>`],
+      warnings: [`${source}: no companies saved; run jobship company add <url>`],
       misconfigured: true,
     };
   }

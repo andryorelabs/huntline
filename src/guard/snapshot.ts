@@ -7,7 +7,7 @@ import { isObject } from "../core/narrow.ts";
 const UID_LINE = /\buid=(\S+)\s+(.*)$/;
 
 function snapshotDirectory(): string {
-  return path.join(os.tmpdir(), "huntline-guard");
+  return path.join(os.tmpdir(), "jobship-guard");
 }
 
 function snapshotFile(sessionId: string): string {

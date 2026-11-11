@@ -56,7 +56,7 @@ function writeValidDataDir(dir: string, profileOverrides: Record<string, unknown
 }
 
 beforeEach(() => {
-  workDir = mkdtempSync(path.join(os.tmpdir(), "huntline-cli-"));
+  workDir = mkdtempSync(path.join(os.tmpdir(), "jobship-cli-"));
 });
 
 afterEach(() => {
@@ -70,6 +70,18 @@ describe("doctor", () => {
     const result = runCli(["doctor", "--data", fixture]);
     expect(result.code).toBe(0);
     expect(result.envelope["ok"]).toBe(true);
+  });
+
+  test("JOBSHIP_HOME resolves the data dir", () => {
+    const fixture = path.join(workDir, "fixture");
+    writeValidDataDir(fixture);
+    expect(runCli(["doctor"], { env: { JOBSHIP_HOME: fixture } }).code).toBe(0);
+  });
+
+  test("a missing JOBSHIP_HOME directory is reported, not searched past", () => {
+    const result = runCli(["doctor"], { env: { JOBSHIP_HOME: path.join(workDir, "absent") } });
+    expect(errorOf(result).code).toBe("data-dir-not-found");
+    expect(errorOf(result).message).toContain("JOBSHIP_HOME");
   });
 
   test("HUNTLINE_HOME and upward search resolve the data dir", () => {
@@ -165,7 +177,7 @@ describe("init", () => {
     const created = runCli(["init"]);
     expect(created.code).toBe(0);
     for (const name of [
-      "huntline.json",
+      "jobship.json",
       "profile.yaml",
       "facts.yaml",
       "bullets.yaml",
@@ -192,7 +204,17 @@ describe("init", () => {
   test("scaffolds into --data", () => {
     const target = path.join(workDir, "fresh");
     expect(runCli(["init", "--data", target]).code).toBe(0);
-    expect(readFileSync(path.join(target, "huntline.json"), "utf8")).toContain("version");
+    expect(readFileSync(path.join(target, "jobship.json"), "utf8")).toContain("version");
+  });
+
+  test("scaffolds into JOBSHIP_HOME, falling back to HUNTLINE_HOME", () => {
+    const newHome = path.join(workDir, "new-home");
+    const oldHome = path.join(workDir, "old-home");
+    const env = { JOBSHIP_HOME: newHome, HUNTLINE_HOME: oldHome };
+    expect(runCli(["init"], { env }).code).toBe(0);
+    expect(readFileSync(path.join(newHome, "jobship.json"), "utf8")).toContain("version");
+    expect(runCli(["init"], { env: { HUNTLINE_HOME: oldHome } }).code).toBe(0);
+    expect(readFileSync(path.join(oldHome, "jobship.json"), "utf8")).toContain("version");
   });
 });
 

@@ -121,7 +121,7 @@ describe("README.md", () => {
   test("starts with Install, before Quickstart, with the marketplace commands", () => {
     expect(readme.indexOf("## Install")).toBeGreaterThan(-1);
     expect(readme.indexOf("## Install")).toBeLessThan(readme.indexOf("## Quickstart"));
-    expect(readme).toContain("claude plugin marketplace add andryorelabs/huntline");
+    expect(readme).toContain("claude plugin marketplace add andryorelabs/jobship");
     expect(readme).toContain("claude plugin install jobship@jobship-marketplace");
     expect(readme).toContain("/jobship:init");
     expect(readme).toContain("/jobship:doctor");

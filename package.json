@@ -13,15 +13,15 @@
     "local-first",
     "typescript"
   ],
-  "homepage": "https://github.com/andryorelabs/huntline#readme",
+  "homepage": "https://github.com/andryorelabs/jobship#readme",
   "bugs": {
-    "url": "https://github.com/andryorelabs/huntline/issues"
+    "url": "https://github.com/andryorelabs/jobship/issues"
   },
   "license": "MIT",
   "author": "andryorelabs",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andryorelabs/huntline.git"
+    "url": "git+https://github.com/andryorelabs/jobship.git"
   },
   "bin": {
     "huntline": "bin/huntline",

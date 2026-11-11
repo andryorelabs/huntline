@@ -6,8 +6,8 @@
   <img src="docs/brand/og/cover-light.png" alt="jobship: search less, decide better. A local-first job-search system for Claude Code." width="100%">
 </picture>
 
-[![CI](https://github.com/andryorelabs/huntline/actions/workflows/ci.yml/badge.svg)](https://github.com/andryorelabs/huntline/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/andryorelabs/huntline)](https://github.com/andryorelabs/huntline/releases)
+[![CI](https://github.com/andryorelabs/jobship/actions/workflows/ci.yml/badge.svg)](https://github.com/andryorelabs/jobship/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/andryorelabs/jobship)](https://github.com/andryorelabs/jobship/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Search less. Decide better.
@@ -17,7 +17,7 @@ Even a small chance of moving forward takes many applications, and nobody can re
 ## Install
 
 ```sh
-claude plugin marketplace add andryorelabs/huntline
+claude plugin marketplace add andryorelabs/jobship
 claude plugin install jobship@jobship-marketplace
 ```
 

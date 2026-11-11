@@ -5,7 +5,7 @@ Follow this after each release, in order, with your own data dir. Stop at the fi
 ## 1. Install the plugin
 
 ```sh
-claude plugin marketplace add andryorelabs/huntline
+claude plugin marketplace add andryorelabs/jobship
 claude plugin install jobship@jobship-marketplace
 ```
 

@@ -17,7 +17,7 @@ The maintainer picked `jobship` on 2026-11-11 (decisions table in [docs/brand/RE
 - `bin/huntline` is a shim: it writes one deprecation line to stderr, never to stdout, and execs `bin/jobship` with the same arguments, so the stdout JSON envelope and the Guard's hook output are unchanged. If `bin/jobship` is missing, `huntline guard` prints a deny ([ADR-0002](0002-the-guard-fails-closed.md)).
 - The Guard is registered through `bin/jobship` in `hooks/hooks.json`.
 - Persisted formats keep their spelling: the `[huntline-key: …]` marker in Linear issues and the `TODO(huntline):` marker in the bundled templates. Changing them would duplicate tracker issues or miss unfilled markers in existing data dirs.
-- GitHub URLs (release downloads, the marketplace source, the schema `$id`, package metadata) still name `andryorelabs/huntline` until the repository is renamed; GitHub redirects the old path afterwards.
+- GitHub URLs (release downloads, the marketplace source, the schema `$id`, package metadata) named `andryorelabs/huntline` until the repository was renamed to `andryorelabs/jobship` on 2026-11-11; GitHub redirects the old path, so links and installs that still use it keep working.
 
 ## Consequences
 

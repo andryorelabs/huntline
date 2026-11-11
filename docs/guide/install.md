@@ -12,7 +12,7 @@
 Add the repository as a plugin marketplace and install `jobship`:
 
 ```sh
-claude plugin marketplace add andryorelabs/huntline
+claude plugin marketplace add andryorelabs/jobship
 claude plugin install jobship@jobship-marketplace
 ```
 
@@ -35,8 +35,8 @@ Re-run the link after an update. `jobship --help` (or `jobship help`) lists ever
 ## From source
 
 ```sh
-git clone https://github.com/andryorelabs/huntline
-cd huntline
+git clone https://github.com/andryorelabs/jobship
+cd jobship
 bun install
 JOBSHIP_FROM_SOURCE=1 bin/jobship doctor
 ```

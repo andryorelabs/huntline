@@ -1,0 +1,23 @@
+name: Documentation bug
+description: Report missing, incorrect or unclear documentation
+labels: ["Type: Docs", "needs-triage"]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: File path, section or link to the affected documentation.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing
+      description: Describe the inaccuracy, gap or confusing passage.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix
+      description: If you have wording or a correction in mind, share it here.

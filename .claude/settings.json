@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Bash(git push origin main)",
+      "Bash(git push origin main *)",
+      "Bash(git push * main)",
+      "Bash(git push * HEAD:main)",
+      "Bash(git push * :main)",
+      "Bash(gh issue delete *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun \"$CLAUDE_PROJECT_DIR/tools/claude/main.ts\""
+          }
+        ]
+      }
+    ]
+  }
+}

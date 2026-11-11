@@ -62,7 +62,7 @@ describe("repo tooling", () => {
   test("CI runs check and test, and release verifies the tag against plugin.json", () => {
     const ci = readFileSync(path.join(root, ".github/workflows/ci.yml"), "utf8");
     expect(ci).toContain("run: bun run check");
-    expect(ci).toContain("run: bun test");
+    expect(ci).toContain("run: bun run test");
     const release = readFileSync(path.join(root, ".github/workflows/release.yml"), "utf8");
     expect(release).toContain("SHA256SUMS");
     expect(release).toContain(".claude-plugin/plugin.json");
@@ -91,6 +91,32 @@ function copyLine(heading: string): string {
   return match[1];
 }
 
+describe("manifest identity fields", () => {
+  const repository = "https://github.com/andryorelabs/jobship";
+  const author = { name: "Andry Orellana", email: "hello@andryore.dev" };
+
+  test("plugin.json carries author, homepage, repository and license", () => {
+    const manifest = readJson(".claude-plugin/plugin.json");
+    expect(manifest["author"], "plugin.json author").toEqual(author);
+    expect(manifest["homepage"], "plugin.json homepage").toBe(repository);
+    expect(manifest["repository"], "plugin.json repository").toBe(repository);
+    expect(manifest["license"], "plugin.json license").toBe("MIT");
+  });
+
+  test("the marketplace plugin entry carries author, homepage, repository and license", () => {
+    const marketplace = readJson(".claude-plugin/marketplace.json");
+    const entries = marketplace["plugins"];
+    if (!Array.isArray(entries)) throw new Error("marketplace.json plugins is not an array");
+    const entry: unknown = entries[0];
+    expect(entry, "marketplace.json plugin entry").toMatchObject({
+      author,
+      homepage: repository,
+      repository,
+      license: "MIT",
+    });
+  });
+});
+
 describe("brand copy on the manifests", () => {
   test("package.json description equals the copy.md package description", () => {
     expect(readJson("package.json")["description"], "package.json description").toBe(
@@ -98,9 +124,8 @@ describe("brand copy on the manifests", () => {
     );
   });
 
-  test("package.json author is the org and keywords include jobship", () => {
+  test("package.json keywords include jobship", () => {
     const manifest = readJson("package.json");
-    expect(manifest["author"], "package.json author").toBe("andryorelabs");
     expect(JSON.stringify(manifest["keywords"]), "package.json keywords").toContain('"jobship"');
   });
 

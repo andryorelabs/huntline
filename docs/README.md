@@ -17,6 +17,10 @@
 
 ## Project
 
+- [Architecture](architecture.md)
+- [Development](development.md)
+- [Security](security.md)
+- [Configuration](configuration.md)
 - [Product](../PRODUCT.md)
 - [Governance](../GOVERNANCE.md)
 

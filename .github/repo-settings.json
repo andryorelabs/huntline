@@ -1,0 +1,30 @@
+{
+  "homepage": "https://github.com/andryorelabs/jobship#readme",
+  "topics": [
+    "bun",
+    "claude-code",
+    "claude-code-plugin",
+    "cli",
+    "cv",
+    "job-search",
+    "jobship",
+    "local-first",
+    "typescript"
+  ],
+  "allow_squash_merge": true,
+  "allow_merge_commit": false,
+  "allow_rebase_merge": false,
+  "squash_merge_commit_title": "PR_TITLE",
+  "squash_merge_commit_message": "PR_BODY",
+  "delete_branch_on_merge": true,
+  "allow_auto_merge": true,
+  "allow_update_branch": true,
+  "has_wiki": false,
+  "has_projects": false,
+  "has_discussions": false,
+  "secret_scanning": "enabled",
+  "secret_scanning_push_protection": "enabled",
+  "dependabot_alerts": true,
+  "dependabot_security_updates": "enabled",
+  "private_vulnerability_reporting": true
+}

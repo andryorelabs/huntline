@@ -1,3 +1,73 @@
+# Synced by .github/workflows/labels.yml. The sync never deletes labels missing from this file.
+
+- name: "Type: Bug"
+  color: "d73a4a"
+  description: Something does not work as documented
+
+- name: "Type: Feature"
+  color: "0e8a16"
+  description: A new capability
+
+- name: "Type: Enhancement"
+  color: "a2eeef"
+  description: An improvement to an existing capability
+
+- name: "Type: Docs"
+  color: "0075ca"
+  description: Documentation additions, corrections or improvements
+
+- name: "Status: Blocked"
+  color: "b60205"
+  description: Cannot proceed until something else is resolved
+
+- name: "Status: Needs Decision"
+  color: "fbca04"
+  description: Waiting on a maintainer decision
+
+- name: "Priority: High"
+  color: "d93f0b"
+  description: Should be handled first
+
+- name: "Priority: Medium"
+  color: "fbca04"
+  description: Normal priority
+
+- name: "Priority: Low"
+  color: "c5def5"
+  description: Handle when there is time
+
+- name: "Area: Core"
+  color: "ededed"
+  description: Core, ledger, gates and shared building blocks
+
+- name: "Area: Guard"
+  color: "ededed"
+  description: The Guard hook and its policy
+
+- name: "Area: CV"
+  color: "ededed"
+  description: Fact bank, Tailored CV and linting
+
+- name: "Area: Sources"
+  color: "ededed"
+  description: Sweeps, Sources and ingest
+
+- name: "Area: Pipeline"
+  color: "ededed"
+  description: Inbox, outreach, apply, interview and tracker
+
+- name: "Area: Plugin"
+  color: "ededed"
+  description: Skills, agents, commands and plugin manifests
+
+- name: "Area: Docs"
+  color: "ededed"
+  description: Guides, reference and ADRs
+
+- name: "Area: Tooling"
+  color: "ededed"
+  description: Build, CI and developer tooling
+
 - name: needs-triage
   color: "F9D0C4"
   description: Freshly captured, not yet reviewed
@@ -14,6 +84,10 @@
   color: "FEF2C0"
   description: Needs a human decision
 
+- name: wontfix
+  color: "ffffff"
+  description: Reviewed and deliberately not going to be worked on
+
 - name: "status:todo"
   color: "ededed"
   description: "emet: not started"
@@ -25,3 +99,19 @@
 - name: "status:in-review"
   color: "0e8a16"
   description: "emet: PR open, awaiting merge"
+
+- name: dependencies
+  color: "0366d6"
+  description: Dependency updates
+
+- name: github-actions
+  color: "2088ff"
+  description: GitHub Actions workflow changes
+
+- name: security
+  color: "b60205"
+  description: A security fix or hardening
+
+- name: breaking-change
+  color: "e11d21"
+  description: Changes the CLI or its output incompatibly

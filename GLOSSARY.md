@@ -105,3 +105,26 @@ A STAR+R interview story built from Fact bank facts.
 
 **Draft**:
 An outreach message the human sends.
+
+## Relationships
+
+- A **Source** publishes **Postings**; a **Sweep** turns new Postings into **Leads**.
+- A **Gate** checks a Posting against the **Profile** and yields an **Eligibility**; a dismissal carries a **Rejection reason**.
+- A **Lead** is a Posting that passed the Gates; an **Application** is the lifecycle of one Lead.
+- A **Dedup key** makes two Postings the same Application; the **Ledger** records every Posting seen or dismissed for dedup.
+- An **Application**'s status is derived from its **Events**.
+- A **Fit score** judges a Lead against the Profile.
+- A **Bullet** is built only from **Fact bank** facts and belongs to an **Entry**; a **Variant** selects Bullets by tag rules; a **Tailored CV** is a Variant built for one Lead.
+- The **Never-claim list** names what a CV must never contain.
+- A **Blocker** arises during an Application; the **Needs-you queue** holds all open Blockers.
+- An **Approval batch** is a set of proposed writes the human approves as a whole.
+- The **Guard** denies Submit and Send actions and fails closed.
+- A **Tracker adapter** projects Applications into a tracker.
+- A **Prep pack** holds interview material for one company and role; a **Story** is built from Fact bank facts.
+- A **Draft** is an outreach message the human sends.
+
+## Flagged ambiguities
+
+- "Job" is avoided for both **Posting** and **Application**: a Posting is the ad, an Application is the lifecycle of one Lead.
+- "Inbox" is avoided for the **Needs-you queue**: the queue holds open Blockers, not mail.
+- **Profile** is not "Settings" or "Preferences", and the **Fact bank** is not "Profile data": the Profile holds search criteria, the Fact bank holds verified facts.

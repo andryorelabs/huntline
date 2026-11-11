@@ -20,7 +20,7 @@ jobs:
     name: CodeQL
     # Code scanning needs GitHub Advanced Security on private repos; skip, do not fail.
     if: ${{ !github.event.repository.private }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || vars.BLACKSMITH_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 20
     permissions:
       contents: read

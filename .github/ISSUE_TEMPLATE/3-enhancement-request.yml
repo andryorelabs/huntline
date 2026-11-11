@@ -1,0 +1,25 @@
+name: Enhancement request
+description: Suggest an improvement to an existing capability
+labels: ["Type: Enhancement", "needs-triage"]
+body:
+  - type: input
+    id: existing
+    attributes:
+      label: Existing capability
+      description: Which command, skill or behavior would this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: How does it work today, and what is lacking?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: What would you like to change? Note that jobship never submits forms or sends messages, and that will not change.
+    validations:
+      required: true

@@ -23,6 +23,8 @@
 ## Brand
 
 - [Brand kit](brand/README.md)
+- [Brandbook](brand/brandbook/index.html)
+- [Applying the kit](brand/apply-spec.md)
 - [Design](design/README.md)
 
 ## Decisions

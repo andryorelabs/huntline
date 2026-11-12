@@ -47,23 +47,29 @@ export async function runInit(
   const fallback = settingValue(env, "HOME") ?? ".";
   const target = path.resolve(cwd, requested ?? fallback);
   const force = argv.includes("--force");
+  const missingOnly = argv.includes("--missing");
+  if (force && missingOnly) return failure("usage", "--force and --missing cannot be combined");
   const existing = Object.keys(SCAFFOLD_FILES).filter((name) =>
     existsSync(path.join(target, name)),
   );
-  if (existing.length > 0 && !force) {
+  if (existing.length > 0 && !force && !missingOnly) {
     return failure("already-exists", `refusing to overwrite ${existing.join(", ")} in ${target}`, {
-      recoveryAction: "re-run with --force to overwrite the scaffold files",
+      recoveryAction:
+        "re-run with --missing to add only the absent files, or --force to overwrite the scaffold files",
     });
   }
+  const toWrite = Object.keys(SCAFFOLD_FILES).filter(
+    (name) => !missingOnly || !existing.includes(name),
+  );
   await withLock(target, () => {
-    for (const [name, content] of Object.entries(SCAFFOLD_FILES)) {
-      writeAtomic(path.join(target, name), content);
+    for (const name of toWrite) {
+      writeAtomic(path.join(target, name), SCAFFOLD_FILES[name] ?? "");
     }
     return Promise.resolve();
   });
   return success({
     dataDir: target,
-    written: Object.keys(SCAFFOLD_FILES),
+    written: toWrite,
     overwritten: force ? existing : [],
     next: "run the Onboarding skill (/jobship:init) to fill the Dossier, then run jobship doctor",
   });

@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { loadBullets, loadFactBank, loadNeverClaim } from "../cv/facts.ts";
-import { loadDossier } from "../dossier/dossier.ts";
+import { DOSSIER_SECTION_NAMES, loadDossier } from "../dossier/dossier.ts";
 import { runGuardSelfTest, SELF_TEST_HOOKS } from "../guard/self-test.ts";
 import { checkLinearConnection } from "../tracker/check.ts";
 import { DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "../tracker/linear.ts";
@@ -212,6 +212,13 @@ export async function runDoctor(
   if (fileProblems.length > 0) {
     return failure("data-file-invalid", fileProblems.join("; "), {
       recoveryAction: "fix or remove the named file",
+    });
+  }
+  if (!existsSync(path.join(ctx.dataDir.path, "dossier"))) {
+    const listed = DOSSIER_SECTION_NAMES.map((name) => `${name} (missing)`).join(", ");
+    return failure("dossier-incomplete", `Dossier sections not complete: ${listed}`, {
+      recoveryAction:
+        "run jobship init --missing to add the Dossier without touching existing files, then the Onboarding skill (/jobship:init)",
     });
   }
   const dossier = loadDossier(ctx.dataDir);

@@ -387,4 +387,37 @@ describe("init scaffold of the Dossier", () => {
     expect(forced.ok).toBe(true);
     expect(readFileSync(path.join(fresh, ".gitignore"), "utf8")).toContain("dossier/identity.md");
   });
+
+  test("--missing adds only absent files and keeps existing data", async () => {
+    const fresh = path.join(workDir, "fresh");
+    mkdirSync(fresh, { recursive: true });
+    writeFileSync(path.join(fresh, "profile.yaml"), "kept: true\n");
+    const added = await runInit(["--data", fresh, "--missing"], workDir);
+    expect(added.ok).toBe(true);
+    expect(readFileSync(path.join(fresh, "profile.yaml"), "utf8")).toBe("kept: true\n");
+    expect(readFileSync(path.join(fresh, "dossier/career.md"), "utf8")).toContain("status: empty");
+    const written = added.ok && isObject(added.data) ? added.data["written"] : [];
+    expect(written).not.toContain("profile.yaml");
+  });
+
+  test("--missing and --force together are a usage error", async () => {
+    const result = await runInit(
+      ["--data", path.join(workDir, "x"), "--missing", "--force"],
+      workDir,
+    );
+    expect(result.ok ? "" : result.error.code).toBe("usage");
+  });
+});
+
+describe("doctor on a data dir without a Dossier", () => {
+  test("fails dossier-incomplete listing every section as missing", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    rmSync(dataFile(ctx, "dossier"), { recursive: true, force: true });
+    const result = await runDoctor(ctx);
+    expect(result.ok ? "" : result.error.code).toBe("dossier-incomplete");
+    for (const section of ["career", "search", "presence", "identity"]) {
+      expect(result.ok ? "" : result.error.message).toContain(`${section} (missing)`);
+    }
+    expect(result.ok ? "" : (result.error.recoveryAction ?? "")).toContain("--missing");
+  });
 });

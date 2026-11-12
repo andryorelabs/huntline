@@ -2,7 +2,7 @@
 
 ## `jobship doctor` exits 1
 
-It lists the remaining `TODO(jobship):` markers in your data dir. Fill each one, then run it again; it exits 0 with `{"ok":true,...}` when the data dir is valid.
+`dossier-incomplete` lists the Dossier sections not yet `complete`, and `derived-empty` names the empty Fact bank, Bullets or Profile `regions`. Both mean Onboarding is not finished: run `/jobship:init` to resume it, then run doctor again; it exits 0 with `{"ok":true,...}` when the data dir is valid.
 
 ## `cv build` cannot find Typst or `pdftotext`
 

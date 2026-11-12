@@ -216,7 +216,7 @@ function deriveSync(ctx: CommandContext, proposal: DossierProposal): Result<Deri
     if (!bullets.ok) return bullets;
     const neverClaim = currentNeverClaim(dir);
     if (!neverClaim.ok) return neverClaim;
-    const valid = validateProposal(dir, proposal, factIds.value);
+    const valid = validateProposal(dir, proposal, factIds.value, bullets.value);
     if (!valid.ok) return valid;
     const items = [
       ...diffFacts(dir, proposal),

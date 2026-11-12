@@ -205,6 +205,31 @@ function checkProfile(dir: DataDir, part: Partial<Profile>): Result<void> {
 }
 
 /**
+ * Finds a bullet that would still cite a removed fact once the proposal is applied:
+ * stored bullets not removed and not replaced, plus every proposed bullet.
+ */
+function orphanedCitation(
+  proposal: DossierProposal,
+  storedBullets: readonly Bullet[],
+): { bullet: string; fact: string } | undefined {
+  const removedFacts = new Set(proposal.removals?.facts ?? []);
+  if (removedFacts.size === 0) return undefined;
+  const removedBullets = new Set(proposal.removals?.bullets ?? []);
+  const proposedIds = new Set(proposal.bullets.map((bullet) => bullet.id));
+  const resulting = [
+    ...storedBullets.filter(
+      (bullet) => !removedBullets.has(bullet.id) && !proposedIds.has(bullet.id),
+    ),
+    ...proposal.bullets.filter((bullet) => !removedBullets.has(bullet.id)),
+  ];
+  for (const bullet of resulting) {
+    const fact = bullet.factIds.find((id) => removedFacts.has(id));
+    if (fact !== undefined) return { bullet: bullet.id, fact };
+  }
+  return undefined;
+}
+
+/**
  * Checks citations, identity values, Fact bank references, Answer keys and the merged
  * Profile. A tier B, C or D identity value in a fact or bullet fails `identity-leak`.
  */
@@ -212,6 +237,7 @@ export function validateProposal(
   dir: DataDir,
   proposal: DossierProposal,
   knownFactIds: readonly string[],
+  storedBullets: readonly Bullet[] = [],
 ): Result<void> {
   const repeatedFact = duplicate(proposal.facts.map((fact) => fact.id));
   if (repeatedFact !== undefined) return invalid(`fact id "${repeatedFact}" is proposed twice`);
@@ -228,6 +254,12 @@ export function validateProposal(
   for (const bullet of proposal.bullets) {
     const unknown = bullet.factIds.find((id) => !available.has(id));
     if (unknown !== undefined) return invalid(`bullet ${bullet.id}: unknown fact "${unknown}"`);
+  }
+  const orphaned = orphanedCitation(proposal, storedBullets);
+  if (orphaned !== undefined) {
+    return invalid(
+      `bullet ${orphaned.bullet} still cites removed fact "${orphaned.fact}"; remove or update the bullet too`,
+    );
   }
   const identity = loadIdentityIfPresent(dir);
   if (!identity.ok) return identity;

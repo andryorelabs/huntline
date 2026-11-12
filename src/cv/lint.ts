@@ -77,6 +77,30 @@ const ALLOWED_TIER_A_FIELDS = new Set([
   "links",
 ]);
 
+/**
+ * Answers too common to match as free text: a tier D `No` would otherwise flag every
+ * "no" in a CV. Values shorter than three characters are skipped for the same reason.
+ */
+const NON_DISTINCTIVE_VALUES = new Set([
+  "yes",
+  "no",
+  "none",
+  "n/a",
+  "not applicable",
+  "decline",
+  "decline to answer",
+  "decline to self-identify",
+  "prefer not to say",
+  "prefer not to answer",
+  "i don't wish to answer",
+]);
+
+/** True when a value is distinctive enough to search for in free text. */
+function isDistinctiveValue(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return normalized.length >= 3 && !NON_DISTINCTIVE_VALUES.has(normalized);
+}
+
 /** True when a CV may carry this identity field: only the allowed tier A fields. */
 function isCvSafeIdentityField(field: IdentityField): boolean {
   return field.tier === "A" && ALLOWED_TIER_A_FIELDS.has(field.name.toLowerCase());
@@ -87,7 +111,7 @@ function guardedIdentityFields(identity: readonly IdentityField[]): IdentityFiel
   return identity.filter(
     (field) =>
       !isCvSafeIdentityField(field) &&
-      field.value.trim() !== "" &&
+      isDistinctiveValue(field.value) &&
       !READINESS_VALUE.test(field.value.trim()),
   );
 }

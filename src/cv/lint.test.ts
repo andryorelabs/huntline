@@ -86,6 +86,22 @@ describe("identity-leak rule", () => {
 
   test("a value inside a longer word does not match", () => {
     expect(leaks("12 Example Street")).toHaveLength(0);
+    expect(leaks("123 Example Street")).toHaveLength(0);
+    expect(leaks("123 Example St.")).toHaveLength(1);
+  });
+
+  test("common answers such as a tier D No are not matched as free text", () => {
+    const fields: IdentityField[] = [
+      { name: "veteran", tier: "D", value: "No", line: 1 },
+      { name: "disability", tier: "D", value: "Prefer not to say", line: 2 },
+      { name: "initials", tier: "B", value: "JE", line: 3 },
+    ];
+    expect(leaks("Shipped with no downtime; prefer not to say more. JE", fields)).toHaveLength(0);
+  });
+
+  test("a distinctive tier D value is still flagged", () => {
+    const fields: IdentityField[] = [{ name: "ethnicity", tier: "D", value: "Examplean", line: 1 }];
+    expect(leaks("Proud Examplean engineer", fields)).toHaveLength(1);
   });
 
   test("overlapping values are reported once", () => {

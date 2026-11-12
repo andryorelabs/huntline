@@ -74,6 +74,23 @@ describe("deriveBatch", () => {
     const checked = validateProposal({ path: dataDir }, proposal.value, []);
     expect(checked.ok).toBe(false);
   });
+
+  test("removing a fact a stored bullet still cites is refused", () => {
+    const stored = [{ id: "b-keep", text: "t", tags: [], factIds: ["f-gone"] }];
+    const proposal = parseProposal({ removals: { facts: ["f-gone"], bullets: [] } });
+    if (!proposal.ok) throw new Error("proposal should parse");
+    const checked = validateProposal({ path: dataDir }, proposal.value, ["f-gone"], stored);
+    expect(checked.ok).toBe(false);
+    if (!checked.ok) expect(checked.error.message).toContain("b-keep");
+  });
+
+  test("removing a fact with every citing bullet removed is accepted", () => {
+    const stored = [{ id: "b-gone", text: "t", tags: [], factIds: ["f-gone"] }];
+    const proposal = parseProposal({ removals: { facts: ["f-gone"], bullets: ["b-gone"] } });
+    if (!proposal.ok) throw new Error("proposal should parse");
+    const checked = validateProposal({ path: dataDir }, proposal.value, ["f-gone"], stored);
+    expect(checked.ok).toBe(true);
+  });
 });
 
 describe("loadIdentityIfPresent", () => {

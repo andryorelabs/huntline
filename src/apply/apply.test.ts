@@ -257,6 +257,30 @@ describe("answer keys", () => {
     expect(resolveAnswerKey("Why do you want this job?")).toBeNull();
   });
 
+  test("answers every sponsorship phrasing from one row and does not over-match", () => {
+    const dir = { path: workDir };
+    writeFileSync(
+      path.join(workDir, "answers.json"),
+      JSON.stringify([
+        { answerKey: "sponsorship", scope: "global", text: "No", provenance: "human" },
+        { answerKey: "languages", scope: "global", text: "English C1", provenance: "human" },
+      ]),
+    );
+    for (const question of [
+      "Will you now or in the future require visa sponsorship?",
+      "Do you need sponsorship to work here?",
+    ]) {
+      expect(lookupAnswer(dir, question, "global")).toMatchObject({ status: "answer", text: "No" });
+    }
+    expect(resolveAnswerKey("Do you have a non-compete?")).toBe("non-compete");
+    expect(resolveAnswerKey("What programming languages are you proficient in?")).toBeNull();
+    expect(resolveAnswerKey("How many years of experience do you have with React?")).toBeNull();
+    expect(lookupAnswer(dir, "What languages do you speak?", "global")).toMatchObject({
+      status: "answer",
+      text: "English C1",
+    });
+  });
+
   test("catalog has unique keys and tier-D identity keys", () => {
     const keys = ANSWER_KEYS.map((entry) => entry.key);
     expect(new Set(keys).size).toBe(keys.length);

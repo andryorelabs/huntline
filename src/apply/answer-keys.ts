@@ -100,18 +100,13 @@ export const ANSWER_KEYS: readonly AnswerKeyEntry[] = [
       "where are you located",
       "where do you live",
       "city and country",
-      "location",
+      "what is your location",
     ],
   },
   {
     key: "remote",
     tier: "A",
-    phrasings: [
-      "work remotely",
-      "comfortable working remotely",
-      "remote work",
-      "remote or on site",
-    ],
+    phrasings: ["work remotely", "comfortable working remotely", "remote or on site"],
   },
   {
     key: "relocation",
@@ -139,12 +134,21 @@ export const ANSWER_KEYS: readonly AnswerKeyEntry[] = [
   {
     key: "years-of-experience",
     tier: "A",
-    phrasings: ["years of experience", "years of professional experience", "how many years"],
+    phrasings: [
+      "total years of experience",
+      "years of professional experience",
+      "years of total experience",
+    ],
   },
   {
     key: "languages",
     tier: "A",
-    phrasings: ["languages you speak", "language proficiency", "spoken languages", "languages"],
+    phrasings: [
+      "languages you speak",
+      "languages do you speak",
+      "spoken languages",
+      "language proficiency",
+    ],
   },
   {
     key: "prior-employment-at-company",

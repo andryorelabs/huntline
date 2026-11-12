@@ -36,7 +36,9 @@ export type DossierSection = {
 
 const DOSSIER_DIRECTORY = "dossier";
 const READINESS_VALUE = /^ready: (yes|no)$/;
-const IDENTITY_LINE = /^-\s+([A-Za-z][A-Za-z0-9]*)\s+\[([A-D])\]:\s*(.*?)\s*$/;
+const IDENTITY_LINE = /^[-*+]\s+([A-Za-z][A-Za-z0-9]*)\s+\[([A-D])\]:\s*(.*?)\s*$/;
+const BULLET_START = /^[-*+]\s/;
+const TIER_MARKER = /\[[A-D]\]:/;
 
 function templateText(content: unknown): string {
   if (typeof content !== "string") throw new TypeError("a bundled template did not load as text");
@@ -99,7 +101,9 @@ function parseFrontMatter(file: string, lines: readonly string[]): Result<FrontM
 function parseIdentityLines(file: string, lines: readonly string[]): Result<IdentityField[]> {
   const fields: IdentityField[] = [];
   let inComment = false;
+  const bodyStart = frontMatterEnd(lines) + 1;
   for (const [index, raw] of lines.entries()) {
+    if (index < bodyStart) continue;
     const text = raw.trim();
     if (inComment) {
       if (text.includes("-->")) inComment = false;
@@ -109,7 +113,7 @@ function parseIdentityLines(file: string, lines: readonly string[]): Result<Iden
       inComment = !text.includes("-->");
       continue;
     }
-    if (!text.startsWith("- ")) continue;
+    if (!BULLET_START.test(text) && !TIER_MARKER.test(text)) continue;
     const match = IDENTITY_LINE.exec(text);
     const [, name, tier, value] = match ?? [];
     if (name === undefined || !isOneOf(IDENTITY_TIERS, tier) || value === undefined) {

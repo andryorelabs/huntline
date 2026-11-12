@@ -149,6 +149,21 @@ describe("loadDossier", () => {
     expect(loadDossier(dir).ok).toBe(true);
   });
 
+  test("accepts block-style sources in the identity front matter", () => {
+    write(
+      "identity.md",
+      "---\nstatus: complete\nsources:\n  - interview\n---\n\n- fullName [A]: Jane Doe\n",
+    );
+    expect(loadDossier(dir).ok).toBe(true);
+  });
+
+  test("rejects tier C values on any bullet style or without a bullet", () => {
+    for (const line of ["passportNumber [C]: X123", "* idNumber [C]: Y999", "-\tssn [C]: 123"]) {
+      write("identity.md", `---\nstatus: complete\nsources: []\n---\n\n${line}\n`);
+      expect(errorOf(loadDossier(dir)).code).toBe("dossier-invalid");
+    }
+  });
+
   test("rejects a malformed identity field", () => {
     write("identity.md", "---\nstatus: complete\nsources: []\n---\n\n- fullName: Jane\n");
     expect(errorOf(loadDossier(dir)).message).toContain("malformed identity field");

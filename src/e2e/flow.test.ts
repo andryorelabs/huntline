@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { isObject } from "../core/narrow.ts";
@@ -7,6 +15,7 @@ import { isObject } from "../core/narrow.ts";
 const REPO_ROOT = path.resolve(import.meta.dir, "../..");
 const CLI_ENTRY = path.join(REPO_ROOT, "src/cli.ts");
 const EXAMPLE_CV = path.join(REPO_ROOT, "examples/cv");
+const COMPLETE_DOSSIER = path.join(REPO_ROOT, "fixtures/dossier/complete/dossier");
 
 const TYPST_STUB = `#!/bin/sh
 while [ $# -gt 1 ]; do
@@ -128,6 +137,7 @@ function writeDataDir(): void {
   copyFileSync(path.join(EXAMPLE_CV, "never-claim.yaml"), path.join(dataDir, "never-claim.yaml"));
   writeFileSync(path.join(dataDir, "facts.yaml"), FLAT_FACTS);
   writeFileSync(path.join(dataDir, "bullets.yaml"), FLAT_BULLETS);
+  cpSync(COMPLETE_DOSSIER, path.join(dataDir, "dossier"), { recursive: true });
   mkdirSync(path.join(dataDir, "cv"));
   copyFileSync(path.join(EXAMPLE_CV, "template.typ"), path.join(dataDir, "cv", "template.typ"));
 }
@@ -221,7 +231,6 @@ describe("end-to-end flow with the local tracker", () => {
   test("doctor, sweep, ingest, score, cv, apply, inbox and status", () => {
     const doctor = ok(["doctor"]);
     expect(doctor["tracker"]).toBe("local");
-    expect(doctor["markers"]).toBe(0);
 
     const sweep = ok(["sweep"]);
     expect(sweep["failed"]).toEqual([]);
@@ -369,11 +378,15 @@ describe("end-to-end flow with the local tracker", () => {
     expect(errorCodeOf(result)).toBe("lint-failed");
   });
 
-  test("a malformed Profile exits 2 and markers exit 1", () => {
-    writeFileSync(path.join(dataDir, "facts.yaml"), "# TODO(jobship): fill\nfacts: []\n");
-    const markers = runCli(["doctor"]);
-    expect(markers.code).toBe(1);
-    expect(errorCodeOf(markers)).toBe("todo-markers");
+  test("a malformed Profile exits 2 and an incomplete Dossier exits 1", () => {
+    const career = path.join(dataDir, "dossier", "career.md");
+    writeFileSync(
+      career,
+      readFileSync(career, "utf8").replace("status: complete", "status: empty"),
+    );
+    const incomplete = runCli(["doctor"]);
+    expect(incomplete.code).toBe(1);
+    expect(errorCodeOf(incomplete)).toBe("dossier-incomplete");
     writeFileSync(path.join(dataDir, "profile.yaml"), "regions: [unterminated\n");
     const malformed = runCli(["doctor"]);
     expect(malformed.code).toBe(2);

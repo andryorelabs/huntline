@@ -33,7 +33,7 @@ export const COMMANDS: Record<string, string> = {
 
 /** Flags each command accepts besides the global `--data`. */
 export const COMMAND_FLAGS: Record<string, readonly string[]> = {
-  init: ["--force"],
+  init: ["--force", "--missing"],
   setup: [],
   doctor: [],
   sweep: ["--source", "--keyword"],
@@ -69,7 +69,7 @@ export const COMMAND_FLAGS: Record<string, readonly string[]> = {
   interview: [],
   migrate: ["--project", "--team"],
   guard: ["--record", "--self-test"],
-  dossier: [],
+  dossier: ["--file"],
 };
 
 /** Returns the first undeclared flag in `argv` for `command`, or null. */

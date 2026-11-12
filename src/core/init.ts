@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import answersTemplate from "../../templates/answers.json.tmpl" with { type: "text" };
 import bulletsTemplate from "../../templates/bullets.yaml" with { type: "text" };
@@ -7,6 +7,7 @@ import factsTemplate from "../../templates/facts.yaml" with { type: "text" };
 import neverClaimTemplate from "../../templates/never-claim.yaml" with { type: "text" };
 import profileTemplate from "../../templates/profile.yaml" with { type: "text" };
 import cvTemplate from "../../templates/cv-template.typ" with { type: "text" };
+import { DOSSIER_TEMPLATES } from "../dossier/dossier.ts";
 import { CONFIG_FILE } from "./data-dir.ts";
 import { settingValue } from "./env.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
@@ -17,6 +18,8 @@ function templateText(content: unknown): string {
   return content;
 }
 
+const IDENTITY_IGNORE = "dossier/identity.md";
+
 const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   [CONFIG_FILE]: templateText(configTemplate),
   "profile.yaml": templateText(profileTemplate),
@@ -25,10 +28,24 @@ const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   "never-claim.yaml": templateText(neverClaimTemplate),
   "answers.json": templateText(answersTemplate),
   "cv/template.typ": templateText(cvTemplate),
+  ...DOSSIER_TEMPLATES,
+  ".gitignore": `${IDENTITY_IGNORE}\n`,
 };
 
-/** The placeholder marker the bundled templates still carry; doctor counts what remains. */
-export const MARKER = "TODO(jobship):";
+/**
+ * Appends the identity file to an existing `.gitignore` that lacks it, so adding the
+ * Dossier to an older data dir never leaves identity data committable.
+ * Returns true when the file was changed.
+ */
+function ensureIdentityIgnored(target: string): boolean {
+  const file = path.join(target, ".gitignore");
+  const current = readFileSync(file, "utf8");
+  const listed = current.split(/\r?\n/).some((line) => line.trim() === IDENTITY_IGNORE);
+  if (listed) return false;
+  const separator = current === "" || current.endsWith("\n") ? "" : "\n";
+  writeAtomic(file, `${current}${separator}${IDENTITY_IGNORE}\n`);
+  return true;
+}
 
 function readDirectoryFlag(argv: readonly string[]): string | undefined {
   const index = argv.indexOf("--data");
@@ -47,24 +64,35 @@ export async function runInit(
   const fallback = settingValue(env, "HOME") ?? ".";
   const target = path.resolve(cwd, requested ?? fallback);
   const force = argv.includes("--force");
+  const missingOnly = argv.includes("--missing");
+  if (force && missingOnly) return failure("usage", "--force and --missing cannot be combined");
   const existing = Object.keys(SCAFFOLD_FILES).filter((name) =>
     existsSync(path.join(target, name)),
   );
-  if (existing.length > 0 && !force) {
+  if (existing.length > 0 && !force && !missingOnly) {
     return failure("already-exists", `refusing to overwrite ${existing.join(", ")} in ${target}`, {
-      recoveryAction: "re-run with --force to overwrite the scaffold files",
+      recoveryAction:
+        "re-run with --missing to add only the absent files, or --force to overwrite the scaffold files",
     });
   }
+  const toWrite = Object.keys(SCAFFOLD_FILES).filter(
+    (name) => !missingOnly || !existing.includes(name),
+  );
+  const updated: string[] = [];
   await withLock(target, () => {
-    for (const [name, content] of Object.entries(SCAFFOLD_FILES)) {
-      writeAtomic(path.join(target, name), content);
+    for (const name of toWrite) {
+      writeAtomic(path.join(target, name), SCAFFOLD_FILES[name] ?? "");
+    }
+    if (missingOnly && existing.includes(".gitignore") && ensureIdentityIgnored(target)) {
+      updated.push(".gitignore");
     }
     return Promise.resolve();
   });
   return success({
     dataDir: target,
-    written: Object.keys(SCAFFOLD_FILES),
+    written: toWrite,
+    updated,
     overwritten: force ? existing : [],
-    next: `fill every ${MARKER} marker, then run jobship doctor`,
+    next: "run the Onboarding skill (/jobship:init) to fill the Dossier, then run jobship doctor",
   });
 }

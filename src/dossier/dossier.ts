@@ -7,13 +7,13 @@ import identityTemplate from "../../templates/dossier/identity.md" with { type: 
 import presenceTemplate from "../../templates/dossier/presence.md" with { type: "text" };
 import searchTemplate from "../../templates/dossier/search.md" with { type: "text" };
 
-const DOSSIER_SECTION_NAMES = ["career", "search", "presence", "identity"] as const;
+export const DOSSIER_SECTION_NAMES = ["career", "search", "presence", "identity"] as const;
 export type DossierSectionName = (typeof DOSSIER_SECTION_NAMES)[number];
 
 const SECTION_STATUSES = ["empty", "partial", "complete"] as const;
 export type SectionStatus = (typeof SECTION_STATUSES)[number];
 
-const DOSSIER_SOURCES = ["cv", "github", "linkedin", "interview", "export"] as const;
+export const DOSSIER_SOURCES = ["cv", "github", "linkedin", "interview", "export"] as const;
 export type DossierSource = (typeof DOSSIER_SOURCES)[number];
 
 const IDENTITY_TIERS = ["A", "B", "C", "D"] as const;

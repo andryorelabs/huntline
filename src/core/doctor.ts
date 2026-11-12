@@ -1,7 +1,8 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { loadBullets, loadFactBank, loadNeverClaim } from "../cv/facts.ts";
+import { DOSSIER_SECTION_NAMES, loadDossier } from "../dossier/dossier.ts";
 import { runGuardSelfTest, SELF_TEST_HOOKS } from "../guard/self-test.ts";
 import { checkLinearConnection } from "../tracker/check.ts";
 import { DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "../tracker/linear.ts";
@@ -12,7 +13,6 @@ import { sources as registeredSources } from "../sources/index.ts";
 import { CONFIG_FILE, loadProfileWithWarnings } from "./data-dir.ts";
 import { PRODUCT_NAME, settingValue } from "./env.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
-import { MARKER } from "./init.ts";
 import { errorMessage, isObject } from "./narrow.ts";
 import { toolStatus } from "./tools.ts";
 import type { DataDir, Profile } from "./types.ts";
@@ -29,25 +29,6 @@ type DoctorWarning = {
 };
 
 type PluginProbe = { readonly installed: boolean; readonly warning: DoctorWarning | null };
-
-const SCANNED_EXTENSIONS = new Set([".yaml", ".yml", ".json"]);
-
-type MarkerHit = { readonly file: string; readonly line: number };
-
-function findMarkers(dir: DataDir): MarkerHit[] {
-  const hits: MarkerHit[] = [];
-  const names = readdirSync(dir.path, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && SCANNED_EXTENSIONS.has(path.extname(entry.name)))
-    .map((entry) => entry.name)
-    .toSorted();
-  for (const name of names) {
-    const lines = readFileSync(path.join(dir.path, name), "utf8").split("\n");
-    for (const [index, line] of lines.entries()) {
-      if (line.includes(MARKER)) hits.push({ file: name, line: index + 1 });
-    }
-  }
-  return hits;
-}
 
 function cvDataProblems(dir: DataDir): string[] {
   const present = (file: string): boolean => existsSync(path.join(dir.path, file));
@@ -70,6 +51,16 @@ function cvDataProblems(dir: DataDir): string[] {
     }
   }
   return problems;
+}
+
+function derivedEmpty(dir: DataDir, profile: Profile): string[] {
+  const facts = loadFactBank(dir);
+  const bullets = loadBullets(dir);
+  const empty: string[] = [];
+  if (!facts.ok || facts.value.facts.length === 0) empty.push("Fact bank");
+  if (!bullets.ok || bullets.value.length === 0) empty.push("Bullets");
+  if (profile.regions.length === 0) empty.push("Profile regions");
+  return empty;
 }
 
 function parseProblem(dir: DataDir, file: string): string | null {
@@ -223,17 +214,36 @@ export async function runDoctor(
       recoveryAction: "fix or remove the named file",
     });
   }
-  const markers = findMarkers(ctx.dataDir);
-  if (markers.length > 0) {
-    const listed = markers.map((hit) => `${hit.file}:${hit.line}`).join(", ");
-    return failure("todo-markers", `${markers.length} ${MARKER} markers remain: ${listed}`, {
-      recoveryAction: `replace each ${MARKER} marker with your own data`,
+  if (!existsSync(path.join(ctx.dataDir.path, "dossier"))) {
+    const listed = DOSSIER_SECTION_NAMES.map((name) => `${name} (missing)`).join(", ");
+    return failure("dossier-incomplete", `Dossier sections not complete: ${listed}`, {
+      recoveryAction:
+        "run jobship init --missing to add the Dossier without touching existing files, then the Onboarding skill (/jobship:init)",
+    });
+  }
+  const dossier = loadDossier(ctx.dataDir);
+  if (!dossier.ok) {
+    return failure(dossier.error.code, dossier.error.message, {
+      recoveryAction: "fix the named Dossier file",
+    });
+  }
+  const unfinished = dossier.value.filter((section) => section.status !== "complete");
+  if (unfinished.length > 0) {
+    const listed = unfinished.map((section) => `${section.name} (${section.status})`).join(", ");
+    return failure("dossier-incomplete", `Dossier sections not complete: ${listed}`, {
+      recoveryAction: "run the Onboarding skill (/jobship:init) to complete every Dossier section",
     });
   }
   const problems = cvDataProblems(ctx.dataDir);
   if (problems.length > 0) {
     return failure("cv-data-invalid", problems.join("; "), {
       recoveryAction: "fix facts.yaml, bullets.yaml and never-claim.yaml as named",
+    });
+  }
+  const empty = derivedEmpty(ctx.dataDir, profile.value);
+  if (empty.length > 0) {
+    return failure("derived-empty", `nothing derived yet: ${empty.join(", ")} empty`, {
+      recoveryAction: "run jobship dossier derive and jobship dossier apply after Onboarding",
     });
   }
   const selfTest = runGuardSelfTest("guardHooks" in deps ? deps.guardHooks : SELF_TEST_HOOKS);
@@ -267,7 +277,6 @@ export async function runDoctor(
     dataDir: ctx.dataDir.path,
     tracker: profile.value.tracker.kind,
     sources: profile.value.sources.length,
-    markers: 0,
     tools: toolStatus(ctx.env),
   });
 }

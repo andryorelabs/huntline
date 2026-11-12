@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { MODULE_FILES } from "../cli.ts";
 import { COMMANDS, COMMAND_FLAGS } from "./commands.ts";
 import { isObject } from "./narrow.ts";
 
+const COMPLETE_DOSSIER = path.join(import.meta.dir, "../../fixtures/dossier/complete/dossier");
 const cliPath = path.join(import.meta.dir, "../cli.ts");
 
 let workDir = "";
@@ -52,6 +53,12 @@ function writeValidDataDir(dir: string, profileOverrides: Record<string, unknown
       tracker: { kind: "local" },
       ...profileOverrides,
     }),
+  );
+  cpSync(COMPLETE_DOSSIER, path.join(dir, "dossier"), { recursive: true });
+  writeFileSync(path.join(dir, "facts.yaml"), "facts:\n  - id: f1\n    text: Built a thing\n");
+  writeFileSync(
+    path.join(dir, "bullets.yaml"),
+    "bullets:\n  - id: b1\n    text: Built a thing\n    facts: [f1]\n",
   );
 }
 
@@ -120,14 +127,18 @@ describe("doctor", () => {
     expect(runCli(["doctor"]).code).toBe(2);
   });
 
-  test("remaining markers exit 1 listing each file and line", () => {
+  test("an incomplete Dossier exits 1 with dossier-incomplete", () => {
     const fixture = path.join(workDir, "fixture");
     writeValidDataDir(fixture);
-    writeFileSync(path.join(fixture, "facts.yaml"), "# TODO(jobship): fill\nfacts: []\n");
+    const career = path.join(fixture, "dossier", "career.md");
+    writeFileSync(
+      career,
+      readFileSync(career, "utf8").replace("status: complete", "status: empty"),
+    );
     const result = runCli(["doctor", "--data", fixture]);
     expect(result.code).toBe(1);
-    expect(errorOf(result).code).toBe("todo-markers");
-    expect(errorOf(result).message).toContain("facts.yaml:1");
+    expect(errorOf(result).code).toBe("dossier-incomplete");
+    expect(errorOf(result).message).toContain("career");
   });
 
   test("invalid facts.yaml exits 1 with cv-data-invalid", () => {
@@ -173,7 +184,7 @@ describe("doctor", () => {
 });
 
 describe("init", () => {
-  test("scaffolds the templates, doctor exits 1 on markers, and init refuses to overwrite", () => {
+  test("scaffolds the templates, doctor exits 1 on the empty Dossier, and init refuses to overwrite", () => {
     const created = runCli(["init"]);
     expect(created.code).toBe(0);
     for (const name of [
@@ -182,14 +193,17 @@ describe("init", () => {
       "facts.yaml",
       "bullets.yaml",
       "never-claim.yaml",
+      ".gitignore",
+      "dossier/career.md",
+      "dossier/identity.md",
     ]) {
       expect(readFileSync(path.join(workDir, name), "utf8").length).toBeGreaterThan(0);
     }
 
     const checked = runCli(["doctor"]);
     expect(checked.code).toBe(1);
-    expect(errorOf(checked).code).toBe("todo-markers");
-    expect(errorOf(checked).message).toContain("profile.yaml");
+    expect(errorOf(checked).code).toBe("dossier-incomplete");
+    expect(errorOf(checked).message).toContain("career");
 
     writeFileSync(path.join(workDir, "profile.yaml"), "kept: true\n");
     const refused = runCli(["init"]);

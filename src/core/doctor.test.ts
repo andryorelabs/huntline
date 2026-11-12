@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -14,7 +22,22 @@ import { isObject } from "./narrow.ts";
 const RECOVERY =
   "claude plugin marketplace add andryorelabs/jobship && claude plugin install jobship@jobship-marketplace";
 
+const COMPLETE_DOSSIER = path.resolve(import.meta.dir, "../../fixtures/dossier/complete/dossier");
+
 let workDir = "";
+
+function writeDerivedFiles(dir: string): void {
+  writeFileSync(path.join(dir, "facts.yaml"), "facts:\n  - id: f1\n    text: Built a thing\n");
+  writeFileSync(
+    path.join(dir, "bullets.yaml"),
+    "bullets:\n  - id: b1\n    text: Built a thing\n    facts: [f1]\n",
+  );
+}
+
+function writeCompleteOnboarding(dir: string): void {
+  cpSync(COMPLETE_DOSSIER, path.join(dir, "dossier"), { recursive: true });
+  writeDerivedFiles(dir);
+}
 
 function writeDataDir(tracker: Record<string, unknown>): CommandContext {
   const dir = path.join(workDir, "data");
@@ -34,6 +57,7 @@ function writeDataDir(tracker: Record<string, unknown>): CommandContext {
       tracker,
     }),
   );
+  writeCompleteOnboarding(dir);
   return { dataDir: { path: dir }, env: { HOME: workDir }, cwd: workDir };
 }
 
@@ -283,5 +307,84 @@ describe("init scaffold", () => {
     expect(result.ok).toBe(true);
     expect(existsSync(path.join(fresh, "cv", "template.typ"))).toBe(true);
     expect(listAnswers({ path: fresh })).toEqual([]);
+  });
+});
+
+describe("doctor onboarding checks", () => {
+  test("a freshly scaffolded data dir fails dossier-incomplete listing all four sections", async () => {
+    const fresh = path.join(workDir, "fresh");
+    await runInit(["--data", fresh], workDir);
+    const result = await runDoctor({ dataDir: { path: fresh }, env: {}, cwd: workDir });
+    expect(result.ok).toBe(false);
+    const error = result.ok ? null : result.error;
+    expect(error?.code).toBe("dossier-incomplete");
+    for (const section of ["career", "search", "presence", "identity"]) {
+      expect(error?.message).toContain(section);
+    }
+  });
+
+  test("a partial Dossier fails dossier-incomplete naming only the unfinished sections", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    const career = dataFile(ctx, "dossier/career.md");
+    writeFileSync(
+      career,
+      readFileSync(career, "utf8").replace("status: complete", "status: partial"),
+    );
+    const result = await runDoctor(ctx);
+    expect(result.ok ? "" : result.error.code).toBe("dossier-incomplete");
+    expect(result.ok ? "" : result.error.message).toContain("career (partial)");
+    expect(result.ok ? "" : result.error.message).not.toContain("search");
+  });
+
+  test("a complete Dossier with empty derived files fails derived-empty", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    writeFileSync(dataFile(ctx, "facts.yaml"), "facts: []\n");
+    writeFileSync(dataFile(ctx, "bullets.yaml"), "bullets: []\n");
+    rewriteProfile(ctx, { regions: [] });
+    const result = await runDoctor(ctx);
+    expect(result.ok ? "" : result.error.code).toBe("derived-empty");
+    for (const name of ["Fact bank", "Bullets", "Profile regions"]) {
+      expect(result.ok ? "" : result.error.message).toContain(name);
+    }
+  });
+
+  test("a complete Dossier and derived files report ok", async () => {
+    const result = await runDoctor(writeDataDir({ kind: "local" }));
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe("init scaffold of the Dossier", () => {
+  test("writes the four Dossier sections and a .gitignore listing identity.md", async () => {
+    const fresh = path.join(workDir, "fresh");
+    const result = await runInit(["--data", fresh], workDir);
+    expect(result.ok).toBe(true);
+    for (const name of ["career", "search", "presence", "identity"]) {
+      const text = readFileSync(path.join(fresh, "dossier", `${name}.md`), "utf8");
+      expect(text).toContain("status: empty");
+      expect(text).toContain("sources: []");
+    }
+    expect(readFileSync(path.join(fresh, ".gitignore"), "utf8")).toContain("dossier/identity.md");
+  });
+
+  test("no scaffolded file carries the retired marker", async () => {
+    const fresh = path.join(workDir, "fresh");
+    await runInit(["--data", fresh], workDir);
+    const found = new Bun.Glob("**/*").scanSync({ cwd: fresh, dot: true });
+    for (const name of found) {
+      expect(readFileSync(path.join(fresh, name), "utf8")).not.toContain("TODO(jobship):");
+    }
+  });
+
+  test("an existing .gitignore is kept without --force and replaced with it", async () => {
+    const fresh = path.join(workDir, "fresh");
+    mkdirSync(fresh, { recursive: true });
+    writeFileSync(path.join(fresh, ".gitignore"), "mine\n");
+    const refused = await runInit(["--data", fresh], workDir);
+    expect(refused.ok ? "" : refused.error.code).toBe("already-exists");
+    expect(readFileSync(path.join(fresh, ".gitignore"), "utf8")).toBe("mine\n");
+    const forced = await runInit(["--data", fresh, "--force"], workDir);
+    expect(forced.ok).toBe(true);
+    expect(readFileSync(path.join(fresh, ".gitignore"), "utf8")).toContain("dossier/identity.md");
   });
 });

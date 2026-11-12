@@ -87,7 +87,7 @@ describe.skipIf(process.platform !== "linux" || process.arch !== "x64")(
       expect(run("init", "--data", target).exitCode).toBe(0);
       const doctor = run("doctor", "--data", target);
       expect(doctor.exitCode).toBe(1);
-      expect(doctor.stdout.toString()).toContain("todo-markers");
+      expect(doctor.stdout.toString()).toContain("dossier-incomplete");
     });
 
     test("inbox eval finds its embedded fixtures in the compiled binary", () => {

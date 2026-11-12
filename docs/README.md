@@ -4,6 +4,7 @@
 
 - [Install](guide/install.md)
 - [Data dir layout](guide/data-dir.md)
+- [Onboarding](guide/onboarding.md)
 - [Adopting jobship with your own data](guide/adopting.md)
 - [Tailored CVs](guide/cv.md)
 - [Safety model](guide/safety.md)

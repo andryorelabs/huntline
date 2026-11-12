@@ -17,3 +17,4 @@ Decisions that are hard to reverse, surprising without context, and the result o
 | 0009 | [The Dossier is the source of derived files](0009-the-dossier-is-the-source-of-derived-files.md) | Accepted   | -                                               |
 | 0010 | [Identity data is tiered](0010-identity-data-is-tiered.md)                                       | Accepted   | -                                               |
 | 0011 | [LinkedIn is read in the user's browser](0011-linkedin-is-read-in-the-users-browser.md)          | Accepted   | -                                               |
+| 0012 | [Use the yaml package to edit derived files](0012-use-the-yaml-package-to-edit-derived-files.md) | Accepted   | -                                               |

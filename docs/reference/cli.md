@@ -63,7 +63,7 @@ ATS Sources (`greenhouse`, `lever`, `ashby`, `workable`, `smartrecruiters`) only
 ### `jobship cv`
 
 - `cv build [--variant <name>] [--tag <tag>]... [--requirement <text>]... [--template <file>]` builds a CV from Bullets backed by Fact bank facts, renders it with Typst and extracts text.
-- `cv lint [--variant <name> | --file <text>]` fails with `lint-failed` on Never-claim terms, repeated phrases, unknown numbers and placeholders. Numbers compare independent of locale (`75.000` equals `75,000`, `4,8` equals `4.8`), and only `TODO(...)` and `TODO:` markers count as placeholders, never the Spanish word "todo".
+- `cv lint [--variant <name> | --file <text>]` fails with `lint-failed` on Never-claim terms, `identity-leak`, repeated phrases, unknown numbers and placeholders. `identity-leak` fires when a tier B, C or D identity value, or a tier A field other than name, email, phone, city, country and links, appears in the CV text; matching is case-insensitive and boundary-aware, per line, and the finding names the field, not its value. Numbers compare independent of locale (`75.000` equals `75,000`, `4,8` equals `4.8`), and only `TODO(...)` and `TODO:` markers count as placeholders, never the Spanish word "todo".
 - `cv coverage <key> --requirement <text>...` lists requirements as `covered` (with fact ids) or `missing`.
 
 ### `jobship apply`
@@ -107,3 +107,7 @@ PreToolUse hook. Reads the hook payload from stdin and prints a `permissionDecis
 ### `jobship dossier`
 
 `dossier check` validates the four Dossier sections in `dossier/` (`career`, `search`, `presence`, `identity`) and prints each section's `status` (`empty`, `partial`, `complete`) and `sources`. It fails with `dossier-invalid`, naming the file and the problem, for malformed or missing front matter, an unknown section file, an unknown status or source, a malformed identity field, or a tier C identity field holding anything other than `ready: yes|no`.
+
+`dossier derive --file <proposal.json>` validates a proposal (`facts`, `bullets`, `profile`, `neverClaim`, `answers`, optional `removals`) and writes an Approval batch `dossier/batches/batch-<hash16>.json` holding only the items that differ from `facts.yaml`, `bullets.yaml`, `profile.yaml`, `never-claim.yaml` and `answers.json`. Every fact needs a `source` (`cv`, `github`, `linkedin`, `interview` or `export`) and `cites` naming existing Dossier lines as `dossier/<section>.md:<line>` (1-based, front matter included). The proposal is a delta: facts and bullets it does not mention are kept, and are removed only when listed in `removals.facts` or `removals.bullets`, which then appear as `remove` items. A proposal identical to the current files yields a batch with `items: []`. It fails `proposal-invalid` for malformed JSON, an unknown Dossier line, source, Answer key or fact reference, or an invalid Profile; and `identity-leak` when a fact or bullet contains a tier B, C or D identity value or a tier A field other than name, email, phone, city, country and links.
+
+`dossier apply <batch>` writes the batch items to the derived files atomically under a lock. It fails `batch-not-found` for a missing file and `batch-changed` when the batch was edited after derive; re-applying a batch is a no-op (`applied: 0`).

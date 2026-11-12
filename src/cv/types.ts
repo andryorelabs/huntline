@@ -47,7 +47,12 @@ export type Bullet = {
   readonly order?: number;
 };
 
-type LintRule = "never-claim" | "repeated-phrase" | "unbacked-number" | "placeholder";
+type LintRule =
+  | "never-claim"
+  | "identity-leak"
+  | "repeated-phrase"
+  | "unbacked-number"
+  | "placeholder";
 
 export type LintFinding = {
   readonly rule: LintRule;

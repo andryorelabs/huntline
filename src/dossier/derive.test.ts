@@ -186,6 +186,45 @@ describe("applyDossierBatch comment preservation", () => {
     expect(readDataFile("facts.yaml")).toContain("# facts note");
   });
 
+  test("removing the first row keeps the comment above the next row", async () => {
+    const seeded = [
+      "# leading note",
+      "facts:",
+      "  # about a",
+      "  - id: a",
+      "    text: A",
+      "    tags: []",
+      "    source: cv",
+      "    cites: [dossier/career.md:10]",
+      "  # about b",
+      "  - id: b",
+      "    text: B",
+      "    tags: []",
+      "    source: cv",
+      "    cites: [dossier/career.md:11]",
+      "",
+    ].join("\n");
+    writeFileSync(path.join(dataDir, "facts.yaml"), seeded);
+    await applyProposal({ facts: [], removals: { facts: ["a"], bullets: [] } });
+    const text = readDataFile("facts.yaml");
+    expect(text).toContain("# about b");
+    expect(text).toContain("# leading note");
+    expect(text).not.toContain("id: a");
+    expect(text).toContain("id: b");
+  });
+
+  test("a comment-only derived file keeps its comments", async () => {
+    const proposal = parseProposal(loadBaseProposal());
+    if (!proposal.ok) throw new Error(proposal.error.message);
+    const derived = await deriveBatch(context(), proposal.value);
+    if (!derived.ok) throw new Error(derived.error.message);
+    writeFileSync(path.join(dataDir, "facts.yaml"), "# my notes\n");
+    const applied = await applyDossierBatch(context(), derived.value.batchPath);
+    expect(applied.ok).toBe(true);
+    expect(readDataFile("facts.yaml")).toContain("# my notes");
+    expect(listOf("facts.yaml", "facts")).toHaveLength(2);
+  });
+
   test("a missing derived file starts from an empty document", async () => {
     rmSync(path.join(dataDir, "never-claim.yaml"));
     await applyProposal(loadBaseProposal());

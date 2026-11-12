@@ -264,6 +264,12 @@ function loadDocument(dir: DataDir, file: string): Document {
   if (!existsSync(target)) return new Document({});
   const document = parseDocument(readFileSync(target, "utf8"));
   if (document.errors.length > 0) throw new Error(document.errors[0]?.message);
+  if (document.contents === null) {
+    const fresh = new Document({});
+    fresh.commentBefore = document.commentBefore;
+    fresh.comment = document.comment;
+    return fresh;
+  }
   return isMap(document.contents) ? document : new Document({});
 }
 

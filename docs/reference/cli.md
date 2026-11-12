@@ -11,12 +11,12 @@ Every command prints exactly one JSON envelope on stdout.
 
 ## Exit codes
 
-| Code | Meaning                                                                                                                                                                          |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | Success (`ok: true`).                                                                                                                                                            |
-| 1    | The command ran and found a problem to fix: `todo-markers`, `lint-failed`, `verify-mismatch`, `batch-changed`, `bullet-fact-missing`, `not-found`, `already-exists` and similar. |
-| 2    | Usage or configuration error: `usage`, `unknown-command`, `data-dir-not-found`, `profile-missing`, `profile-malformed`.                                                          |
-| 3    | Internal error (`internal`).                                                                                                                                                     |
+| Code | Meaning                                                                                                                                                          |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Success (`ok: true`).                                                                                                                                            |
+| 1    | The command ran and found a problem to fix: `lint-failed`, `verify-mismatch`, `batch-changed`, `bullet-fact-missing`, `not-found`, `already-exists` and similar. |
+| 2    | Usage or configuration error: `usage`, `unknown-command`, `data-dir-not-found`, `profile-missing`, `profile-malformed`.                                          |
+| 3    | Internal error (`internal`).                                                                                                                                     |
 
 ## Commands
 

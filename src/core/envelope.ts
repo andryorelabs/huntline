@@ -14,7 +14,6 @@ export type ExitCode = 0 | 1 | 2 | 3;
 
 const EXIT_CODE_BY_ERROR: Readonly<Record<string, ExitCode>> = {
   "not-implemented": 1,
-  "todo-markers": 1,
   "already-exists": 1,
   "unknown-command": 2,
   usage: 2,

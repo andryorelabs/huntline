@@ -101,7 +101,6 @@ Details: [safety model](docs/guide/safety.md). After a release, follow the [dogf
 - [Architecture decisions](docs/adr/README.md)
 - [Product](PRODUCT.md)
 - [Governance](GOVERNANCE.md)
-- [Roadmap](ROADMAP.md)
 - [Glossary](GLOSSARY.md)
 - [Changelog](CHANGELOG.md)
 

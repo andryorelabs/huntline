@@ -14,6 +14,7 @@
 
 - [CLI reference](reference/cli.md)
 - [Profile reference](reference/profile.md)
+- [Onboarding research](reference/onboarding-research.md)
 
 ## Project
 

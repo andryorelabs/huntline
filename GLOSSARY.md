@@ -77,6 +77,24 @@ A Variant built for one Lead.
 **Answer bank**:
 Reusable form answers with provenance and scope; it abstains when unsure.
 
+### Onboarding
+
+**Dossier**:
+Everything the user knows about their own career, search and identity, in their own words, with provenance; the source the Fact bank, Profile and Answer bank are derived from.
+_Avoid_: Onboarding data, resume
+
+**Dossier section**:
+One part of the Dossier (career, search, presence or identity) with a completeness status.
+
+**Onboarding**:
+Building the Dossier from the user's sources and an interview, then deriving the first Fact bank, Profile, Answer bank and CV.
+
+**Identity tier**:
+How far a piece of identity data may travel: any form, yes/no only, readiness only, or never pre-filled.
+
+**Answer key**:
+The stable meaning of a recurring form question that many phrasings map to.
+
 ### Human gates
 
 **Blocker**:
@@ -116,6 +134,8 @@ An outreach message the human sends.
 - A **Fit score** judges a Lead against the Profile.
 - A **Bullet** is built only from **Fact bank** facts and belongs to an **Entry**; a **Variant** selects Bullets by tag rules; a **Tailored CV** is a Variant built for one Lead.
 - The **Never-claim list** names what a CV must never contain.
+- **Onboarding** builds the **Dossier**, which has **Dossier sections**; the Fact bank, Bullets, Profile, Never-claim list and Answer bank are derived from the Dossier through **Approval batches**.
+- Each **Answer bank** entry is stored under an **Answer key**; identity data in the Dossier carries an **Identity tier**.
 - A **Blocker** arises during an Application; the **Needs-you queue** holds all open Blockers.
 - An **Approval batch** is a set of proposed writes the human approves as a whole.
 - The **Guard** denies Submit and Send actions and fails closed.
@@ -128,3 +148,4 @@ An outreach message the human sends.
 - "Job" is avoided for both **Posting** and **Application**: a Posting is the ad, an Application is the lifecycle of one Lead.
 - "Inbox" is avoided for the **Needs-you queue**: the queue holds open Blockers, not mail.
 - **Profile** is not "Settings" or "Preferences", and the **Fact bank** is not "Profile data": the Profile holds search criteria, the Fact bank holds verified facts.
+- The Dossier's search section is not the **Profile**: it holds what the user wants in their own words, and the Profile is derived from it. "Portal" is avoided for the accounts the user holds on job platforms; call them platform accounts.

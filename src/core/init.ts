@@ -7,6 +7,7 @@ import factsTemplate from "../../templates/facts.yaml" with { type: "text" };
 import neverClaimTemplate from "../../templates/never-claim.yaml" with { type: "text" };
 import profileTemplate from "../../templates/profile.yaml" with { type: "text" };
 import cvTemplate from "../../templates/cv-template.typ" with { type: "text" };
+import { DOSSIER_TEMPLATES } from "../dossier/dossier.ts";
 import { CONFIG_FILE } from "./data-dir.ts";
 import { settingValue } from "./env.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
@@ -25,10 +26,9 @@ const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   "never-claim.yaml": templateText(neverClaimTemplate),
   "answers.json": templateText(answersTemplate),
   "cv/template.typ": templateText(cvTemplate),
+  ...DOSSIER_TEMPLATES,
+  ".gitignore": "dossier/identity.md\n",
 };
-
-/** The placeholder marker the bundled templates still carry; doctor counts what remains. */
-export const MARKER = "TODO(jobship):";
 
 function readDirectoryFlag(argv: readonly string[]): string | undefined {
   const index = argv.indexOf("--data");
@@ -65,6 +65,6 @@ export async function runInit(
     dataDir: target,
     written: Object.keys(SCAFFOLD_FILES),
     overwritten: force ? existing : [],
-    next: `fill every ${MARKER} marker, then run jobship doctor`,
+    next: "run the Onboarding skill (/jobship:init) to fill the Dossier, then run jobship doctor",
   });
 }

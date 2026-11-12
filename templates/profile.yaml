@@ -1,21 +1,15 @@
-# TODO(jobship): list the regions you can work from, for example LATAM or EU.
 regions: []
-# TODO(jobship): keep only the contract types you accept.
 contractTypes:
   - full-time
   - contract
-# TODO(jobship): choose remote-only, hybrid or any.
 remote: remote-only
 stack:
-  # TODO(jobship): technologies a Posting should mention.
   include: []
-  # TODO(jobship): technologies that rule a Posting out.
   exclude: []
-# TODO(jobship): set a floor such as {amount: 60000, currency: USD, period: year}, or keep null.
 salaryFloor: null
 excludedCompanies: []
 outreachDailyCap: 5
-# TODO(jobship): list sources to sweep. Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`), getonboard, himalayas, remoteok, hn.
+# Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`), getonboard, himalayas, remoteok, hn.
 sources: []
 tracker:
   kind: local

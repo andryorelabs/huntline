@@ -11,37 +11,43 @@ claude plugin install jobship@jobship-marketplace
 
 Pass: `claude plugin list` shows `jobship`.
 
-## 2. Doctor is green
+## 2. Onboarding is complete
+
+Run `/jobship:init` in your data dir, finish Onboarding ([guide](onboarding.md)), then run `jobship dossier check`.
+
+Pass: every Dossier section is `complete`.
+
+## 3. Doctor is green
 
 Run `jobship doctor`.
 
 Pass: exit 0 with `"ok":true`, `guard.selfTest` is `"pass"`, `guard.pluginInstalled` is `true` and `warnings` is empty. With `tracker.kind: linear`, a green doctor also means the Linear check passed; `linear-not-ready` lists what is missing (`LINEAR_API_KEY`, the team key or a mapped state).
 
-## 3. Guard self-test
+## 4. Guard self-test
 
 Run `jobship guard --self-test`.
 
 Pass: exit 0, and every case in the envelope has `expected` equal to `actual`. A failing run exits 1 with `guard-self-test-failed` naming each failing case.
 
-## 4. One real sweep
+## 5. One real sweep
 
 Run `jobship sweep` against your configured Sources.
 
 Pass: exit 0 and per-Source `seen/known/new` counts. A Source listed under `failed` is a problem; one under `empty` is fine.
 
-## 5. One apply, stopped at the Submit
+## 6. One apply, stopped at the Submit
 
 Run the `apply` skill on one real Lead in your own Chrome, through the browser MCP. It fills the form and runs `jobship apply verify`.
 
 Pass: the form is filled, `jobship apply verify` reports no mismatch, and the run stops before Submit. Trying to click "Submit application" is denied by the Guard. You press Submit yourself, or close the tab.
 
-## 6. One inbox run against Gmail
+## 7. One inbox run against Gmail
 
 Run the `inbox` skill against your mailbox with the Gmail MCP connected, using `jobship inbox` for batches.
 
 Pass: it classifies mail and proposes changes without applying them. Nothing changes in Gmail until you approve.
 
-## 7. Outreach draft, no send
+## 8. Outreach draft, no send
 
 Run the `outreach` skill for one Lead.
 

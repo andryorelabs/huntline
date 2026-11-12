@@ -1,0 +1,41 @@
+{
+  "facts": [
+    {
+      "id": "checkout-latency",
+      "text": "Cut p95 latency of the checkout API from 900 ms to 300 ms by adding a read-through cache",
+      "tags": ["backend", "performance"],
+      "source": "cv",
+      "cites": ["dossier/career.md:10"]
+    },
+    {
+      "id": "ci-pipeline",
+      "text": "Built the CI pipeline for 12 services with GitHub Actions",
+      "tags": ["devops"],
+      "source": "cv",
+      "cites": ["dossier/career.md:11"]
+    }
+  ],
+  "bullets": [
+    {
+      "id": "b-checkout-latency",
+      "text": "Cut checkout API p95 latency from 900 ms to 300 ms with a read-through cache",
+      "tags": ["backend"],
+      "factIds": ["checkout-latency"],
+      "entry": "example-systems",
+      "order": 1
+    }
+  ],
+  "profile": {
+    "regions": ["EU"],
+    "remote": "remote-only"
+  },
+  "neverClaim": ["Kubernetes certified"],
+  "answers": [
+    {
+      "answerKey": "sponsorship",
+      "scope": "global",
+      "text": "No",
+      "provenance": "dossier/search.md"
+    }
+  ]
+}

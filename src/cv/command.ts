@@ -9,6 +9,7 @@ import {
   systemRunner,
   type TypstRunner,
 } from "./build.ts";
+import { loadIdentityIfPresent } from "../dossier/identity-guard.ts";
 import { loadFactBank, loadNeverClaim } from "./facts.ts";
 import { lintCv } from "./lint.ts";
 import { requirementCoverage } from "./select.ts";
@@ -104,7 +105,13 @@ export async function runWith(
     if (!facts.ok) return resultFailure(facts.error);
     const neverClaim = loadNeverClaim(dir);
     if (!neverClaim.ok) return resultFailure(neverClaim.error);
-    const findings = lintCv(text.value, { facts: facts.value, neverClaim: neverClaim.value });
+    const identity = loadIdentityIfPresent(dir);
+    if (!identity.ok) return resultFailure(identity.error);
+    const findings = lintCv(text.value, {
+      facts: facts.value,
+      neverClaim: neverClaim.value,
+      identity: identity.value,
+    });
     if (findings.length === 0) return success({ file: textPath, findings });
     const detail = findings.map((finding) => finding.message).join("; ");
     return failure("lint-failed", `${findings.length} finding(s): ${detail}`);

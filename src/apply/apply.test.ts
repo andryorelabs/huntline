@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { isObject } from "../core/narrow.ts";
+import { ANSWER_KEYS, resolveAnswerKey } from "./answer-keys.ts";
 import { lookupAnswer, saveAnswer } from "./answers.ts";
 import { listNeeds, recordBlocker, unansweredDetail } from "./blockers.ts";
 import { verifyFields } from "./verify.ts";
@@ -241,5 +242,101 @@ describe("cli", () => {
     expect(JSON.stringify(mismatch.envelope)).toContain("file-name-mismatch");
     writeFileSync(dump, JSON.stringify([{ name: "cv", value: "cv-acme.pdf" }]));
     expect(cli(["apply", "verify", "--intended", intended, "--dump", dump]).code).toBe(0);
+  });
+});
+
+describe("answer keys", () => {
+  test("resolves synonym phrasings to one key and rejects unknown questions", () => {
+    expect(resolveAnswerKey("What are your salary expectations for this role?")).toBe(
+      "salary-expectation",
+    );
+    expect(resolveAnswerKey("Desired salary")).toBe("salary-expectation");
+    expect(resolveAnswerKey("Are you authorized to work in the United States?")).toBe(
+      "work-authorization-us",
+    );
+    expect(resolveAnswerKey("Why do you want this job?")).toBeNull();
+  });
+
+  test("answers every sponsorship phrasing from one row and does not over-match", () => {
+    const dir = { path: workDir };
+    writeFileSync(
+      path.join(workDir, "answers.json"),
+      JSON.stringify([
+        { answerKey: "sponsorship", scope: "global", text: "No", provenance: "human" },
+        { answerKey: "languages", scope: "global", text: "English C1", provenance: "human" },
+      ]),
+    );
+    for (const question of [
+      "Will you now or in the future require visa sponsorship?",
+      "Do you need sponsorship to work here?",
+    ]) {
+      expect(lookupAnswer(dir, question, "global")).toMatchObject({ status: "answer", text: "No" });
+    }
+    expect(resolveAnswerKey("Do you have a non-compete?")).toBe("non-compete");
+    expect(resolveAnswerKey("What programming languages are you proficient in?")).toBeNull();
+    expect(resolveAnswerKey("How many years of experience do you have with React?")).toBeNull();
+    expect(lookupAnswer(dir, "What languages do you speak?", "global")).toMatchObject({
+      status: "answer",
+      text: "English C1",
+    });
+  });
+
+  test("catalog has unique keys and tier-D identity keys", () => {
+    const keys = ANSWER_KEYS.map((entry) => entry.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    const tierD = ANSWER_KEYS.filter((entry) => entry.tier === "D").map((entry) => entry.key);
+    expect(tierD.toSorted()).toEqual(["disability", "gender", "race-ethnicity", "veteran"]);
+  });
+
+  test("a synonym phrasing finds an answer saved under the key", async () => {
+    const dir = { path: workDir };
+    await saveAnswer(dir, "Expected salary?", "global", "90k", "human");
+    expect(lookupAnswer(dir, "What are your salary expectations?", "acme")).toEqual({
+      status: "answer",
+      text: "90k",
+      provenance: "human",
+    });
+    const rows: unknown = JSON.parse(readFileSync(path.join(workDir, "answers.json"), "utf8"));
+    expect(rows).toEqual([
+      { answerKey: "salary-expectation", scope: "global", text: "90k", provenance: "human" },
+    ]);
+  });
+
+  test("unmatched questions are stored under the normalized question", async () => {
+    const dir = { path: workDir };
+    await saveAnswer(dir, "Why us?", "global", "great", "human");
+    const rows: unknown = JSON.parse(readFileSync(path.join(workDir, "answers.json"), "utf8"));
+    expect(rows).toEqual([
+      { answerKey: "why us", scope: "global", text: "great", provenance: "human" },
+    ]);
+  });
+
+  test("tier-D keys always abstain and cannot be saved", async () => {
+    const dir = { path: workDir };
+    writeFileSync(
+      path.join(workDir, "answers.json"),
+      JSON.stringify([{ answerKey: "gender", scope: "global", text: "x", provenance: "human" }]),
+    );
+    expect(lookupAnswer(dir, "What is your gender?", "global").status).toBe("abstain");
+    const saved = await saveAnswer(dir, "Gender", "global", "x", "human");
+    expect(saved.ok).toBe(false);
+  });
+
+  test("saving under a key closes blockers for any phrasing of it", async () => {
+    const dir = { path: workDir };
+    await recordBlocker(dir, "acme-1", "field", unansweredDetail("Desired salary?", "global"));
+    await saveAnswer(dir, "Salary expectations", "global", "90k", "human");
+    expect(await listNeeds(dir)).toEqual([]);
+  });
+
+  test("legacy question rows are still read", () => {
+    const dir = { path: workDir };
+    writeFileSync(
+      path.join(workDir, "answers.json"),
+      JSON.stringify([
+        { question: "expected salary", scope: "global", text: "80k", provenance: "human" },
+      ]),
+    );
+    expect(lookupAnswer(dir, "salary expectations", "global").status).toBe("answer");
   });
 });

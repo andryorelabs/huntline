@@ -1,3 +1,4 @@
+import type { IdentityField } from "../dossier/dossier.ts";
 import type { FactBank, LintFinding } from "./types.ts";
 
 const PHRASE_WORDS = 4;
@@ -38,15 +39,24 @@ function locate(text: string, pattern: RegExp): Located[] {
   return found;
 }
 
+/**
+ * Finds every case-insensitive, boundary-aware occurrence of `term`, one line at a
+ * time, so a value split across lines never matches. Shared by the Never-claim and
+ * identity-leak rules.
+ */
+function findTermHits(text: string, term: string): Located[] {
+  const pattern = new RegExp(
+    `(?<![\\p{L}\\p{N}])${escapeRegExp(term.trim())}(?![\\p{L}\\p{N}])`,
+    "giu",
+  );
+  return locate(text, pattern);
+}
+
 function neverClaimFindings(text: string, terms: string[]): LintFinding[] {
   return terms
     .filter((term) => term.trim() !== "")
     .flatMap((term) => {
-      const pattern = new RegExp(
-        `(?<![\\p{L}\\p{N}])${escapeRegExp(term.trim())}(?![\\p{L}\\p{N}])`,
-        "giu",
-      );
-      return locate(text, pattern).map((hit) => ({
+      return findTermHits(text, term).map((hit) => ({
         rule: "never-claim" as const,
         term,
         line: hit.line,
@@ -54,6 +64,96 @@ function neverClaimFindings(text: string, terms: string[]): LintFinding[] {
         message: `Never-claim term "${term}" at line ${hit.line}, column ${hit.column}`,
       }));
     });
+}
+
+const READINESS_VALUE = /^ready: (yes|no)$/;
+const ALLOWED_TIER_A_FIELDS = new Set([
+  "name",
+  "fullname",
+  "email",
+  "phone",
+  "city",
+  "country",
+  "links",
+]);
+
+/**
+ * Answers too common to match as free text: a tier D `No` would otherwise flag every
+ * "no" in a CV. Values shorter than three characters are skipped for the same reason.
+ */
+const NON_DISTINCTIVE_VALUES = new Set([
+  "yes",
+  "no",
+  "none",
+  "n/a",
+  "not applicable",
+  "decline",
+  "decline to answer",
+  "decline to self-identify",
+  "prefer not to say",
+  "prefer not to answer",
+  "i don't wish to answer",
+]);
+
+/** True when a value is distinctive enough to search for in free text. */
+function isDistinctiveValue(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return normalized.length >= 3 && !NON_DISTINCTIVE_VALUES.has(normalized);
+}
+
+/** True when a CV may carry this identity field: only the allowed tier A fields. */
+function isCvSafeIdentityField(field: IdentityField): boolean {
+  return field.tier === "A" && ALLOWED_TIER_A_FIELDS.has(field.name.toLowerCase());
+}
+
+/** The identity fields whose values must never appear in a CV or Fact bank text. */
+function guardedIdentityFields(identity: readonly IdentityField[]): IdentityField[] {
+  return identity.filter(
+    (field) =>
+      !isCvSafeIdentityField(field) &&
+      isDistinctiveValue(field.value) &&
+      !READINESS_VALUE.test(field.value.trim()),
+  );
+}
+
+type IdentityHit = { readonly field: string; readonly line: number; readonly column: number };
+
+/**
+ * Locates guarded identity values in `text`. A hit lying inside a longer hit on the
+ * same line is dropped so overlapping values are reported once.
+ */
+export function findIdentityLeaks(text: string, identity: readonly IdentityField[]): IdentityHit[] {
+  const hits = guardedIdentityFields(identity).flatMap((field) =>
+    findTermHits(text, field.value).map((hit) => ({
+      field: field.name,
+      line: hit.line,
+      column: hit.column,
+      end: hit.column + hit.term.length,
+    })),
+  );
+  return hits
+    .filter(
+      (hit) =>
+        !hits.some(
+          (other) =>
+            other !== hit &&
+            other.line === hit.line &&
+            other.column <= hit.column &&
+            other.end >= hit.end &&
+            (other.column < hit.column || other.end > hit.end),
+        ),
+    )
+    .map(({ field, line, column }) => ({ field, line, column }));
+}
+
+function identityLeakFindings(text: string, identity: readonly IdentityField[]): LintFinding[] {
+  return findIdentityLeaks(text, identity).map((hit) => ({
+    rule: "identity-leak" as const,
+    term: hit.field,
+    line: hit.line,
+    column: hit.column,
+    message: `identity field "${hit.field}" appears at line ${hit.line}, column ${hit.column}`,
+  }));
 }
 
 function placeholderFindings(text: string): LintFinding[] {
@@ -124,10 +224,11 @@ function repeatedPhraseFindings(text: string): LintFinding[] {
 
 export function lintCv(
   text: string,
-  ctx: { facts: FactBank; neverClaim: string[] },
+  ctx: { facts: FactBank; neverClaim: string[]; identity?: readonly IdentityField[] },
 ): LintFinding[] {
   return [
     ...neverClaimFindings(text, ctx.neverClaim),
+    ...identityLeakFindings(text, ctx.identity ?? []),
     ...repeatedPhraseFindings(text),
     ...numberFindings(text, ctx.facts),
     ...placeholderFindings(text),

@@ -73,17 +73,17 @@ export async function recordBlocker(
 
 function matchesSavedAnswer(
   detail: string,
-  normalizedQuestion: string,
+  isSameQuestion: (question: string) => boolean,
   savedScope: string,
 ): boolean {
   const unanswered = parseUnanswered(detail);
-  if (unanswered === null || unanswered.question !== normalizedQuestion) return false;
+  if (unanswered === null || !isSameQuestion(unanswered.question)) return false;
   return savedScope === GLOBAL_ANSWER_SCOPE || unanswered.answerScope === savedScope;
 }
 
 export async function closeFieldBlockers(
   dir: DataDir,
-  normalizedQuestion: string,
+  isSameQuestion: (question: string) => boolean,
   savedScope: string,
 ): Promise<number> {
   const events = await readEvents(dir);
@@ -95,7 +95,7 @@ export async function closeFieldBlockers(
     event.kind === "blocker.opened" &&
     event.scope === "field" &&
     !resolved.has(event.blockerId) &&
-    matchesSavedAnswer(event.detail, normalizedQuestion, savedScope)
+    matchesSavedAnswer(event.detail, isSameQuestion, savedScope)
       ? [event.blockerId]
       : [],
   );

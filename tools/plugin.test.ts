@@ -78,6 +78,10 @@ describe("repo tooling", () => {
       "facts.yaml",
       "bullets.yaml",
       "never-claim.yaml",
+      "dossier/career.md",
+      "dossier/search.md",
+      "dossier/presence.md",
+      "dossier/identity.md",
     ]) {
       expect(existsSync(path.join(root, "templates", name))).toBe(true);
     }

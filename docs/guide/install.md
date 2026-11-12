@@ -18,7 +18,7 @@ claude plugin install jobship@jobship-marketplace
 
 The plugin ships the skills, the two subagents, the `/jobship:init` and `/jobship:doctor` commands, and the Guard hook registration. Its `bin/jobship` launcher downloads the release binary for your platform on the first session start (a `SessionStart` hook prefetches it) and verifies its checksum. If the checksum does not match, the launcher refuses to run.
 
-After installing, run `/jobship:init` in an empty directory, then `/jobship:doctor`, and follow the [dogfooding checklist](dogfooding.md).
+After installing, run `/jobship:init` in an empty directory. It scaffolds the data dir and then runs Onboarding, which fills the Dossier and derives your data from it; see the [Onboarding guide](onboarding.md). Then run `/jobship:doctor` and follow the [dogfooding checklist](dogfooding.md).
 
 ### Put the binary on your PATH (optional)
 

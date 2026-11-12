@@ -36,9 +36,9 @@ Linux and macOS only (x64 and arm64). Windows is unsupported and WSL is untested
 
 From Claude Code, in an empty directory such as `~/job-search`:
 
-1. Run `/jobship:init` to scaffold the data dir.
-2. Fill every `TODO(jobship):` marker in the generated files (Profile, Fact bank, Bullets, Never-claim list, Answer bank).
-3. Run `/jobship:doctor`. It lists the remaining markers until you are done and reports `"ok":true` when the data dir is valid.
+1. Run `/jobship:init`. It scaffolds the data dir and starts Onboarding.
+2. Answer the Onboarding interview. It reads your CV, GitHub and LinkedIn if you offer them, asks only for the gaps, and writes your Dossier. You approve the Fact bank, Bullets, Profile, Never-claim list and Answer bank it derives as one batch. See [Onboarding](docs/guide/onboarding.md).
+3. Run `/jobship:doctor`. It names any Dossier section still incomplete and reports `"ok":true` when the data dir is valid. A data dir from before the Dossier recovers with `jobship init --missing`.
 4. Use the skills (`sweep`, `score`, `tailor-cv`, `apply`, `inbox`, `outreach`, `interview`).
 
 Optional: put the cached binary on your PATH to use the CLI from a terminal.

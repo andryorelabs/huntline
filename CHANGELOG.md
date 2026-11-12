@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-12
+
+### Added
+
+- The Dossier: four Markdown sections under `dossier/` that hold what you tell jobship about yourself, with `jobship dossier check|derive|apply` to derive the Fact bank, Bullets, Profile, Never-claim list and Answer bank through an Approval batch ([ADR-0009](docs/adr/0009-the-dossier-is-the-source-of-derived-files.md)).
+- The Onboarding skill and guide: `/jobship:init` now scaffolds the data dir and runs Onboarding, from the optional CV, GitHub and LinkedIn sources to a built and linted CV.
+- Identity tiers and the `identity-leak` finding in `cv lint`, which flags tier B, C and D values in CV text ([ADR-0010](docs/adr/0010-identity-data-is-tiered.md)).
+- Answer keys for the Answer bank.
+- `jobship init --missing` to add only the absent files to a pre-Dossier data dir.
+- A coverage gate with a coverage manifest and a pre-push hook.
+
+### Changed
+
+- `doctor` checks Dossier completeness and derived data instead of `TODO(jobship):` markers.
+- `dossier apply` keeps comments in derived YAML files, using the `yaml` package, the first runtime dependency ([ADR-0012](docs/adr/0012-use-the-yaml-package-to-edit-derived-files.md)).
+- `develop` is the trunk; releases merge `develop` into `main` ([ADR-0008](docs/adr/0008-develop-is-the-trunk.md)).
+- The repository follows the cross-repo standard v1 ([ADR-0007](docs/adr/0007-adopt-cross-repo-standard-v1.md)).
+
+### Removed
+
+- The `TODO(jobship):` markers in templates and doctor's `todo-markers` check.
+
 ## [0.3.0] - 2026-11-11
 
 ### Changed
@@ -56,7 +78,8 @@ First tagged release.
 
 - `cv lint` is Spanish-safe, and doctor validates CV data.
 
-[Unreleased]: https://github.com/andryorelabs/jobship/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/andryorelabs/jobship/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/andryorelabs/jobship/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/andryorelabs/jobship/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/andryorelabs/jobship/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/andryorelabs/jobship/releases/tag/v0.1.1

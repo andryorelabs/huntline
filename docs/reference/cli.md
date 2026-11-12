@@ -103,3 +103,7 @@ Lists open Blockers grouped by Application and scope.
 ### `jobship guard`
 
 PreToolUse hook. Reads the hook payload from stdin and prints a `permissionDecision` of `allow` or `deny`; it fails closed on malformed or oversized input. `guard --record` records snapshot labels after `take_snapshot`. `guard --self-test` runs canned payloads (a click on a "Submit application" uid for `mcp__chrome-devtools__click`, `press_key` Enter, `evaluate_script`, Gmail `send_message`, and an allowed `take_snapshot`) through the Guard decision and checks each denied tool name against the PreToolUse matcher in the shipped `hooks/hooks.json`. It prints an envelope listing each case with `expected`, `actual` and `matcherCovers`, and exits 0 only if every case matches; otherwise exit 1 `guard-self-test-failed` naming the failing cases.
+
+### `jobship dossier`
+
+`dossier check` validates the four Dossier sections in `dossier/` (`career`, `search`, `presence`, `identity`) and prints each section's `status` (`empty`, `partial`, `complete`) and `sources`. It fails with `dossier-invalid`, naming the file and the problem, for malformed or missing front matter, an unknown section file, an unknown status or source, a malformed identity field, or a tier C identity field holding anything other than `ready: yes|no`.

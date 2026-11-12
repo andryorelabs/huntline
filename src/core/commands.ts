@@ -28,6 +28,7 @@ export const COMMANDS: Record<string, string> = {
   interview: "src/interview/command.ts",
   migrate: "src/migrate/command.ts",
   guard: "src/guard/command.ts",
+  dossier: "src/dossier/command.ts",
 };
 
 /** Flags each command accepts besides the global `--data`. */
@@ -68,6 +69,7 @@ export const COMMAND_FLAGS: Record<string, readonly string[]> = {
   interview: [],
   migrate: ["--project", "--team"],
   guard: ["--record", "--self-test"],
+  dossier: [],
 };
 
 /** Returns the first undeclared flag in `argv` for `command`, or null. */

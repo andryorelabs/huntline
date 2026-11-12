@@ -69,7 +69,7 @@ export const COMMAND_FLAGS: Record<string, readonly string[]> = {
   interview: [],
   migrate: ["--project", "--team"],
   guard: ["--record", "--self-test"],
-  dossier: [],
+  dossier: ["--file"],
 };
 
 /** Returns the first undeclared flag in `argv` for `command`, or null. */

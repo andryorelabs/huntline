@@ -13,7 +13,7 @@ export type DossierSectionName = (typeof DOSSIER_SECTION_NAMES)[number];
 const SECTION_STATUSES = ["empty", "partial", "complete"] as const;
 export type SectionStatus = (typeof SECTION_STATUSES)[number];
 
-const DOSSIER_SOURCES = ["cv", "github", "linkedin", "interview", "export"] as const;
+export const DOSSIER_SOURCES = ["cv", "github", "linkedin", "interview", "export"] as const;
 export type DossierSource = (typeof DOSSIER_SOURCES)[number];
 
 const IDENTITY_TIERS = ["A", "B", "C", "D"] as const;

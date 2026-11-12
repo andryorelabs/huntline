@@ -22,7 +22,7 @@ Every command prints exactly one JSON envelope on stdout.
 
 ### `jobship init`
 
-Scaffolds `jobship.json`, `profile.yaml`, `facts.yaml`, `bullets.yaml`, `never-claim.yaml`, the four Dossier sections under `dossier/` (`status: empty`) and a `.gitignore` listing `dossier/identity.md` in the working directory. Refuses to overwrite (`already-exists`, exit 1). `--missing` writes only the absent files and never touches existing ones, which adds the Dossier to a data dir created before it; `--force` overwrites every scaffold file. The two flags cannot be combined (`usage`).
+Scaffolds `jobship.json`, `profile.yaml`, `facts.yaml`, `bullets.yaml`, `never-claim.yaml`, the four Dossier sections under `dossier/` (`status: empty`) and a `.gitignore` listing `dossier/identity.md` in the working directory. Refuses to overwrite (`already-exists`, exit 1). `--missing` writes only the absent files and never overwrites existing ones, which adds the Dossier to a data dir created before it; it appends `dossier/identity.md` to an existing `.gitignore` that lacks it and names that file in `updated`; `--force` overwrites every scaffold file. The two flags cannot be combined (`usage`).
 
 ### `jobship doctor`
 

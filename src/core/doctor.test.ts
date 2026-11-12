@@ -400,6 +400,24 @@ describe("init scaffold of the Dossier", () => {
     expect(written).not.toContain("profile.yaml");
   });
 
+  test("--missing appends the identity file to an existing .gitignore that lacks it", async () => {
+    const fresh = path.join(workDir, "fresh");
+    mkdirSync(fresh, { recursive: true });
+    writeFileSync(path.join(fresh, ".gitignore"), "*.pdf");
+    const added = await runInit(["--data", fresh, "--missing"], workDir);
+    expect(added.ok).toBe(true);
+    expect(readFileSync(path.join(fresh, ".gitignore"), "utf8")).toBe(
+      "*.pdf\ndossier/identity.md\n",
+    );
+    const updated = added.ok && isObject(added.data) ? added.data["updated"] : [];
+    expect(updated).toEqual([".gitignore"]);
+    const again = await runInit(["--data", fresh, "--missing"], workDir);
+    expect(readFileSync(path.join(fresh, ".gitignore"), "utf8")).toBe(
+      "*.pdf\ndossier/identity.md\n",
+    );
+    expect(again.ok && isObject(again.data) ? again.data["updated"] : null).toEqual([]);
+  });
+
   test("--missing and --force together are a usage error", async () => {
     const result = await runInit(
       ["--data", path.join(workDir, "x"), "--missing", "--force"],

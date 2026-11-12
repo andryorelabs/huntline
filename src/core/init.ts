@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import answersTemplate from "../../templates/answers.json.tmpl" with { type: "text" };
 import bulletsTemplate from "../../templates/bullets.yaml" with { type: "text" };
@@ -18,6 +18,8 @@ function templateText(content: unknown): string {
   return content;
 }
 
+const IDENTITY_IGNORE = "dossier/identity.md";
+
 const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   [CONFIG_FILE]: templateText(configTemplate),
   "profile.yaml": templateText(profileTemplate),
@@ -27,8 +29,23 @@ const SCAFFOLD_FILES: Readonly<Record<string, string>> = {
   "answers.json": templateText(answersTemplate),
   "cv/template.typ": templateText(cvTemplate),
   ...DOSSIER_TEMPLATES,
-  ".gitignore": "dossier/identity.md\n",
+  ".gitignore": `${IDENTITY_IGNORE}\n`,
 };
+
+/**
+ * Appends the identity file to an existing `.gitignore` that lacks it, so adding the
+ * Dossier to an older data dir never leaves identity data committable.
+ * Returns true when the file was changed.
+ */
+function ensureIdentityIgnored(target: string): boolean {
+  const file = path.join(target, ".gitignore");
+  const current = readFileSync(file, "utf8");
+  const listed = current.split(/\r?\n/).some((line) => line.trim() === IDENTITY_IGNORE);
+  if (listed) return false;
+  const separator = current === "" || current.endsWith("\n") ? "" : "\n";
+  writeAtomic(file, `${current}${separator}${IDENTITY_IGNORE}\n`);
+  return true;
+}
 
 function readDirectoryFlag(argv: readonly string[]): string | undefined {
   const index = argv.indexOf("--data");
@@ -61,15 +78,20 @@ export async function runInit(
   const toWrite = Object.keys(SCAFFOLD_FILES).filter(
     (name) => !missingOnly || !existing.includes(name),
   );
+  const updated: string[] = [];
   await withLock(target, () => {
     for (const name of toWrite) {
       writeAtomic(path.join(target, name), SCAFFOLD_FILES[name] ?? "");
+    }
+    if (missingOnly && existing.includes(".gitignore") && ensureIdentityIgnored(target)) {
+      updated.push(".gitignore");
     }
     return Promise.resolve();
   });
   return success({
     dataDir: target,
     written: toWrite,
+    updated,
     overwritten: force ? existing : [],
     next: "run the Onboarding skill (/jobship:init) to fill the Dossier, then run jobship doctor",
   });

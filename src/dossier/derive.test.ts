@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
+import { isObject } from "../core/narrow.ts";
 import { applyDossierBatch, deriveBatch } from "./derive.ts";
 import { loadIdentityIfPresent } from "./identity-guard.ts";
 import { parseProposal, validateProposal } from "./proposal.ts";
@@ -101,5 +102,93 @@ describe("loadIdentityIfPresent", () => {
     } finally {
       rmSync(empty, { recursive: true, force: true });
     }
+  });
+});
+
+function readDataFile(name: string): string {
+  return readFileSync(path.join(dataDir, name), "utf8");
+}
+
+function parsedFile(name: string): Record<string, unknown> {
+  const parsed: unknown = Bun.YAML.parse(readDataFile(name));
+  if (!isObject(parsed)) throw new TypeError(`${name} is not a mapping`);
+  return parsed;
+}
+
+function listOf(name: string, key: string): unknown[] {
+  const list = parsedFile(name)[key];
+  return Array.isArray(list) ? Array.from<unknown>(list) : [];
+}
+
+function loadBaseProposal(): Record<string, unknown> {
+  const parsed: unknown = JSON.parse(
+    readFileSync(path.join(REPO_ROOT, "fixtures/dossier/proposal.json"), "utf8"),
+  );
+  if (!isObject(parsed)) throw new TypeError("proposal fixture is not an object");
+  return parsed;
+}
+
+async function applyProposal(raw: unknown): Promise<string> {
+  const proposal = parseProposal(raw);
+  if (!proposal.ok) throw new Error(proposal.error.message);
+  const derived = await deriveBatch(context(), proposal.value);
+  if (!derived.ok) throw new Error(derived.error.message);
+  const applied = await applyDossierBatch(context(), derived.value.batchPath);
+  if (!applied.ok) throw new Error(applied.error.message);
+  return derived.value.batchPath;
+}
+
+describe("applyDossierBatch comment preservation", () => {
+  const DERIVED_YAML = ["facts.yaml", "bullets.yaml", "profile.yaml", "never-claim.yaml"];
+  const COMMENT_LINES = [
+    "# Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`), getonboard, himalayas, remoteok, hn.",
+    "  # Linear only, all optional:",
+    "  # states: {lead: Backlog, applied: In Progress}",
+    '  # channelLabels: {linkedin: "channel:linkedin"}',
+    '  # channelLabelPrefix: "channel:"',
+    "  # titleFormat: role-at-company",
+  ];
+
+  test("keeps every comment and key order, parses as before, and is idempotent", async () => {
+    writeFileSync(path.join(dataDir, "facts.yaml"), "# facts note\nfacts: []\n");
+    writeFileSync(path.join(dataDir, "bullets.yaml"), "# bullets note\nbullets: []\n");
+    const batchPath = await applyProposal(loadBaseProposal());
+
+    const profileText = readDataFile("profile.yaml");
+    for (const line of COMMENT_LINES) expect(profileText).toContain(line);
+    expect(readDataFile("facts.yaml")).toContain("# facts note");
+    expect(readDataFile("bullets.yaml")).toContain("# bullets note");
+    const profile = parsedFile("profile.yaml");
+    expect(Object.keys(profile).slice(0, 3)).toEqual(["regions", "contractTypes", "remote"]);
+    expect(profile["regions"]).toEqual(["EU"]);
+    const factIds = listOf("facts.yaml", "facts").map((fact) => isObject(fact) && fact["id"]);
+    expect(factIds).toEqual(["checkout-latency", "ci-pipeline"]);
+    expect(listOf("never-claim.yaml", "terms")).toEqual(["Kubernetes certified"]);
+
+    const before = DERIVED_YAML.map(readDataFile);
+    const again = await applyDossierBatch(context(), batchPath);
+    expect(again).toEqual({ ok: true, value: { applied: 0 } });
+    expect(DERIVED_YAML.map(readDataFile)).toEqual(before);
+  });
+
+  test("replacing a bullet keeps untouched entries and comments", async () => {
+    writeFileSync(path.join(dataDir, "facts.yaml"), "# facts note\nfacts: []\n");
+    const base = loadBaseProposal();
+    await applyProposal(base);
+    const stored: unknown = base["bullets"];
+    const candidate: unknown = Array.isArray(stored) ? stored[0] : {};
+    const first = isObject(candidate) ? candidate : {};
+    const replacement = "Cut checkout latency threefold with a cache";
+    await applyProposal({ ...base, bullets: [{ ...first, text: replacement }] });
+    const bullets = listOf("bullets.yaml", "bullets");
+    expect(bullets).toHaveLength(1);
+    expect(isObject(bullets[0]) && bullets[0]["text"]).toBe(replacement);
+    expect(readDataFile("facts.yaml")).toContain("# facts note");
+  });
+
+  test("a missing derived file starts from an empty document", async () => {
+    rmSync(path.join(dataDir, "never-claim.yaml"));
+    await applyProposal(loadBaseProposal());
+    expect(listOf("never-claim.yaml", "terms")).toEqual(["Kubernetes certified"]);
   });
 });

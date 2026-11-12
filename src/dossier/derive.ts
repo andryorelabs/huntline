@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { Document, isMap, isSeq, parseDocument, type YAMLSeq } from "yaml";
 import { listAnswers, type StoredAnswer } from "../apply/answers.ts";
 import { approvalHash, IdempotencyMap } from "../core/approval.ts";
 import type { CommandContext } from "../core/commands.ts";
@@ -258,29 +259,57 @@ function parseBatch(content: string): DerivedChange[] | null {
 
 type Rendered = { readonly content: string; readonly applied: number };
 
+function loadDocument(dir: DataDir, file: string): Document {
+  const target = path.join(dir.path, file);
+  if (!existsSync(target)) return new Document({});
+  const document = parseDocument(readFileSync(target, "utf8"));
+  if (document.errors.length > 0) throw new Error(document.errors[0]?.message);
+  return isMap(document.contents) ? document : new Document({});
+}
+
+function sequenceAt(document: Document, key: string): YAMLSeq {
+  const existing = document.get(key, true);
+  if (isSeq(existing)) {
+    existing.flow = false;
+    return existing;
+  }
+  const created = document.createNode([]);
+  document.set(key, created);
+  return created;
+}
+
+function findRowIndex(sequence: YAMLSeq, id: string): number {
+  return sequence.items.findIndex((item) => isMap(item) && item.get("id") === id);
+}
+
 function upsertRow(
-  rows: Record<string, unknown>[],
+  document: Document,
+  sequence: YAMLSeq,
   change: DerivedChange,
   row: Record<string, unknown>,
 ): boolean {
-  const index = rows.findIndex((existing) => existing["id"] === change.id);
+  const index = findRowIndex(sequence, change.id);
   if (change.op === "remove") {
     if (index === -1) return false;
-    rows.splice(index, 1);
+    sequence.items.splice(index, 1);
     return true;
   }
   if (index === -1) {
-    rows.push(row);
+    sequence.add(document.createNode(row));
     return true;
   }
-  const merged = { ...rows[index], ...row };
-  if (canonical(merged) === canonical(rows[index])) return false;
-  rows[index] = merged;
+  const existing = sequence.items[index];
+  if (!isMap(existing)) return false;
+  const current: unknown = existing.toJS(document);
+  if (canonical({ ...(isObject(current) ? current : {}), ...row }) === canonical(current)) {
+    return false;
+  }
+  for (const [name, value] of Object.entries(row)) existing.set(name, value);
   return true;
 }
 
-function renderYaml(document: Record<string, unknown>): string {
-  return `${Bun.YAML.stringify(document, null, 2)}\n`;
+function serialize(document: Document): string {
+  return document.toString({ lineWidth: 0 });
 }
 
 function renderRowFile(
@@ -290,36 +319,43 @@ function renderRowFile(
   changes: readonly DerivedChange[],
   toRow: (value: unknown) => Record<string, unknown>,
 ): Rendered {
-  const document = readYamlMapping(dir, file);
-  const rows = rowsOf(document, key);
+  const document = loadDocument(dir, file);
+  const sequence = sequenceAt(document, key);
   let applied = 0;
   for (const change of changes) {
-    if (upsertRow(rows, change, change.op === "remove" ? {} : toRow(change.value))) applied += 1;
+    const row = change.op === "remove" ? {} : toRow(change.value);
+    if (upsertRow(document, sequence, change, row)) applied += 1;
   }
-  return { content: renderYaml({ ...document, [key]: rows }), applied };
+  return { content: serialize(document), applied };
 }
 
 function renderProfile(dir: DataDir, changes: readonly DerivedChange[]): Rendered {
-  const document = readYamlMapping(dir, "profile.yaml");
+  const document = loadDocument(dir, "profile.yaml");
   let applied = 0;
   for (const change of changes) {
-    if (canonical(document[change.id]) === canonical(change.value)) continue;
-    document[change.id] = change.value;
+    const current: unknown = document.get(change.id, true);
+    const currentValue: unknown =
+      isMap(current) || isSeq(current) ? current.toJS(document) : document.get(change.id);
+    if (canonical(currentValue) === canonical(change.value)) continue;
+    document.set(change.id, change.value);
     applied += 1;
   }
-  return { content: renderYaml(document), applied };
+  return { content: serialize(document), applied };
 }
 
 function renderNeverClaim(dir: DataDir, changes: readonly DerivedChange[]): Rendered {
-  const document = readYamlMapping(dir, "never-claim.yaml");
-  const terms = Array.isArray(document["terms"]) ? Array.from<unknown>(document["terms"]) : [];
+  const document = loadDocument(dir, "never-claim.yaml");
+  const sequence = sequenceAt(document, "terms");
+  const stored: unknown = sequence.toJS(document);
+  const terms = new Set<unknown>(Array.isArray(stored) ? stored : []);
   let applied = 0;
   for (const change of changes) {
-    if (terms.includes(change.id)) continue;
-    terms.push(change.id);
+    if (terms.has(change.id)) continue;
+    sequence.add(change.id);
+    terms.add(change.id);
     applied += 1;
   }
-  return { content: renderYaml({ ...document, terms }), applied };
+  return { content: serialize(document), applied };
 }
 
 function toStoredAnswer(value: unknown): StoredAnswer {

@@ -1,16 +1,19 @@
 ---
-description: Scaffold a jobship data directory with `jobship init`, then list what is left to fill in
+description: Scaffold a jobship data directory with `jobship init`, then run Onboarding to fill the Dossier and derive your data
 ---
 
 Run `jobship init` with the Bash tool. Pass `--data <dir>` when the user named a
 directory; otherwise it scaffolds the current directory. `jobship` is on PATH in
 plugin sessions.
 
-Then summarize the result:
+If the data dir already exists, do not fail: run `jobship dossier check` and
+continue. For a data dir created before the Dossier, run `jobship init --missing`,
+which writes only the absent files.
 
-- Files written, one line each.
-- Every `TODO(jobship):` marker left in them (run `rg -n 'TODO\(jobship\):' <dir>`),
-  with its file and line, so the user knows what to fill in.
+Then load the `onboard` skill and follow it: it gathers a CV, GitHub and LinkedIn
+when offered, interviews for the gaps, writes the Dossier, derives the Fact bank,
+Bullets, Profile, Never-claim list and Answer bank as an Approval batch for the user
+to approve, builds a first CV, and ends with `jobship doctor`.
 
-If the command fails, show its error output and stop. Never retry with `--force`
+If a command fails, show its error output and stop. Never retry with `--force`
 unless the user asks for it: it overwrites their files.

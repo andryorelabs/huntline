@@ -64,17 +64,17 @@
     },
     "reviewer": {
       "medium": {
-        "model": "fable",
+        "model": "opus",
         "effort": "medium"
       },
       "high": {
-        "model": "fable",
+        "model": "opus",
         "effort": "medium"
       }
     },
     "triage": "haiku",
     "escalation": {
-      "sonnet": "fable"
+      "sonnet": "opus"
     }
   },
   "review": {

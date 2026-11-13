@@ -3,7 +3,7 @@ import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import { loadProfile } from "../core/data-dir.ts";
 import { writeAtomic } from "../core/fs.ts";
-import { errorMessage } from "../core/narrow.ts";
+import { errorMessage, isObject } from "../core/narrow.ts";
 import type {
   DataDir,
   HuntEvent,
@@ -16,7 +16,7 @@ import type {
   TrackerAdapter,
 } from "../core/types.ts";
 import { readCompanies } from "../sources/companies.ts";
-import { sources as defaultSources } from "../sources/index.ts";
+import { resolveBoards, type ResolvedBoard } from "../sources/index.ts";
 import { readEvents } from "../ledger/events.ts";
 import { createTracker, projectEvents } from "../tracker/index.ts";
 import { addCounts, EMPTY_COUNTS, processBatch } from "./pipeline.ts";
@@ -26,6 +26,7 @@ import type {
   SourceReport,
   SweepOptions,
   SweepReport,
+  SkippedBoard,
   TrackerSummary,
 } from "./types.ts";
 
@@ -141,12 +142,13 @@ async function fetchSource(
   source: string,
   adapter: SourceAdapter | undefined,
   queries: readonly SourceQuery[],
+  problem: string | undefined,
 ): Promise<Fetched> {
   if (adapter === undefined) {
     return {
       source,
       postings: [],
-      errors: [`${source}: unknown source`],
+      errors: [problem ?? `${source}: unknown source`],
       warnings: [],
       misconfigured: false,
     };
@@ -209,7 +211,11 @@ async function ingestFetched(
   });
 }
 
-function summarize(collected: Collected, tracker: TrackerSummary): SweepReport {
+function summarize(
+  collected: Collected,
+  tracker: TrackerSummary,
+  skipped: readonly SkippedBoard[],
+): SweepReport {
   const failed = collected.reports
     .filter((report) => report.status === "failed")
     .map((report) => ({ source: report.source, errors: report.errors }));
@@ -228,25 +234,106 @@ function summarize(collected: Collected, tracker: TrackerSummary): SweepReport {
     failed,
     empty,
     misconfigured,
+    skipped,
     totals,
     leads: collected.leads,
     tracker,
   };
 }
 
-function selectSources(profile: Profile, options: SweepOptions): Result<string[]> {
-  const configured = [...new Set(profile.sources)];
-  if (options.only === undefined || options.only.length === 0) {
-    return { ok: true, value: configured };
+const BOARD_RUNS_FILE = "board-runs.json";
+
+type BoardRuns = Readonly<Record<string, number>>;
+
+function readBoardRuns(dir: DataDir): BoardRuns {
+  try {
+    const parsed: unknown = JSON.parse(readFileSync(path.join(dir.path, BOARD_RUNS_FILE), "utf8"));
+    if (!isObject(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        (entry): entry is [string, number] => typeof entry[1] === "number",
+      ),
+    );
+  } catch {
+    return {};
   }
-  const unknown = options.only.filter((name) => !configured.includes(name));
+}
+
+function writeBoardRuns(dir: DataDir, runs: BoardRuns): void {
+  writeAtomic(path.join(dir.path, BOARD_RUNS_FILE), `${JSON.stringify(runs, null, 2)}\n`);
+}
+
+/** Minimum intervals belong to the catalog board, so every `id:option` of a board shares one. */
+function intervalKey(board: ResolvedBoard): string {
+  return board.board?.id ?? board.id;
+}
+
+function skipReason(board: ResolvedBoard, runs: BoardRuns, now: number): string | undefined {
+  const interval = board.minIntervalMinutes;
+  const last = runs[intervalKey(board)];
+  if (interval === undefined || last === undefined) return undefined;
+  const retryAt = last + interval * 60_000;
+  if (retryAt <= now) return undefined;
+  return `fetched at ${new Date(last).toISOString()}; minimum interval ${interval} minutes, next run after ${new Date(retryAt).toISOString()}`;
+}
+
+function selectBoards(
+  resolved: readonly ResolvedBoard[],
+  options: SweepOptions,
+): Result<ResolvedBoard[]> {
+  const fetchable = resolved.filter(
+    (entry) => entry.board === undefined || entry.board.access === "feed",
+  );
+  if (options.only === undefined || options.only.length === 0)
+    return { ok: true, value: fetchable };
+  const names = fetchable.map((entry) => entry.id);
+  const unknown = options.only.filter((name) => !names.includes(name));
   if (unknown.length > 0) {
     return fail(
       "usage",
-      `--source ${unknown.join(", ")} not in the Profile sources (${configured.join(", ") || "none"})`,
+      `--source ${unknown.join(", ")} not in the Profile sources (${names.join(", ") || "none"})`,
     );
   }
-  return { ok: true, value: [...options.only] };
+  return { ok: true, value: fetchable.filter((entry) => options.only?.includes(entry.id)) };
+}
+
+function partitionByInterval(
+  boards: readonly ResolvedBoard[],
+  runs: BoardRuns,
+  now: number,
+): { readonly due: ResolvedBoard[]; readonly skipped: SkippedBoard[] } {
+  const due: ResolvedBoard[] = [];
+  const skipped: SkippedBoard[] = [];
+  const claimed = new Map<string, string>();
+  for (const board of boards) {
+    const key = intervalKey(board);
+    const earlier = board.minIntervalMinutes === undefined ? undefined : claimed.get(key);
+    const reason =
+      earlier === undefined
+        ? skipReason(board, runs, now)
+        : `${earlier} already fetches ${key} in this sweep; minimum interval ${board.minIntervalMinutes} minutes`;
+    if (reason !== undefined) {
+      skipped.push({ source: board.id, reason });
+      continue;
+    }
+    due.push(board);
+    if (board.minIntervalMinutes !== undefined) claimed.set(key, board.id);
+  }
+  return { due, skipped };
+}
+
+function recordRuns(
+  dir: DataDir,
+  runs: BoardRuns,
+  due: readonly ResolvedBoard[],
+  now: number,
+): void {
+  const timed = due.filter((board) => board.minIntervalMinutes !== undefined);
+  if (timed.length === 0) return;
+  writeBoardRuns(dir, {
+    ...runs,
+    ...Object.fromEntries(timed.map((board) => [intervalKey(board), now])),
+  });
 }
 
 export async function runSweep(
@@ -257,15 +344,27 @@ export async function runSweep(
   if (!prepared.ok) return prepared;
   const companies = readCompanies(prepared.value.dir);
   if (!companies.ok) return companies;
-  const adapters = options.adapters ?? defaultSources;
-  const selected = selectSources(prepared.value.profile, options);
+  const resolved = await resolveBoards(prepared.value.profile, prepared.value.dir, {
+    env: ctx.env,
+    ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+  });
+  if (!resolved.ok) return resolved;
+  const selected = selectBoards(resolved.value, options);
   if (!selected.ok) return selected;
-  const names = selected.value;
+  const now = (options.now ?? Date.now)();
+  const runs = readBoardRuns(prepared.value.dir);
+  const { due, skipped } = partitionByInterval(selected.value, runs, now);
   const fetched = await Promise.all(
-    names.map((name) =>
-      fetchSource(name, adapters[name], queriesFor(name, companies.value, options.keywords)),
+    due.map((board) =>
+      fetchSource(
+        board.id,
+        options.adapters?.[board.id] ?? board.adapter,
+        queriesFor(board.id, companies.value, options.keywords),
+        board.problem,
+      ),
     ),
   );
+  recordRuns(prepared.value.dir, runs, due, now);
   try {
     const collected = await ingestFetched(prepared.value, fetched, 0, {
       reports: [],
@@ -278,7 +377,7 @@ export async function runSweep(
       collected.leads,
     );
     if (!tracker.ok) return tracker;
-    return { ok: true, value: summarize(collected, tracker.value) };
+    return { ok: true, value: summarize(collected, tracker.value, skipped) };
   } catch (error) {
     return fail("sweep-failed", errorMessage(error));
   }

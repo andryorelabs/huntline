@@ -1,7 +1,7 @@
 import type { DataDir, Profile, Result, SourceAdapter } from "../core/types.ts";
 import { createAtsAdapters } from "./ats.ts";
 import { createApiBoardAdapters, type ApiBoardName, type ApiEndpoints } from "./boards-api.ts";
-import { createBoardAdapters } from "./boards.ts";
+import { createBoardAdapters, type BoardEndpoints } from "./boards.ts";
 import { loadCatalog, matchesProfile, type Board, type LoadCatalogOptions } from "./catalog.ts";
 import { readCustomBoards } from "./custom-boards.ts";
 import {
@@ -47,6 +47,10 @@ export type ResolvedBoard = {
 
 function isApiBoardName(name: string): name is ApiBoardName {
   return (API_BOARD_NAMES as readonly string[]).includes(name);
+}
+
+function isOptionBoardName(name: string): name is keyof BoardEndpoints {
+  return name === "getonboard" || name === "himalayas";
 }
 
 function defaultValue(board: Board, name: string): string {
@@ -111,6 +115,13 @@ function apiAdapter(
       (adapter) => adapter.name === parser,
     );
     if (found !== undefined) return found;
+  }
+  if (option !== undefined && isOptionBoardName(parser)) {
+    const endpoints: BoardEndpoints = { [parser]: endpoint };
+    const optioned = createBoardAdapters(fetchFunction, endpoints).find(
+      (adapter) => adapter.name === parser,
+    );
+    if (optioned !== undefined) return optioned;
   }
   const found = registered.get(parser);
   if (found === undefined) return `${board.id}: no adapter for parser "${parser}"`;

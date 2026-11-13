@@ -451,6 +451,27 @@ describe("command", () => {
     expect(later.value.skipped).toEqual([]);
   });
 
+  test("options of one board share its minimum interval", async () => {
+    writeProfile(["jobicy:latam", "jobicy:europe"]);
+    let calls = 0;
+    const fetchStub = (): Promise<Response> => {
+      calls += 1;
+      return Promise.resolve(new Response("", { status: 500 }));
+    };
+    const start = Date.parse("2026-11-13T10:00:00Z");
+    const first = await runSweep(makeContext(), { fetch: fetchStub, now: () => start });
+    if (!first.ok) throw new Error(first.error.message);
+    expect(calls).toBe(1);
+    expect(first.value.skipped.map((entry) => entry.source)).toEqual(["jobicy:europe"]);
+    const second = await runSweep(makeContext(), { fetch: fetchStub, now: () => start + 60_000 });
+    if (!second.ok) throw new Error(second.error.message);
+    expect(calls).toBe(1);
+    expect(second.value.skipped.map((entry) => entry.source)).toEqual([
+      "jobicy:latam",
+      "jobicy:europe",
+    ]);
+  });
+
   test("custom boards from the data dir join an automatic sweep", async () => {
     writeProfile([], { kind: "local" }, { regions: ["JP"], remote: "remote-only" });
     writeFileSync(

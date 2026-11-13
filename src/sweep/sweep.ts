@@ -263,9 +263,14 @@ function writeBoardRuns(dir: DataDir, runs: BoardRuns): void {
   writeAtomic(path.join(dir.path, BOARD_RUNS_FILE), `${JSON.stringify(runs, null, 2)}\n`);
 }
 
+/** Minimum intervals belong to the catalog board, so every `id:option` of a board shares one. */
+function intervalKey(board: ResolvedBoard): string {
+  return board.board?.id ?? board.id;
+}
+
 function skipReason(board: ResolvedBoard, runs: BoardRuns, now: number): string | undefined {
   const interval = board.minIntervalMinutes;
-  const last = runs[board.id];
+  const last = runs[intervalKey(board)];
   if (interval === undefined || last === undefined) return undefined;
   const retryAt = last + interval * 60_000;
   if (retryAt <= now) return undefined;
@@ -299,10 +304,20 @@ function partitionByInterval(
 ): { readonly due: ResolvedBoard[]; readonly skipped: SkippedBoard[] } {
   const due: ResolvedBoard[] = [];
   const skipped: SkippedBoard[] = [];
+  const claimed = new Map<string, string>();
   for (const board of boards) {
-    const reason = skipReason(board, runs, now);
-    if (reason === undefined) due.push(board);
-    else skipped.push({ source: board.id, reason });
+    const key = intervalKey(board);
+    const earlier = board.minIntervalMinutes === undefined ? undefined : claimed.get(key);
+    const reason =
+      earlier === undefined
+        ? skipReason(board, runs, now)
+        : `${earlier} already fetches ${key} in this sweep; minimum interval ${board.minIntervalMinutes} minutes`;
+    if (reason !== undefined) {
+      skipped.push({ source: board.id, reason });
+      continue;
+    }
+    due.push(board);
+    if (board.minIntervalMinutes !== undefined) claimed.set(key, board.id);
   }
   return { due, skipped };
 }
@@ -317,7 +332,7 @@ function recordRuns(
   if (timed.length === 0) return;
   writeBoardRuns(dir, {
     ...runs,
-    ...Object.fromEntries(timed.map((board) => [board.id, now])),
+    ...Object.fromEntries(timed.map((board) => [intervalKey(board), now])),
   });
 }
 

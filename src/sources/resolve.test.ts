@@ -133,6 +133,25 @@ describe("resolveBoards", () => {
     expect(resolved.value[0]?.minIntervalMinutes).toBe(60);
   });
 
+  test("an option on getonboard fetches its category endpoint", async () => {
+    const requested: string[] = [];
+    const resolved = await resolveBoards(
+      profileWith({ sources: ["getonboard:sysadmin-devops-qa"] }),
+      { path: root },
+      {
+        env: OFF,
+        fetch: (input) => {
+          requested.push(input);
+          return Promise.resolve(new Response('{"data":[]}'));
+        },
+      },
+    );
+    if (!resolved.ok) throw new Error(resolved.error.message);
+    expect(resolved.value[0]?.problem).toBeUndefined();
+    await resolved.value[0]?.adapter?.fetch({});
+    expect(requested[0]).toContain("/categories/sysadmin-devops-qa/jobs");
+  });
+
   test("browser boards in an explicit list resolve without an adapter or problem", async () => {
     const resolved = await resolveBoards(
       profileWith({ sources: ["wellfound"] }),

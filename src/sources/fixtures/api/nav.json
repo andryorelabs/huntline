@@ -1,0 +1,4 @@
+{"items":[
+{"id":"nav-9001","url":"https://pam-stilling-feed.nav.no/api/v1/feed/ad/nav-9001","title":"Utvikler","date_modified":"2026-11-10T08:00:00+01:00","_feed_entry":{"uuid":"nav-9001","title":"Utvikler","businessName":"Norsk AS","municipal":"Oslo","description":"<p>Bygg systemer.</p>"}},
+{"id":"nav-9002","url":"https://pam-stilling-feed.nav.no/api/v1/feed/ad/nav-9002","title":"Sykepleier","date_modified":"2026-11-09T08:00:00+01:00","_feed_entry":{"uuid":"nav-9002","title":"Sykepleier","businessName":"Sykehus Nord","municipal":"Tromso"}}
+]}

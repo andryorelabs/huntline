@@ -69,6 +69,8 @@ export type Salary = {
   readonly period?: SalaryPeriod;
 };
 
+export type WorkMode = "remote" | "hybrid" | "onsite";
+
 export type Posting = {
   readonly id: string;
   readonly source: string;
@@ -77,6 +79,7 @@ export type Posting = {
   readonly title: string;
   readonly location?: string;
   readonly remote?: boolean;
+  readonly workMode?: WorkMode;
   readonly contract?: string;
   readonly salary?: Salary;
   readonly stack?: readonly string[];

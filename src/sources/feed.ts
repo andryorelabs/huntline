@@ -73,13 +73,14 @@ function decode(content: Uint8Array, encoding: string | undefined): Outcome<stri
 }
 
 function balanceError(xml: string): string | undefined {
-  const stripped = xml.replace(
-    /<!\[CDATA\[[\s\S]*?\]\]>|<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!DOCTYPE[^>]*>/gi,
-    "",
-  );
   const stack: string[] = [];
-  for (const match of stripped.matchAll(/<(\/?)([^\s>/]+)[^>]*?(\/?)>/g)) {
-    const [, closing, name = "", selfClosing] = match;
+  let sawElement = false;
+  const tokens =
+    /<!\[CDATA\[[\s\S]*?\]\]>|<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!DOCTYPE[^>]*>|<(\/?)([^\s>/!?]+)[^>]*?(\/?)>/gi;
+  for (const match of xml.matchAll(tokens)) {
+    const [, closing, name, selfClosing] = match;
+    if (name === undefined) continue;
+    sawElement = true;
     if (selfClosing === "/") continue;
     if (closing !== "/") {
       stack.push(name);
@@ -90,7 +91,7 @@ function balanceError(xml: string): string | undefined {
   }
   const unclosed = stack.at(-1);
   if (unclosed !== undefined) return `unclosed <${unclosed}>`;
-  return stack.length === 0 && /<[^!?]/.test(stripped) ? undefined : "no root element";
+  return sawElement ? undefined : "no root element";
 }
 
 async function getXml(

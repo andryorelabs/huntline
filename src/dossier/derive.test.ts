@@ -141,7 +141,7 @@ async function applyProposal(raw: unknown): Promise<string> {
 describe("applyDossierBatch comment preservation", () => {
   const DERIVED_YAML = ["facts.yaml", "bullets.yaml", "profile.yaml", "never-claim.yaml"];
   const COMMENT_LINES = [
-    "# Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`), getonboard, himalayas, remoteok, hn.",
+    "# ATS names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`).",
     "  # Linear only, all optional:",
     "  # states: {lead: Backlog, applied: In Progress}",
     '  # channelLabels: {linkedin: "channel:linkedin"}',

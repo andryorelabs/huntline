@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Example Remote Jobs</title>
+    <link>https://jobs.example.test/</link>
+    <item>
+      <title><![CDATA[Acme Corp: Senior Backend Engineer]]></title>
+      <link>https://jobs.example.test/listings/acme-senior-backend</link>
+      <guid isPermaLink="false">acme-senior-backend</guid>
+      <pubDate>Tue, 10 Nov 2026 09:00:00 +0000</pubDate>
+      <dc:creator>Acme Corp</dc:creator>
+      <description><![CDATA[<p>Build APIs &amp; services.</p><ul><li>Elixir</li><li>Postgres</li></ul>]]></description>
+    </item>
+    <item>
+      <title>Globex &amp; Sons: Platform Engineer</title>
+      <link>/listings/globex-platform</link>
+      <description>&lt;p&gt;Run the platform &amp;amp; tooling&lt;/p&gt;</description>
+    </item>
+    <item>
+      <description>No title or link here</description>
+    </item>
+  </channel>
+</rss>

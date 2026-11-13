@@ -257,10 +257,25 @@ function hn(fetchFunction: FetchFunction): SourceAdapter {
   };
 }
 
-export function createBoardAdapters(fetchFunction: FetchFunction): SourceAdapter[] {
+/** Endpoint overrides for boards whose catalog entry offers options, keyed by adapter name. */
+export type BoardEndpoints = Partial<Record<"getonboard" | "himalayas", string>>;
+
+function withEndpoint(spec: AdapterSpec, endpoint: string | undefined): AdapterSpec {
+  if (endpoint === undefined) return spec;
+  return {
+    ...spec,
+    url: () => endpoint,
+    parse: (body, query) => filterByKeywords(spec.parse(body, query), query),
+  };
+}
+
+export function createBoardAdapters(
+  fetchFunction: FetchFunction,
+  endpoints: BoardEndpoints = {},
+): SourceAdapter[] {
   return [
-    defineAdapter(getonboard, fetchFunction),
-    defineAdapter(himalayas, fetchFunction),
+    defineAdapter(withEndpoint(getonboard, endpoints.getonboard), fetchFunction),
+    defineAdapter(withEndpoint(himalayas, endpoints.himalayas), fetchFunction),
     defineAdapter(remoteok, fetchFunction),
     hn(fetchFunction),
   ];

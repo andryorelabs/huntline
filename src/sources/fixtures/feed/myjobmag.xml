@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobs>
+  <item>
+    <title>Accountant at Example Ltd</title>
+    <link>https://myjobmag.example.test/job/accountant</link>
+    <industry>Finance</industry>
+    <description><![CDATA[Prepare ledgers &nbsp;and reports.]]></description>
+  </item>
+</jobs>

@@ -9,7 +9,8 @@ import { DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "../t
 import type { CommandContext } from "./commands.ts";
 import { createAtsAdapters } from "../sources/ats.ts";
 import { readCompanies } from "../sources/companies.ts";
-import { sources as registeredSources } from "../sources/index.ts";
+import { resolveBoards, sources as registeredSources } from "../sources/index.ts";
+import type { ResolvedBoard } from "../sources/index.ts";
 import { CONFIG_FILE, loadProfileWithWarnings } from "./data-dir.ts";
 import { PRODUCT_NAME, settingValue } from "./env.ts";
 import { failure, success, type Envelope } from "./envelope.ts";
@@ -100,9 +101,16 @@ function dataFileProblems(dir: DataDir): string[] {
   return problems;
 }
 
-function unknownSources(profile: Profile): string[] {
-  const known = Object.keys(registeredSources);
-  return profile.sources.filter((name) => !known.includes(name));
+function noBoardsWarning(resolved: readonly ResolvedBoard[]): DoctorWarning[] {
+  if (resolved.some((entry) => entry.adapter !== undefined)) return [];
+  return [
+    {
+      code: "no-boards",
+      message: "the Profile sources resolve to no feed board, so a sweep fetches nothing",
+      recoveryAction:
+        "set regions and remote in profile.yaml, list board ids under sources, or run jobship board add",
+    },
+  ];
 }
 
 function atsWithoutCompanies(dir: DataDir, profile: Profile): DoctorWarning[] {
@@ -202,11 +210,21 @@ export async function runDoctor(
     });
   }
   const profile = { ok: true as const, value: loaded.value.profile };
-  const badSources = unknownSources(profile.value);
-  if (badSources.length > 0) {
-    return failure("unknown-sources", `unknown Source names: ${badSources.join(", ")}`, {
-      recoveryAction: `use only: ${Object.keys(registeredSources).join(", ")}`,
+  const resolved = await resolveBoards(profile.value, ctx.dataDir, { env: ctx.env });
+  if (!resolved.ok) {
+    return failure(resolved.error.code, resolved.error.message, {
+      recoveryAction: "fix boards.json in the data dir or the catalog setting",
     });
+  }
+  const badSources = resolved.value.filter((entry) => entry.problem !== undefined);
+  if (badSources.length > 0) {
+    return failure(
+      "unknown-sources",
+      `unknown Source names: ${badSources.map((entry) => entry.id).join(", ")}`,
+      {
+        recoveryAction: `use a catalog board id, id:option, or one of: ${Object.keys(registeredSources).join(", ")}`,
+      },
+    );
   }
   const fileProblems = dataFileProblems(ctx.dataDir);
   if (fileProblems.length > 0) {
@@ -271,6 +289,7 @@ export async function runDoctor(
         message,
         recoveryAction: "remove the field from profile.yaml",
       })),
+      ...noBoardsWarning(resolved.value),
       ...atsWithoutCompanies(ctx.dataDir, profile.value),
       ...(plugin.warning === null ? [] : [plugin.warning]),
     ],

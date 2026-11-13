@@ -20,6 +20,7 @@ const MODULE_LOADERS: Readonly<Record<string, () => Promise<CommandModule>>> = {
   "src/sweep/command.ts": () => import("./sweep/command.ts"),
   "src/ledger/command.ts": () => import("./ledger/command.ts"),
   "src/sources/command.ts": () => import("./sources/command.ts"),
+  "src/sources/board-command.ts": () => import("./sources/board-command.ts"),
   "src/cv/command.ts": () => import("./cv/command.ts"),
   "src/apply/command.ts": () => import("./apply/command.ts"),
   "src/inbox/command.ts": () => import("./inbox/command.ts"),

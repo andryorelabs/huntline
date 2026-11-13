@@ -1,0 +1,1151 @@
+[
+  {
+    "id": "remoteok",
+    "name": "Remote OK",
+    "homepage": "https://remoteok.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["tech"],
+    "parser": "remoteok",
+    "endpoint": "https://remoteok.com/api",
+    "attribution": "Link back to Remote OK and name it as the source"
+  },
+  {
+    "id": "himalayas",
+    "name": "Himalayas",
+    "homepage": "https://himalayas.app",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"],
+    "parser": "himalayas",
+    "endpoint": "https://himalayas.app/jobs/api/search",
+    "options": {
+      "q": [],
+      "country": [],
+      "seniority": [],
+      "employment_type": [],
+      "timezone": [],
+      "default": []
+    },
+    "attribution": "Visible link back to Himalayas"
+  },
+  {
+    "id": "getonboard",
+    "name": "Get on Board",
+    "homepage": "https://www.getonbrd.com",
+    "access": "feed",
+    "regions": ["LATAM", "US"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech", "general"],
+    "parser": "getonboard",
+    "endpoint": "https://www.getonbrd.com/api/v0/categories/{category}/jobs?per_page=100",
+    "options": {
+      "category": [
+        "programming",
+        "mobile-developer",
+        "sysadmin-devops-qa",
+        "data-science-analytics",
+        "machine-learning-ai",
+        "cybersecurity",
+        "design-ux",
+        "sales",
+        "customer-support",
+        "hr",
+        "operations-management",
+        "education-coaching",
+        "digital-marketing"
+      ],
+      "default": ["programming"]
+    }
+  },
+  {
+    "id": "hn",
+    "name": "HN Who is hiring",
+    "homepage": "https://news.ycombinator.com/submitted?id=whoishiring",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "hn",
+    "endpoint": "https://hn.algolia.com/api/v1/search_by_date?tags=story,author_whoishiring"
+  },
+  {
+    "id": "hnjobs",
+    "name": "HN jobs",
+    "homepage": "https://news.ycombinator.com/jobs",
+    "access": "feed",
+    "regions": ["global", "US"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "hnjobs",
+    "endpoint": "https://hacker-news.firebaseio.com/v0/jobstories.json"
+  },
+  {
+    "id": "weworkremotely",
+    "name": "We Work Remotely",
+    "homepage": "https://weworkremotely.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"],
+    "parser": "rss",
+    "endpoint": "https://weworkremotely.com/remote-jobs.rss",
+    "optionEndpoint": "https://weworkremotely.com/categories/{category}.rss",
+    "options": {
+      "category": [
+        "remote-programming-jobs",
+        "remote-full-stack-programming-jobs",
+        "remote-back-end-programming-jobs",
+        "remote-front-end-programming-jobs",
+        "remote-devops-sysadmin-jobs",
+        "remote-design-jobs",
+        "remote-product-jobs",
+        "remote-customer-support-jobs",
+        "remote-sales-and-marketing-jobs",
+        "remote-management-and-finance-jobs",
+        "all-other-remote-jobs"
+      ],
+      "default": []
+    }
+  },
+  {
+    "id": "remotive",
+    "name": "Remotive",
+    "homepage": "https://remotive.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"],
+    "parser": "remotive",
+    "endpoint": "https://remotive.com/api/remote-jobs",
+    "minIntervalMinutes": 360,
+    "attribution": "Link back to Remotive and name it as the source"
+  },
+  {
+    "id": "jobicy",
+    "name": "Jobicy",
+    "homepage": "https://jobicy.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"],
+    "parser": "jobicy",
+    "endpoint": "https://jobicy.com/api/v2/remote-jobs?count=50&geo={geo}&industry={industry}",
+    "minIntervalMinutes": 60,
+    "options": {
+      "geo": ["usa", "canada", "europe", "latam", "spain"],
+      "industry": ["engineering", "dev", "marketing"],
+      "default": []
+    },
+    "attribution": "Keep the Jobicy attribution on every Posting"
+  },
+  {
+    "id": "arbeitnow",
+    "name": "Arbeitnow",
+    "homepage": "https://www.arbeitnow.com",
+    "access": "feed",
+    "regions": ["DE", "EU"],
+    "workModes": ["onsite", "hybrid", "remote"],
+    "jobTypes": ["general"],
+    "parser": "arbeitnow",
+    "endpoint": "https://www.arbeitnow.com/api/job-board-api?page=1",
+    "attribution": "Link back to Arbeitnow"
+  },
+  {
+    "id": "workingnomads",
+    "name": "Working Nomads",
+    "homepage": "https://www.workingnomads.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"],
+    "parser": "workingnomads",
+    "endpoint": "https://www.workingnomads.com/api/exposed_jobs/"
+  },
+  {
+    "id": "nodesk",
+    "name": "NoDesk",
+    "homepage": "https://nodesk.co",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"],
+    "parser": "rss",
+    "endpoint": "https://nodesk.co/remote-jobs/index.xml"
+  },
+  {
+    "id": "jobspresso",
+    "name": "Jobspresso",
+    "homepage": "https://jobspresso.co",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"],
+    "parser": "rss",
+    "endpoint": "https://jobspresso.co/feed/?post_type=job_listing"
+  },
+  {
+    "id": "berlinstartupjobs",
+    "name": "Berlin Startup Jobs",
+    "homepage": "https://berlinstartupjobs.com",
+    "access": "feed",
+    "regions": ["DE"],
+    "workModes": ["onsite", "hybrid"],
+    "jobTypes": ["tech", "general"],
+    "parser": "rss",
+    "endpoint": "https://berlinstartupjobs.com/feed/",
+    "optionEndpoint": "https://berlinstartupjobs.com/{category}/feed/",
+    "options": {
+      "category": ["engineering"],
+      "default": []
+    }
+  },
+  {
+    "id": "germantechjobs",
+    "name": "GermanTechJobs",
+    "homepage": "https://germantechjobs.de",
+    "access": "feed",
+    "regions": ["DE"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "job-feed-xml",
+    "endpoint": "https://germantechjobs.de/job_feed.xml"
+  },
+  {
+    "id": "swissdevjobs",
+    "name": "SwissDevJobs",
+    "homepage": "https://swissdevjobs.ch",
+    "access": "feed",
+    "regions": ["CH"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "job-feed-xml",
+    "endpoint": "https://swissdevjobs.ch/job_feed.xml"
+  },
+  {
+    "id": "devitjobs-us",
+    "name": "DevITjobs US",
+    "homepage": "https://devitjobs.com",
+    "access": "feed",
+    "regions": ["US", "global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "job-feed-xml",
+    "endpoint": "https://devitjobs.com/job_feed.xml"
+  },
+  {
+    "id": "devitjobs-uk",
+    "name": "DevITjobs UK",
+    "homepage": "https://devitjobs.uk",
+    "access": "feed",
+    "regions": ["UK"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "job-feed-xml",
+    "endpoint": "https://devitjobs.uk/job_feed.xml"
+  },
+  {
+    "id": "devitjobs-nl",
+    "name": "DevITjobs NL",
+    "homepage": "https://devitjobs.nl",
+    "access": "feed",
+    "regions": ["NL"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "job-feed-xml",
+    "endpoint": "https://devitjobs.nl/job_feed.xml"
+  },
+  {
+    "id": "tokyodev",
+    "name": "TokyoDev",
+    "homepage": "https://www.tokyodev.com",
+    "access": "feed",
+    "regions": ["JP"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "rss",
+    "endpoint": "https://www.tokyodev.com/jobs/atom.xml"
+  },
+  {
+    "id": "pythonjobs",
+    "name": "Python.org Jobs",
+    "homepage": "https://www.python.org/jobs/",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "rss",
+    "endpoint": "https://www.python.org/jobs/feed/rss/"
+  },
+  {
+    "id": "remotepython",
+    "name": "Remote Python",
+    "homepage": "https://www.remotepython.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["tech"],
+    "parser": "rss",
+    "endpoint": "https://www.remotepython.com/latest/jobs/feed/"
+  },
+  {
+    "id": "larajobs",
+    "name": "LaraJobs",
+    "homepage": "https://larajobs.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "rss",
+    "endpoint": "https://larajobs.com/feed"
+  },
+  {
+    "id": "golangprojects",
+    "name": "Golang Projects",
+    "homepage": "https://www.golangprojects.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "rss",
+    "endpoint": "https://www.golangprojects.com/rss.xml"
+  },
+  {
+    "id": "elixirjobs",
+    "name": "Elixir Jobs",
+    "homepage": "https://elixirjobs.net",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "rss",
+    "endpoint": "https://elixirjobs.net/rss"
+  },
+  {
+    "id": "cryptojobslist",
+    "name": "CryptoJobsList",
+    "homepage": "https://cryptojobslist.com",
+    "access": "feed",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"],
+    "parser": "rss",
+    "endpoint": "https://cryptojobslist.com/rss"
+  },
+  {
+    "id": "bundesagentur",
+    "name": "Bundesagentur für Arbeit Jobsuche",
+    "homepage": "https://www.arbeitsagentur.de/jobsuche/",
+    "access": "feed",
+    "regions": ["DE"],
+    "workModes": ["onsite", "hybrid"],
+    "jobTypes": ["general", "public-sector"],
+    "parser": "bundesagentur",
+    "endpoint": "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs",
+    "stability": "unofficial",
+    "method": "GET",
+    "headers": {
+      "X-API-Key": "jobboerse-jobsuche"
+    }
+  },
+  {
+    "id": "eures",
+    "name": "EURES",
+    "homepage": "https://eures.europa.eu/index_en",
+    "access": "feed",
+    "regions": ["EU", "ES", "DE", "NL", "PT", "PL"],
+    "workModes": ["onsite", "hybrid", "remote"],
+    "jobTypes": ["general", "public-sector"],
+    "parser": "eures",
+    "endpoint": "https://europa.eu/eures/api/jv-searchengine/public/jv-search/search",
+    "stability": "unofficial",
+    "method": "POST",
+    "body": {
+      "keywords": [],
+      "locationCodes": [],
+      "positionScheduleCodes": [],
+      "sortSearch": "MOST_RECENT",
+      "resultsPerPage": 50,
+      "page": 1,
+      "publicationPeriod": null
+    },
+    "attribution": "ELA acknowledged as the source"
+  },
+  {
+    "id": "jobtech",
+    "name": "JobTech JobSearch (Sweden)",
+    "homepage": "https://jobtechdev.se/en",
+    "access": "feed",
+    "regions": ["EU", "SE"],
+    "workModes": ["onsite", "hybrid", "remote"],
+    "jobTypes": ["general", "public-sector"],
+    "parser": "jobtech",
+    "endpoint": "https://jobsearch.api.jobtechdev.se/search"
+  },
+  {
+    "id": "nav",
+    "name": "NAV Arbeidsplassen (Norway)",
+    "homepage": "https://arbeidsplassen.nav.no",
+    "access": "feed",
+    "regions": ["EU", "NO"],
+    "workModes": ["onsite", "hybrid", "remote"],
+    "jobTypes": ["general", "public-sector"],
+    "parser": "nav",
+    "endpoint": "https://pam-stilling-feed.nav.no/api/v1/feed",
+    "minIntervalMinutes": 60
+  },
+  {
+    "id": "nhsjobs",
+    "name": "NHS Jobs",
+    "homepage": "https://www.jobs.nhs.uk",
+    "access": "feed",
+    "regions": ["UK"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"],
+    "parser": "nhs-xml",
+    "endpoint": "https://www.jobs.nhs.uk/api/v1/search_xml?keyword=&location=&sort=publicationDateDesc"
+  },
+  {
+    "id": "mycareersfuture",
+    "name": "MyCareersFuture",
+    "homepage": "https://www.mycareersfuture.gov.sg",
+    "access": "feed",
+    "regions": ["APAC", "SG"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"],
+    "parser": "mycareersfuture",
+    "endpoint": "https://api.mycareersfuture.gov.sg/v2/jobs?limit=100&sortBy=new_posting_date"
+  },
+  {
+    "id": "cbop",
+    "name": "CBOP Poland",
+    "homepage": "https://oferty.praca.gov.pl",
+    "access": "feed",
+    "regions": ["PL"],
+    "workModes": ["onsite"],
+    "jobTypes": ["general", "public-sector"],
+    "parser": "cbop",
+    "endpoint": "https://oferty.praca.gov.pl/portal-api/v3/oferta/wyszukiwanie?page=0&size=100&sort=dataDodaniaCbop,desc",
+    "stability": "unofficial",
+    "method": "POST",
+    "body": {}
+  },
+  {
+    "id": "boe-oposiciones",
+    "name": "BOE Oposiciones y concursos",
+    "homepage": "https://www.boe.es",
+    "access": "feed",
+    "regions": ["ES"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"],
+    "parser": "rss",
+    "endpoint": "https://www.boe.es/rss/boe.php?s=2B"
+  },
+  {
+    "id": "netempregos",
+    "name": "Net-Empregos",
+    "homepage": "https://www.net-empregos.com",
+    "access": "feed",
+    "regions": ["PT"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"],
+    "parser": "rss",
+    "endpoint": "https://www.net-empregos.com/rss.asp"
+  },
+  {
+    "id": "myjobmag-ng",
+    "name": "MyJobMag Nigeria",
+    "homepage": "https://www.myjobmag.com",
+    "access": "feed",
+    "regions": ["Africa", "NG"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"],
+    "parser": "rss",
+    "endpoint": "https://www.myjobmag.com/jobsxml.xml"
+  },
+  {
+    "id": "myjobmag-ke",
+    "name": "MyJobMag Kenya",
+    "homepage": "https://www.myjobmag.co.ke",
+    "access": "feed",
+    "regions": ["Africa", "KE"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"],
+    "parser": "rss",
+    "endpoint": "https://www.myjobmag.co.ke/jobsxml.xml"
+  },
+  {
+    "id": "myjobmag-za",
+    "name": "MyJobMag South Africa",
+    "homepage": "https://www.myjobmag.co.za",
+    "access": "feed",
+    "regions": ["Africa", "ZA"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"],
+    "parser": "rss",
+    "endpoint": "https://www.myjobmag.co.za/jobsxml.xml"
+  },
+  {
+    "id": "freejobalert",
+    "name": "FreeJobAlert",
+    "homepage": "https://www.freejobalert.com",
+    "access": "feed",
+    "regions": ["APAC", "IN"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"],
+    "parser": "rss",
+    "endpoint": "https://www.freejobalert.com/feed/"
+  },
+  {
+    "id": "sarkariresult",
+    "name": "Sarkari Result",
+    "homepage": "https://www.sarkariresult.com",
+    "access": "feed",
+    "regions": ["APAC", "IN"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"],
+    "parser": "rss",
+    "endpoint": "https://www.sarkariresult.com/feed/"
+  },
+  {
+    "id": "wellfound",
+    "name": "Wellfound",
+    "homepage": "https://wellfound.com",
+    "access": "browser",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "linkedin",
+    "name": "LinkedIn",
+    "homepage": "https://www.linkedin.com/jobs/",
+    "access": "browser",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech", "general"]
+  },
+  {
+    "id": "x",
+    "name": "X",
+    "homepage": "https://x.com",
+    "access": "browser",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech", "general"]
+  },
+  {
+    "id": "workatastartup",
+    "name": "Work at a Startup",
+    "homepage": "https://www.workatastartup.com",
+    "access": "browser",
+    "regions": ["global", "US"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "welcometothejungle",
+    "name": "Welcome to the Jungle",
+    "homepage": "https://www.welcometothejungle.com",
+    "access": "browser",
+    "regions": ["EU", "FR", "US"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech", "general"]
+  },
+  {
+    "id": "torre",
+    "name": "Torre",
+    "homepage": "https://torre.ai",
+    "access": "browser",
+    "regions": ["global", "LATAM"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech", "general"]
+  },
+  {
+    "id": "startupjobs",
+    "name": "startup.jobs",
+    "homepage": "https://startup.jobs",
+    "access": "browser",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "occmundial",
+    "name": "OCC Mundial",
+    "homepage": "https://www.occ.com.mx",
+    "access": "browser",
+    "regions": ["MX"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "bumeran",
+    "name": "Bumeran",
+    "homepage": "https://www.bumeran.com",
+    "access": "browser",
+    "regions": ["AR", "PE", "MX", "CL", "LATAM"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "zonajobs",
+    "name": "ZonaJobs",
+    "homepage": "https://www.zonajobs.com.ar",
+    "access": "browser",
+    "regions": ["AR"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "vagas",
+    "name": "Vagas.com",
+    "homepage": "https://www.vagas.com.br",
+    "access": "browser",
+    "regions": ["BR"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "infojobs-brasil",
+    "name": "InfoJobs Brasil",
+    "homepage": "https://www.infojobs.com.br",
+    "access": "browser",
+    "regions": ["BR"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "glassdoor",
+    "name": "Glassdoor",
+    "homepage": "https://www.glassdoor.com/Job/",
+    "access": "browser",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "seek",
+    "name": "Seek",
+    "homepage": "https://www.seek.com.au",
+    "access": "browser",
+    "regions": ["AU", "APAC"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "jora",
+    "name": "Jora",
+    "homepage": "https://au.jora.com",
+    "access": "browser",
+    "regions": ["AU", "APAC"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "jobstreet",
+    "name": "JobStreet and JobsDB",
+    "homepage": "https://www.jobstreet.com",
+    "access": "browser",
+    "regions": ["APAC", "SG"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "foundit",
+    "name": "foundit",
+    "homepage": "https://www.foundit.in",
+    "access": "browser",
+    "regions": ["IN", "APAC"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "bayt",
+    "name": "Bayt",
+    "homepage": "https://www.bayt.com",
+    "access": "browser",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "indeed",
+    "name": "Indeed",
+    "homepage": "https://www.indeed.com",
+    "access": "browser",
+    "regions": ["global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "talentoperu",
+    "name": "Talento Perú (SERVIR)",
+    "homepage": "https://talentoperu.servir.gob.pe",
+    "access": "browser",
+    "regions": ["PE"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "ukfindajob",
+    "name": "UK Find a job",
+    "homepage": "https://findajob.dwp.gov.uk",
+    "access": "browser",
+    "regions": ["UK"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general", "public-sector"]
+  },
+  {
+    "id": "computrabajo",
+    "name": "Computrabajo",
+    "homepage": "https://www.computrabajo.com",
+    "access": "manual",
+    "regions": ["LATAM", "MX", "AR", "CL", "CO", "PE", "ES"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "elempleo",
+    "name": "elempleo.com",
+    "homepage": "https://www.elempleo.com",
+    "access": "manual",
+    "regions": ["CO"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "laborum",
+    "name": "Laborum",
+    "homepage": "https://www.laborum.cl",
+    "access": "manual",
+    "regions": ["CL"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "trabajando",
+    "name": "Trabajando.com",
+    "homepage": "https://www.trabajando.cl",
+    "access": "manual",
+    "regions": ["CL"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "empleospublicos",
+    "name": "Empleos Públicos",
+    "homepage": "https://www.empleospublicos.cl",
+    "access": "manual",
+    "regions": ["CL"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "portaldelempleo",
+    "name": "Portal del Empleo",
+    "homepage": "https://www.empleo.gob.mx",
+    "access": "manual",
+    "regions": ["MX"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general", "public-sector"]
+  },
+  {
+    "id": "catho",
+    "name": "Catho",
+    "homepage": "https://www.catho.com.br",
+    "access": "manual",
+    "regions": ["BR"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "trampos",
+    "name": "Trampos",
+    "homepage": "https://trampos.co",
+    "access": "manual",
+    "regions": ["BR"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "workana",
+    "name": "Workana",
+    "homepage": "https://www.workana.com",
+    "access": "manual",
+    "regions": ["LATAM", "global"],
+    "workModes": ["remote"],
+    "jobTypes": ["tech", "general"]
+  },
+  {
+    "id": "manfred",
+    "name": "Manfred",
+    "homepage": "https://www.getmanfred.com",
+    "access": "manual",
+    "regions": ["ES"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "stepstone",
+    "name": "StepStone",
+    "homepage": "https://www.stepstone.de",
+    "access": "manual",
+    "regions": ["DE"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "hellowork",
+    "name": "HelloWork",
+    "homepage": "https://www.hellowork.com",
+    "access": "manual",
+    "regions": ["FR"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "reed",
+    "name": "Reed",
+    "homepage": "https://www.reed.co.uk",
+    "access": "manual",
+    "regions": ["UK"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "irishjobs",
+    "name": "IrishJobs",
+    "homepage": "https://www.irishjobs.ie",
+    "access": "manual",
+    "regions": ["IE"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "jobsie",
+    "name": "Jobs.ie",
+    "homepage": "https://www.jobs.ie",
+    "access": "manual",
+    "regions": ["IE"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "publicjobs",
+    "name": "publicjobs.ie",
+    "homepage": "https://www.publicjobs.ie",
+    "access": "manual",
+    "regions": ["IE"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "civilservicejobs",
+    "name": "Civil Service Jobs",
+    "homepage": "https://www.civilservicejobs.service.gov.uk",
+    "access": "manual",
+    "regions": ["UK"],
+    "workModes": ["onsite", "hybrid"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "pracuj",
+    "name": "pracuj.pl",
+    "homepage": "https://www.pracuj.pl",
+    "access": "manual",
+    "regions": ["PL"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "inpa",
+    "name": "inPA",
+    "homepage": "https://www.inpa.gov.it",
+    "access": "manual",
+    "regions": ["IT"],
+    "workModes": ["onsite"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "relocateme",
+    "name": "Relocate.me",
+    "homepage": "https://relocate.me",
+    "access": "manual",
+    "regions": ["EU", "global"],
+    "workModes": ["onsite", "hybrid"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "eurotechjobs",
+    "name": "EuroTechJobs",
+    "homepage": "https://www.eurotechjobs.com",
+    "access": "manual",
+    "regions": ["EU"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "euremotejobs",
+    "name": "EU Remote Jobs",
+    "homepage": "https://euremotejobs.com",
+    "access": "manual",
+    "regions": ["EU"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "infojobs",
+    "name": "InfoJobs",
+    "homepage": "https://www.infojobs.net",
+    "access": "manual",
+    "regions": ["ES"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "builtin",
+    "name": "Built In",
+    "homepage": "https://builtin.com",
+    "access": "manual",
+    "regions": ["US"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "dice",
+    "name": "Dice",
+    "homepage": "https://www.dice.com",
+    "access": "manual",
+    "regions": ["US"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "ycjobs",
+    "name": "Y Combinator Jobs",
+    "homepage": "https://www.ycombinator.com/jobs",
+    "access": "manual",
+    "regions": ["US", "global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "levelsfyi",
+    "name": "Levels.fyi Jobs",
+    "homepage": "https://www.levels.fyi/jobs",
+    "access": "manual",
+    "regions": ["US", "global"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "usajobs",
+    "name": "USAJOBS",
+    "homepage": "https://www.usajobs.gov",
+    "access": "manual",
+    "regions": ["US"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "jobbank",
+    "name": "Job Bank Canada",
+    "homepage": "https://www.jobbank.gc.ca",
+    "access": "manual",
+    "regions": ["CA"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general", "public-sector"]
+  },
+  {
+    "id": "gcjobs",
+    "name": "GC Jobs",
+    "homepage": "https://emploisfp-psjobs.cfp-psc.gc.ca",
+    "access": "manual",
+    "regions": ["CA"],
+    "workModes": ["onsite", "hybrid"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "apsjobs",
+    "name": "APSJobs",
+    "homepage": "https://www.apsjobs.gov.au",
+    "access": "manual",
+    "regions": ["AU"],
+    "workModes": ["onsite", "hybrid"],
+    "jobTypes": ["public-sector"]
+  },
+  {
+    "id": "workforceaustralia",
+    "name": "Workforce Australia",
+    "homepage": "https://www.workforceaustralia.gov.au",
+    "access": "manual",
+    "regions": ["AU"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "naukri",
+    "name": "Naukri",
+    "homepage": "https://www.naukri.com",
+    "access": "manual",
+    "regions": ["IN"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "ncs",
+    "name": "NCS",
+    "homepage": "https://www.ncs.gov.in",
+    "access": "manual",
+    "regions": ["IN"],
+    "workModes": ["onsite"],
+    "jobTypes": ["general", "public-sector"]
+  },
+  {
+    "id": "hellowork-jp",
+    "name": "Hello Work",
+    "homepage": "https://www.hellowork.mhlw.go.jp",
+    "access": "manual",
+    "regions": ["JP"],
+    "workModes": ["onsite"],
+    "jobTypes": ["general", "public-sector"]
+  },
+  {
+    "id": "japandev",
+    "name": "Japan Dev",
+    "homepage": "https://japan-dev.com",
+    "access": "manual",
+    "regions": ["JP"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "techinasia",
+    "name": "Tech in Asia Jobs",
+    "homepage": "https://www.techinasia.com/jobs",
+    "access": "manual",
+    "regions": ["APAC"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["tech"]
+  },
+  {
+    "id": "pnet",
+    "name": "PNet",
+    "homepage": "https://www.pnet.co.za",
+    "access": "manual",
+    "regions": ["ZA", "Africa"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "careers24",
+    "name": "Careers24",
+    "homepage": "https://www.careers24.com",
+    "access": "manual",
+    "regions": ["ZA", "Africa"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "jobberman",
+    "name": "Jobberman",
+    "homepage": "https://www.jobberman.com",
+    "access": "manual",
+    "regions": ["NG", "Africa"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "brightermonday",
+    "name": "BrighterMonday",
+    "homepage": "https://www.brightermonday.co.ke",
+    "access": "manual",
+    "regions": ["KE", "Africa"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "fuzu",
+    "name": "Fuzu",
+    "homepage": "https://www.fuzu.com",
+    "access": "manual",
+    "regions": ["Africa", "KE"],
+    "workModes": ["remote", "hybrid", "onsite"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "remoteafrica",
+    "name": "Remote Africa",
+    "homepage": "https://remoteafrica.io",
+    "access": "manual",
+    "regions": ["Africa"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "justremote",
+    "name": "JustRemote",
+    "homepage": "https://justremote.co",
+    "access": "manual",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "dailyremote",
+    "name": "DailyRemote",
+    "homepage": "https://dailyremote.com",
+    "access": "manual",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "remoterocketship",
+    "name": "Remote Rocketship",
+    "homepage": "https://www.remoterocketship.com",
+    "access": "manual",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "remoteleaf",
+    "name": "Remoteleaf",
+    "homepage": "https://remoteleaf.com",
+    "access": "manual",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "remotefirstjobs",
+    "name": "RemoteFirstJobs",
+    "homepage": "https://remotefirstjobs.com",
+    "access": "manual",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "remotejobsio",
+    "name": "Remotejobs.io",
+    "homepage": "https://remotejobs.io",
+    "access": "manual",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  },
+  {
+    "id": "remoteco",
+    "name": "Remote.co",
+    "homepage": "https://remote.co",
+    "access": "manual",
+    "regions": ["global"],
+    "workModes": ["remote"],
+    "jobTypes": ["general"]
+  }
+]

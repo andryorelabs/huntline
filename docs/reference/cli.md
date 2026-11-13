@@ -11,12 +11,12 @@ Every command prints exactly one JSON envelope on stdout.
 
 ## Exit codes
 
-| Code | Meaning                                                                                                                                                                          |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | Success (`ok: true`).                                                                                                                                                            |
-| 1    | The command ran and found a problem to fix: `todo-markers`, `lint-failed`, `verify-mismatch`, `batch-changed`, `bullet-fact-missing`, `not-found`, `already-exists` and similar. |
-| 2    | Usage or configuration error: `usage`, `unknown-command`, `data-dir-not-found`, `profile-missing`, `profile-malformed`.                                                          |
-| 3    | Internal error (`internal`).                                                                                                                                                     |
+| Code | Meaning                                                                                                                                                          |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Success (`ok: true`).                                                                                                                                            |
+| 1    | The command ran and found a problem to fix: `lint-failed`, `verify-mismatch`, `batch-changed`, `bullet-fact-missing`, `not-found`, `already-exists` and similar. |
+| 2    | Usage or configuration error: `usage`, `unknown-command`, `data-dir-not-found`, `profile-missing`, `profile-malformed`.                                          |
+| 3    | Internal error (`internal`).                                                                                                                                     |
 
 ## Commands
 
@@ -59,6 +59,14 @@ Prepares the tools `cv build` needs. Downloads the pinned Typst release (checksu
 ### `jobship company`
 
 ATS Sources (`greenhouse`, `lever`, `ashby`, `workable`, `smartrecruiters`) only sweep companies saved here. `company add <careers-url>` detects the ATS and slug (Greenhouse, Lever, Ashby, Workable, SmartRecruiters) and stores it. `company list` lists stored companies.
+
+### `jobship board`
+
+Boards are the job sites a sweep reads. The catalog lists them with `access` (`feed`, `browser` or `manual`), `regions`, `workModes` and `jobTypes`; custom boards live in `boards.json` in the data dir.
+
+- `board add <feed-url> --name <name> [--region <region>]... [--work-mode remote|hybrid|onsite]...` fetches the URL once, requires a valid RSS or Atom feed with at least one item, and saves it as a `feed` board. A URL that is not a feed fails `board-invalid` (exit 1). Without flags the board is `global` and `remote`.
+- `board list` prints catalog and custom boards with `access`, `regions`, `workModes`, `jobTypes`, `custom` and `active`, plus the catalog `origin`. `active` is true when the Profile resolves the board into a sweep.
+- `board remove <id>` deletes a custom board. A catalog id or an unknown id fails `not-found` (exit 1).
 
 ### `jobship cv`
 

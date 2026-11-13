@@ -1,0 +1,4 @@
+{"data":[
+{"slug":"backend-dev-acme-berlin-1","company_name":"Acme GmbH","title":"Backend Developer","description":"<p>Go and Postgres.</p>","remote":true,"url":"https://www.arbeitnow.com/jobs/companies/acme/backend-dev-acme-berlin-1","tags":["Backend"],"job_types":["full time"],"location":"Berlin","created_at":1762850000},
+{"slug":"office-admin-umbrella-munich-2","company_name":"Umbrella AG","title":"Office Admin","description":"<p>Front desk.</p>","remote":false,"url":"https://www.arbeitnow.com/jobs/companies/umbrella/office-admin-umbrella-munich-2","tags":[],"job_types":[],"location":"Munich","created_at":1762840000}
+]}

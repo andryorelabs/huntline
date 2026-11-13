@@ -15,6 +15,10 @@ Collect Postings from Sources that need the human's logged-in browser, normalize
 - Terms of service: LinkedIn, X and Wellfound restrict automated access in their terms of service, and automation can get the human's account limited or banned. Tell the human this before the first run, keep volumes low and proceed only if they accept it.
 - Go slowly: one query at a time, with pauses. Stop and report if a CAPTCHA, login wall or rate limit appears.
 
+## Boards
+
+Run `jobship board list` and take the boards with `access: browser` that match the Profile regions. Ask the human which to read. The sections below give recipes for Wellfound, LinkedIn and X; for any other `browser` board, read its public job listing pages the same way and stop on any checkpoint.
+
 ## Posting JSON
 
 An array of objects. Required: `id`, `source`, `url`, `company`, `title`. Optional: `location`, `remote`, `contract`, `salary` (`min`, `max`, `currency`), `stack`, `description`, `postedAt` (ISO date).

@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import { isObject } from "../core/narrow.ts";
-import type { HuntEvent, Posting, SourceAdapter } from "../core/types.ts";
+import type { HuntEvent, Posting, SourceAdapter, SourceResult } from "../core/types.ts";
 import { dedupKey, readLedger } from "../ledger/dedup.ts";
 import { readEvents } from "../ledger/events.ts";
 import { createTracker } from "../tracker/index.ts";
@@ -17,12 +17,13 @@ import { ingestPostings, runSweep } from "./sweep.ts";
 let root = "";
 
 function makeContext(): CommandContext {
-  return { dataDir: { path: root }, env: {}, cwd: root };
+  return { dataDir: { path: root }, env: { JOBSHIP_CATALOG_URL: "off" }, cwd: root };
 }
 
 function writeProfile(
   sources: string[],
   tracker: Record<string, unknown> = { kind: "local" },
+  overrides: Record<string, unknown> = {},
 ): void {
   writeFileSync(path.join(root, "jobship.json"), '{"version":1}\n');
   writeFileSync(
@@ -37,6 +38,7 @@ function writeProfile(
       outreachDailyCap: 5,
       sources,
       tracker,
+      ...overrides,
     }),
   );
 }
@@ -387,12 +389,112 @@ describe("command", () => {
     });
   });
 
-  test("sweep with no configured sources reports an empty run", async () => {
-    writeProfile([]);
-    expect(await run(["sweep"], makeContext())).toMatchObject({
-      ok: true,
-      data: { failed: [], empty: [] },
+  test("sweep with empty sources resolves boards from the Profile", async () => {
+    writeProfile([], { kind: "local" }, { regions: ["LATAM"], remote: "remote-only" });
+    const requested: string[] = [];
+    const result = await runSweep(makeContext(), {
+      fetch: (input) => {
+        requested.push(input);
+        return Promise.resolve(new Response("", { status: 404 }));
+      },
     });
+    if (!result.ok) throw new Error(result.error.message);
+    const names = result.value.sources.map((entry) => entry.source);
+    expect(names).toContain("getonboard");
+    expect(names).toContain("weworkremotely");
+    expect(names).not.toContain("berlinstartupjobs");
+    expect(result.value.skipped).toEqual([]);
+  });
+
+  test("an id:option Source fetches only that feed URL", async () => {
+    writeProfile(["weworkremotely:remote-devops-sysadmin-jobs"]);
+    const requested: string[] = [];
+    const result = await runSweep(makeContext(), {
+      fetch: (input) => {
+        requested.push(input);
+        return Promise.resolve(
+          new Response(
+            readFileSync(path.join(import.meta.dir, "../sources/fixtures/feed/rss.xml")),
+          ),
+        );
+      },
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(requested).toEqual([
+      "https://weworkremotely.com/categories/remote-devops-sysadmin-jobs.rss",
+    ]);
+    expect(result.value.sources).toHaveLength(1);
+    expect(result.value.totals.seen).toBeGreaterThan(0);
+  });
+
+  test("a board inside its minimum interval is reported skipped and not fetched", async () => {
+    writeProfile(["remotive"]);
+    let calls = 0;
+    const fetchStub = (): Promise<Response> => {
+      calls += 1;
+      return Promise.resolve(new Response("", { status: 500 }));
+    };
+    const start = Date.parse("2026-11-13T10:00:00Z");
+    await runSweep(makeContext(), { fetch: fetchStub, now: () => start });
+    expect(calls).toBe(1);
+    const second = await runSweep(makeContext(), { fetch: fetchStub, now: () => start + 60_000 });
+    if (!second.ok) throw new Error(second.error.message);
+    expect(calls).toBe(1);
+    expect(second.value.skipped.map((entry) => entry.source)).toEqual(["remotive"]);
+    expect(second.value.sources).toEqual([]);
+    const later = await runSweep(makeContext(), {
+      fetch: fetchStub,
+      now: () => start + 361 * 60_000,
+    });
+    if (!later.ok) throw new Error(later.error.message);
+    expect(calls).toBe(2);
+    expect(later.value.skipped).toEqual([]);
+  });
+
+  test("options of one board share its minimum interval", async () => {
+    writeProfile(["jobicy:latam", "jobicy:europe"]);
+    let calls = 0;
+    const fetchStub = (): Promise<Response> => {
+      calls += 1;
+      return Promise.resolve(new Response("", { status: 500 }));
+    };
+    const start = Date.parse("2026-11-13T10:00:00Z");
+    const first = await runSweep(makeContext(), { fetch: fetchStub, now: () => start });
+    if (!first.ok) throw new Error(first.error.message);
+    expect(calls).toBe(1);
+    expect(first.value.skipped.map((entry) => entry.source)).toEqual(["jobicy:europe"]);
+    const second = await runSweep(makeContext(), { fetch: fetchStub, now: () => start + 60_000 });
+    if (!second.ok) throw new Error(second.error.message);
+    expect(calls).toBe(1);
+    expect(second.value.skipped.map((entry) => entry.source)).toEqual([
+      "jobicy:latam",
+      "jobicy:europe",
+    ]);
+  });
+
+  test("custom boards from the data dir join an automatic sweep", async () => {
+    writeProfile([], { kind: "local" }, { regions: ["JP"], remote: "remote-only" });
+    writeFileSync(
+      path.join(root, "boards.json"),
+      JSON.stringify([
+        {
+          id: "my-feed",
+          name: "My feed",
+          homepage: "https://feed.example.test",
+          access: "feed",
+          regions: ["global"],
+          workModes: ["remote"],
+          jobTypes: ["general"],
+          parser: "rss",
+          endpoint: "https://feed.example.test/rss.xml",
+        },
+      ]),
+    );
+    const result = await runSweep(makeContext(), {
+      fetch: () => Promise.resolve(new Response("", { status: 404 })),
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.sources.map((entry) => entry.source)).toContain("my-feed");
   });
 });
 
@@ -437,5 +539,84 @@ describe("skills", () => {
     const body = readFileSync(path.join(skillsRoot, "browser-source", "SKILL.md"), "utf8");
     for (const heading of ["## Wellfound (GraphQL)", "## LinkedIn", "## X"])
       expect(body).toContain(heading);
+  });
+});
+
+function cursorAdapter(queries: (string | undefined)[], results: SourceResult[]): SourceAdapter {
+  return {
+    name: "remotive",
+    fetch: (query) => {
+      queries.push(query.cursor);
+      const next = results.shift();
+      return Promise.resolve(next ?? { postings: [], errors: [], warnings: [] });
+    },
+  };
+}
+
+function cursorFile(): string {
+  return path.join(root, "board-cursors.json");
+}
+
+describe("board cursors", () => {
+  const START = Date.parse("2026-11-13T10:00:00Z");
+  const DAY = 24 * 60 * 60_000;
+
+  test("stores nextCursor and passes it to the next sweep", async () => {
+    writeProfile(["remotive"]);
+    const queries: (string | undefined)[] = [];
+    const adapter = cursorAdapter(queries, [
+      { postings: [], errors: [], warnings: [], nextCursor: "abc" },
+      { postings: [], errors: [], warnings: [], nextCursor: "def" },
+    ]);
+    await runSweep(makeContext(), { adapters: { remotive: adapter }, now: () => START });
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "abc" });
+    await runSweep(makeContext(), { adapters: { remotive: adapter }, now: () => START + DAY });
+    expect(queries).toEqual([undefined, "abc"]);
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "def" });
+  });
+
+  test("a failed fetch keeps the stored cursor", async () => {
+    writeProfile(["remotive"]);
+    writeFileSync(cursorFile(), JSON.stringify({ remotive: "abc" }));
+    const queries: (string | undefined)[] = [];
+    const adapter = cursorAdapter(queries, [
+      { postings: [], errors: ["remotive: boom"], warnings: [], nextCursor: "zzz" },
+    ]);
+    const result = await runSweep(makeContext(), {
+      adapters: { remotive: adapter },
+      now: () => START,
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.failed).toHaveLength(1);
+    expect(queries).toEqual(["abc"]);
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "abc" });
+  });
+
+  test("a corrupt cursor file is ignored", async () => {
+    writeProfile(["remotive"]);
+    writeFileSync(cursorFile(), "{not json");
+    const queries: (string | undefined)[] = [];
+    const adapter = cursorAdapter(queries, [
+      { postings: [], errors: [], warnings: [], nextCursor: "abc" },
+    ]);
+    const result = await runSweep(makeContext(), {
+      adapters: { remotive: adapter },
+      now: () => START,
+    });
+    expect(result.ok).toBe(true);
+    expect(queries).toEqual([undefined]);
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "abc" });
+  });
+
+  test("boards that return no nextCursor write no cursor file", async () => {
+    writeProfile(["remotive:x", "jobicy:latam"]);
+    const queries: (string | undefined)[] = [];
+    const result = await runSweep(makeContext(), {
+      adapters: { remotive: cursorAdapter(queries, []) },
+      fetch: () => Promise.resolve(new Response("", { status: 500 })),
+      now: () => START,
+    });
+    expect(result.ok).toBe(true);
+    expect(() => readFileSync(cursorFile(), "utf8")).toThrow();
   });
 });

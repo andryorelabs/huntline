@@ -31,9 +31,11 @@ Pass: exit 0, and every case in the envelope has `expected` equal to `actual`. A
 
 ## 5. One real sweep
 
-Run `jobship sweep` against your configured Sources.
+Run `jobship board list` and check that the boards marked `active` match your Profile `regions` and `remote`. Then run `jobship sweep` against your configured Sources (empty `sources` means auto).
 
 Pass: exit 0 and per-Source `seen/known/new` counts. A Source listed under `failed` is a problem; one under `empty` is fine.
+
+A board with a stored cursor, such as `nav`, warns `cursor initialized` on its first sweep and brings Postings from the next one.
 
 ## 6. One apply, stopped at the Submit
 

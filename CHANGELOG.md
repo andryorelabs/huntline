@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-13
+
+### Added
+
+- A catalog of free job boards (`catalog/boards.json`) with `feed`, `browser` and `manual` access, feed adapters for RSS, Atom, XML and JSON boards, and `jobship board add|list|remove` for custom boards ([ADR-0013](docs/adr/0013-jobship-ships-a-board-catalog.md)).
+- The catalog refreshes from the repository at most once a day, with a 24-hour cache and a fallback to the bundled copy; `JOBSHIP_CATALOG_URL` points it elsewhere, and `off` skips the fetch.
+- The `nav` feed adapter for NAV Arbeidsplassen (Norway), with a stored cursor in `board-cursors.json` so each sweep reads only entries published since the previous one. Postings arrive from the second sweep on.
+
+### Changed
+
+- `sweep` resolves its boards from the Profile `regions` and `remote` when `sources` is empty, and `jobship doctor` warns `no-boards` when none resolve.
+
 ## [0.4.0] - 2026-11-12
 
 ### Added
@@ -78,7 +90,8 @@ First tagged release.
 
 - `cv lint` is Spanish-safe, and doctor validates CV data.
 
-[Unreleased]: https://github.com/andryorelabs/jobship/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/andryorelabs/jobship/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/andryorelabs/jobship/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/andryorelabs/jobship/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/andryorelabs/jobship/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/andryorelabs/jobship/compare/v0.1.1...v0.2.0

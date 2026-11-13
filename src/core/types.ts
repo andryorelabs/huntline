@@ -69,6 +69,8 @@ export type Salary = {
   readonly period?: SalaryPeriod;
 };
 
+export type WorkMode = "remote" | "hybrid" | "onsite";
+
 export type Posting = {
   readonly id: string;
   readonly source: string;
@@ -77,6 +79,7 @@ export type Posting = {
   readonly title: string;
   readonly location?: string;
   readonly remote?: boolean;
+  readonly workMode?: WorkMode;
   readonly contract?: string;
   readonly salary?: Salary;
   readonly stack?: readonly string[];
@@ -88,12 +91,14 @@ export type SourceResult = {
   readonly postings: Posting[];
   readonly errors: string[];
   readonly warnings: string[];
+  readonly nextCursor?: string;
 };
 
 export type SourceQuery = {
   readonly company?: string;
   readonly slug?: string;
   readonly keywords?: readonly string[];
+  readonly cursor?: string;
 };
 
 export type SourceAdapter = {

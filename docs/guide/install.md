@@ -94,14 +94,25 @@ The `inbox` and `outreach` skills use the Gmail connector for Claude Code (tools
 
 ## Sources
 
-`sources` in the Profile lists the Source names that `sweep` runs. Valid names:
+`sweep` reads boards from the catalog that ships with jobship, plus any custom boards you add. List them with `jobship board list`: each entry shows `access`, `regions`, `workModes`, `jobTypes` and whether it is `active` for your Profile.
 
-| Kind   | Names                                                         | Notes                                                          |
-| ------ | ------------------------------------------------------------- | -------------------------------------------------------------- |
-| ATS    | `greenhouse`, `lever`, `ashby`, `workable`, `smartrecruiters` | Need companies saved with `jobship company add <careers-url>`. |
-| Boards | `getonboard`, `himalayas`, `remoteok`, `hn`                   | Public APIs; no setup.                                         |
+| Access    | Meaning                                                                                 |
+| --------- | --------------------------------------------------------------------------------------- |
+| `feed`    | An RSS feed or public API that `sweep` reads.                                           |
+| `browser` | Read in your own Chrome by the `browser-source` skill, then passed to `jobship ingest`. |
+| `manual`  | Listed for you to browse; jobship does not read it (terms or no public endpoint).       |
 
-An ATS Source with no saved companies is reported as misconfigured, with a hint to run `jobship company add`. An unknown name is reported as `unknown source`. Browser-only Sources (Wellfound, LinkedIn, X) are not `sweep` Sources; the `browser-source` skill collects them and passes the result to `jobship ingest`.
+`sources` in the Profile decides what `sweep` runs:
+
+- Empty `sources` means auto: every active `feed` board whose regions match the Profile `regions` (or `global`) and whose work modes fit `remote` (`remote-only` needs remote, `hybrid` accepts remote and hybrid, `any` accepts all).
+- A list is used as given. Use a board id (for example `getonboard`, `himalayas`, `remoteok` or `hn`), an ATS name (`greenhouse`, `lever`, `ashby`, `workable`, `smartrecruiters`) or `id:option` to pick a board option, for example `weworkremotely:remote-devops-sysadmin-jobs`.
+- A board inside its minimum interval is reported under `skipped`. A failing board is reported under `failed` and does not stop the sweep. `jobship doctor` warns `no-boards` when no `feed` board resolves.
+
+Add a board the catalog lacks with `jobship board add <feed-url> --name <name> [--region <region>]... [--work-mode remote|hybrid|onsite]...`. It must serve valid RSS or Atom with at least one item. `jobship board remove <id>` deletes a custom board. The catalog refreshes from GitHub at most once a day and falls back to the bundled copy; set `JOBSHIP_CATALOG_URL` to `off` to skip the fetch (see [configuration](../configuration.md)).
+
+Auto selection never includes ATS Sources. To sweep the companies you save with `jobship company add <careers-url>`, list the ATS names in `sources` together with the board ids you want, since a non-empty list turns auto selection off. An ATS Source with no saved companies is reported as misconfigured. An unknown name is reported as `unknown source`.
+
+The `nav` board (NAV Arbeidsplassen, Norway) reads a feed that is walked forward. Its first sweep only records where the feed stands and yields no Postings; Postings fill in from the second sweep on. The position is stored in `board-cursors.json` in the data dir, next to `board-runs.json`. A failed fetch keeps the old position, and deleting the file restarts the board from the latest page.
 
 Example: `jobship company add https://jobs.ashbyhq.com/acme` detects the ATS and stores `{ats: "ashby", slug: "acme"}`.
 

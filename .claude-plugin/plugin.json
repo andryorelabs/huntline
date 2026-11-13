@@ -1,6 +1,6 @@
 {
   "name": "jobship",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A job-search plugin for Claude Code: sweeps Sources, scores fit against the Profile, builds a Tailored CV from Fact bank facts and assists the form, while the human presses every Submit and Send.",
   "author": { "name": "Andry Orellana", "email": "hello@andryore.dev" },
   "homepage": "https://github.com/andryorelabs/jobship",

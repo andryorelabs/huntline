@@ -368,6 +368,19 @@ export function createJobFeedXmlAdapter(
   );
 }
 
+function utcDate(value: string | undefined): string | undefined {
+  return value !== undefined && /T[\d:.]+$/.test(value) ? `${value.slice(0, 23)}Z` : value;
+}
+
+function nhsLocation(row: Node): string | undefined {
+  const wrapper = row["locations"];
+  const entries = nodes(wrapper).flatMap((node) =>
+    (Array.isArray(node["location"]) ? node["location"] : [node["location"]]).map(leaf),
+  );
+  const names = entries.filter((entry) => entry !== undefined);
+  return names.length === 0 ? leaf(row["location"]) : names.join("; ");
+}
+
 function mapNhsRow(row: Node, options: XmlFeedOptions): Posting | undefined {
   const title = plain(pick(row, ["title", "jobTitle"]));
   const url = absolute(pick(row, ["url", "link"]), options.endpoint);
@@ -382,17 +395,17 @@ function mapNhsRow(row: Node, options: XmlFeedOptions): Posting | undefined {
       title,
     },
     {
-      location: locationOf(row, ["town", "location", "county"]),
-      contract: plain(pick(row, ["jobType", "contractType", "contract"])),
+      location: nhsLocation(row),
+      contract: plain(pick(row, ["type", "jobType", "contractType"])),
       description: plain(pick(row, ["description", "summary"])),
-      postedAt: isoDate(pick(row, ["publicationDate", "datePosted", "postedDate", "date"])),
+      postedAt: isoDate(utcDate(pick(row, ["postDate", "publicationDate", "date"]))),
     },
   );
 }
 
 /**
  * Builds an adapter for the NHS Jobs `search_xml` API, whose `<vacancyDetails>`
- * elements carry id, title, employer, url, town, jobType and publicationDate.
+ * elements carry id, title, employer, type, url, postDate and a `<locations>` list.
  */
 export function createNhsXmlAdapter(
   fetchFunction: FetchFunction,

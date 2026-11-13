@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Tokyo Jobs</title>
+  <entry>
+    <title>Frontend Engineer</title>
+    <link rel="self" href="https://atom.example.test/jobs/1.atom"/>
+    <link rel="alternate" type="text/html" href="/jobs/frontend-engineer"/>
+    <id>tag:atom.example.test,2026:job-1</id>
+    <published>2026-11-09T08:30:00Z</published>
+    <updated>2026-11-10T08:30:00Z</updated>
+    <author><name>Initech</name></author>
+    <summary type="html">&lt;p&gt;Work on the &lt;b&gt;web app&lt;/b&gt;.&lt;/p&gt;</summary>
+  </entry>
+</feed>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobs>
+  <job>
+    <id>9001</id>
+    <title>Senior Java Developer</title>
+    <company>Hooli</company>
+    <url>https://devitjobs.example.test/jobs/hooli-senior-java</url>
+    <country>Germany</country>
+    <region>Berlin</region>
+    <city>Berlin</city>
+    <jobtype>Full-time</jobtype>
+    <location>Full Remote</location>
+    <description><![CDATA[<p>Java &amp; Spring.</p>]]></description>
+    <date>2026-11-08</date>
+  </job>
+  <job>
+    <id>9002</id>
+    <title>QA Engineer</title>
+    <company>Pied Piper</company>
+    <url>/jobs/pied-piper-qa</url>
+    <country>Switzerland</country>
+    <city>Zurich</city>
+    <jobtype>Contract</jobtype>
+  </job>
+  <job><id>9003</id></job>
+</jobs>

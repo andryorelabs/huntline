@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vacancyList>
+  <vacancyDetails>
+    <id>A0001-26-0001</id>
+    <title>Staff Nurse</title>
+    <employer>Example NHS Foundation Trust</employer>
+    <url>https://www.jobs.nhs.example.test/candidate/jobadvert/A0001-26-0001</url>
+    <town>Leeds</town>
+    <jobType>Permanent</jobType>
+    <description><![CDATA[<p>Ward nursing role.</p>]]></description>
+    <publicationDate>2026-11-10</publicationDate>
+  </vacancyDetails>
+</vacancyList>

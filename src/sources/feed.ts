@@ -102,7 +102,9 @@ async function getXml(
   let response: Response;
   try {
     response = await fetchFunction(url, {
-      headers: { accept: "application/rss+xml, application/atom+xml, application/xml, text/xml" },
+      headers: {
+        accept: "application/rss+xml, application/atom+xml, application/xml, text/xml, */*;q=0.1",
+      },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch (error) {

@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+
+- Feed requests also accept `*/*` at low priority, so boards that answer 500 to XML-only requests (elixirjobs) sweep again.
+- `devitjobs-us` is now a `manual` board: its feed is over 10 MB, past the response cap, so every sweep failed it.
+
 ## [0.5.0] - 2026-11-13
 
 ### Added

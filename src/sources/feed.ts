@@ -73,11 +73,10 @@ function decode(content: Uint8Array, encoding: string | undefined): Outcome<stri
 }
 
 function balanceError(xml: string): string | undefined {
-  const stripped = xml
-    .replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<\?[\s\S]*?\?>/g, "")
-    .replace(/<!DOCTYPE[^>]*>/gi, "");
+  const stripped = xml.replace(
+    /<!\[CDATA\[[\s\S]*?\]\]>|<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!DOCTYPE[^>]*>/gi,
+    "",
+  );
   const stack: string[] = [];
   for (const match of stripped.matchAll(/<(\/?)([^\s>/]+)[^>]*?(\/?)>/g)) {
     const [, closing, name = "", selfClosing] = match;

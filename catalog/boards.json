@@ -340,7 +340,7 @@
     "homepage": "https://www.arbeitsagentur.de/jobsuche/",
     "access": "feed",
     "regions": ["DE"],
-    "workModes": ["onsite", "hybrid", "remote"],
+    "workModes": ["onsite", "hybrid"],
     "jobTypes": ["general", "public-sector"],
     "parser": "bundesagentur",
     "endpoint": "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs",

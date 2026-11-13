@@ -53,6 +53,23 @@ async function resolveIds(overrides: Partial<Profile>): Promise<string[]> {
 }
 
 describe("resolveBoards", () => {
+  test("nav resolves to the nav adapter and rejects options", async () => {
+    const plain = await resolveBoards(
+      profileWith({ sources: ["nav"] }),
+      { path: root },
+      { env: OFF },
+    );
+    if (!plain.ok) throw new Error(plain.error.message);
+    expect(plain.value[0]?.adapter?.name).toBe("nav");
+    const optioned = await resolveBoards(
+      profileWith({ sources: ["nav:x"] }),
+      { path: root },
+      { env: OFF },
+    );
+    if (!optioned.ok) throw new Error(optioned.error.message);
+    expect(optioned.value[0]?.problem).toContain("does not support options");
+  });
+
   test("empty sources select feed boards matching the Profile regions and remote", async () => {
     const ids = await resolveIds({});
     expect(ids).toContain("getonboard");

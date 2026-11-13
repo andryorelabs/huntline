@@ -388,10 +388,13 @@
     "id": "nav",
     "name": "NAV Arbeidsplassen (Norway)",
     "homepage": "https://arbeidsplassen.nav.no",
-    "access": "manual",
+    "access": "feed",
     "regions": ["EU", "NO"],
     "workModes": ["onsite", "hybrid", "remote"],
-    "jobTypes": ["general", "public-sector"]
+    "jobTypes": ["general", "public-sector"],
+    "parser": "nav",
+    "endpoint": "https://pam-stilling-feed.nav.no/api/v1/feed",
+    "minIntervalMinutes": 60
   },
   {
     "id": "nhsjobs",

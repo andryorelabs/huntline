@@ -91,12 +91,14 @@ export type SourceResult = {
   readonly postings: Posting[];
   readonly errors: string[];
   readonly warnings: string[];
+  readonly nextCursor?: string;
 };
 
 export type SourceQuery = {
   readonly company?: string;
   readonly slug?: string;
   readonly keywords?: readonly string[];
+  readonly cursor?: string;
 };
 
 export type SourceAdapter = {

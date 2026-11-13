@@ -71,6 +71,7 @@ const KNOWN_PARSERS = [
   "bundesagentur",
   "eures",
   "cbop",
+  "nav",
 ] as const;
 
 /** One job board in the catalog. Only `feed` boards carry a `parser` and an `endpoint`. */

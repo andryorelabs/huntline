@@ -18,3 +18,4 @@ Decisions that are hard to reverse, surprising without context, and the result o
 | 0010 | [Identity data is tiered](0010-identity-data-is-tiered.md)                                       | Accepted   | -                                               |
 | 0011 | [LinkedIn is read in the user's browser](0011-linkedin-is-read-in-the-users-browser.md)          | Accepted   | -                                               |
 | 0012 | [Use the yaml package to edit derived files](0012-use-the-yaml-package-to-edit-derived-files.md) | Accepted   | -                                               |
+| 0013 | [jobship ships a board catalog](0013-jobship-ships-a-board-catalog.md)                           | Accepted   | -                                               |

@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- A catalog of free job boards (`catalog/boards.json`) with `feed`, `browser` and `manual` access, feed adapters for RSS, Atom, XML and JSON boards, and `jobship board add|list|remove` for custom boards ([ADR-0013](docs/adr/0013-jobship-ships-a-board-catalog.md)).
+
+### Changed
+
+- `sweep` resolves its boards from the Profile `regions` and `remote` when `sources` is empty, and `jobship doctor` warns `no-boards` when none resolve.
+
 ## [0.4.0] - 2026-11-12
 
 ### Added

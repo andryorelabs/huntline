@@ -9,7 +9,9 @@ stack:
 salaryFloor: null
 excludedCompanies: []
 outreachDailyCap: 5
-# Valid names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`), getonboard, himalayas, remoteok, hn.
+# Empty means auto: sweep reads every feed board that matches `regions` and `remote` (see `jobship board list`).
+# To pin boards, list ids from `jobship board list` (or `id:option`, for example weworkremotely:remote-devops-sysadmin-jobs) and ATS names.
+# ATS names: greenhouse, lever, ashby, workable, smartrecruiters (these need `jobship company add`).
 sources: []
 tracker:
   kind: local

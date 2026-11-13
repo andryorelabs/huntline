@@ -153,6 +153,8 @@ describe("createJobFeedXmlAdapter", () => {
       location: "Zurich, Switzerland",
     });
     expect(result.postings[1]?.remote).toBeUndefined();
+    expect(result.postings[0]?.postedAt).toBe("2026-11-08T00:00:00.000Z");
+    expect(result.postings[1]?.postedAt).toBe("2020-12-01T00:00:00.000Z");
     expect(result.warnings).toHaveLength(1);
   });
 

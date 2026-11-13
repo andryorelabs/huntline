@@ -325,6 +325,15 @@ function locationOf(row: Node, keys: readonly string[]): string | undefined {
   return unique.length === 0 ? undefined : unique.join(", ");
 }
 
+function jobFeedDate(value: string | undefined): string | undefined {
+  const match = value === undefined ? null : /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(value);
+  if (match === null) return isoDate(value);
+  const [, day = "", month = "", year = ""] = match;
+  const parsed = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  const valid = parsed.getUTCMonth() === Number(month) - 1 && parsed.getUTCDate() === Number(day);
+  return valid ? parsed.toISOString() : undefined;
+}
+
 function mapJobFeedRow(row: Node, options: XmlFeedOptions): Posting | undefined {
   const title = plain(pick(row, ["title", "name"]));
   const url = absolute(pick(row, ["url", "link", "apply_url"]), options.endpoint);
@@ -346,7 +355,7 @@ function mapJobFeedRow(row: Node, options: XmlFeedOptions): Posting | undefined 
       remote,
       contract: plain(pick(row, ["jobtype", "job_type", "type"])),
       description: plain(pick(row, ["description", "summary"])),
-      postedAt: isoDate(pick(row, ["date", "pubdate", "published", "posted"])),
+      postedAt: jobFeedDate(pick(row, ["date", "pubdate", "published", "posted"])),
     },
   );
 }

@@ -85,7 +85,12 @@ function runCli(
     [process.execPath, ...runtimeArgs, CLI_ENTRY, ...args, "--data", dataDir],
     {
       cwd: workDir,
-      env: { PATH: `${binDir}:${process.env["PATH"] ?? ""}`, HOME: workDir, ...extraEnv },
+      env: {
+        PATH: `${binDir}:${process.env["PATH"] ?? ""}`,
+        HOME: workDir,
+        JOBSHIP_CATALOG_URL: "off",
+        ...extraEnv,
+      },
       stdout: "pipe",
       stderr: "pipe",
     },
@@ -130,7 +135,7 @@ function writeDataDir(): void {
       salaryFloor: null,
       excludedCompanies: [],
       outreachDailyCap: 5,
-      sources: [],
+      sources: ["linkedin"],
       tracker: { kind: "local", directory: "tracker" },
     }),
   );

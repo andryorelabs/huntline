@@ -67,6 +67,21 @@ function parsePage(body: unknown): Page | undefined {
   return { id, nextId: text(field(body, "next_id")), items };
 }
 
+function itemId(item: Record<string, unknown>): string | undefined {
+  return text(item["id"]) ?? text(field(item["_feed_entry"], "uuid"));
+}
+
+function parseCursor(cursor: string): Position {
+  const cut = cursor.indexOf(":");
+  if (cut < 0) return { pageId: cursor, after: undefined };
+  const after = cursor.slice(cut + 1);
+  return { pageId: cursor.slice(0, cut), after: after === "" ? undefined : after };
+}
+
+function formatCursor(pageId: string, handled: string | undefined): string {
+  return handled === undefined ? pageId : `${pageId}:${handled}`;
+}
+
 function entryOf(item: Record<string, unknown>): Record<string, unknown> | undefined {
   const entry = field(item, "_feed_entry");
   return isObject(entry) ? entry : undefined;
@@ -106,14 +121,41 @@ type WalkState = {
   readonly details: number;
 };
 
+type Position = { readonly pageId: string; readonly after: string | undefined };
+
 type CollectStep =
-  | { readonly kind: "done"; readonly state: WalkState; readonly complete: boolean }
+  | {
+      readonly kind: "done";
+      readonly state: WalkState;
+      readonly handled: string | undefined;
+      readonly complete: boolean;
+    }
   | { readonly kind: "error"; readonly error: string };
 
 type WalkStep =
   | { readonly kind: "done"; readonly state: WalkState }
   | { readonly kind: "reset" }
   | { readonly kind: "error"; readonly error: string };
+
+function remainingItems(
+  page: Page,
+  after: string | undefined,
+  state: WalkState,
+): { readonly items: readonly Record<string, unknown>[]; readonly state: WalkState } {
+  if (after === undefined) return { items: page.items, state };
+  const index = page.items.findIndex((item) => itemId(item) === after);
+  if (index >= 0) return { items: page.items.slice(index + 1), state };
+  return {
+    items: page.items,
+    state: {
+      ...state,
+      warnings: [
+        ...state.warnings,
+        `nav: entry ${after} not found on page ${page.id}; reading the page from its start`,
+      ],
+    },
+  };
+}
 
 /**
  * Reads the NAV job vacancy feed. The first sweep only records the newest feed page as a
@@ -159,31 +201,36 @@ export function createNavAdapter(fetchFunction: FetchFunction, endpoint: string)
     token: string,
     items: readonly Record<string, unknown>[],
     state: WalkState,
+    handled: string | undefined,
     query: SourceQuery,
   ): Promise<CollectStep> {
     const item = items[0];
-    if (item === undefined) return { kind: "done", state, complete: true };
-    if (state.details >= MAX_DETAILS) return { kind: "done", state, complete: false };
+    if (item === undefined) return { kind: "done", state, handled, complete: true };
+    const id = itemId(item);
+    const rest = items.slice(1);
+    if (!isActive(item)) return collect(token, rest, state, id ?? handled, query);
+    if (state.details >= MAX_DETAILS) return { kind: "done", state, handled, complete: false };
     const posting = toPosting(item);
-    if (posting === undefined) return collect(token, items.slice(1), state, query);
+    if (posting === undefined) return collect(token, rest, state, id ?? handled, query);
     const confirmed = await confirmActive(token, posting.id.slice("nav:".length));
-    if (!confirmed.ok) return { kind: "error", error: confirmed.error };
-    const keep = confirmed.value && matchesKeywords(posting, query.keywords);
+    if (!confirmed.ok && !confirmed.notFound) return { kind: "error", error: confirmed.error };
+    const keep = confirmed.ok && confirmed.value && matchesKeywords(posting, query.keywords);
     return collect(
       token,
-      items.slice(1),
+      rest,
       {
         ...state,
         details: state.details + 1,
         postings: keep ? [...state.postings, posting] : state.postings,
       },
+      id ?? handled,
       query,
     );
   }
 
   async function walk(
     token: string,
-    pageId: string,
+    position: Position,
     state: WalkState,
     query: SourceQuery,
   ): Promise<WalkStep> {
@@ -199,19 +246,22 @@ export function createNavAdapter(fetchFunction: FetchFunction, endpoint: string)
         },
       };
     }
-    const page = await readPage(token, pageId);
+    const page = await readPage(token, position.pageId);
     if (!page.ok) {
       return page.notFound && state.pages === 0
         ? { kind: "reset" }
         : { kind: "error", error: page.error };
     }
-    const collected = await collect(token, page.value.items.filter(isActive), state, query);
+    const resumed = remainingItems(page.value, position.after, state);
+    const collected = await collect(token, resumed.items, resumed.state, position.after, query);
     if (collected.kind === "error") return collected;
+    const cursor = formatCursor(page.value.id, collected.handled);
     if (!collected.complete) {
       return {
         kind: "done",
         state: {
           ...collected.state,
+          nextCursor: collected.handled === undefined ? state.nextCursor : cursor,
           warnings: [
             ...collected.state.warnings,
             `nav: stopped after ${MAX_DETAILS} entries; resuming next sweep`,
@@ -219,9 +269,9 @@ export function createNavAdapter(fetchFunction: FetchFunction, endpoint: string)
         },
       };
     }
-    const advanced = { ...collected.state, pages: state.pages + 1, nextCursor: page.value.id };
+    const advanced = { ...collected.state, pages: state.pages + 1, nextCursor: cursor };
     if (page.value.nextId === undefined) return { kind: "done", state: advanced };
-    return walk(token, page.value.nextId, advanced, query);
+    return walk(token, { pageId: page.value.nextId, after: undefined }, advanced, query);
   }
 
   return {
@@ -234,7 +284,7 @@ export function createNavAdapter(fetchFunction: FetchFunction, endpoint: string)
       }
       const walked = await walk(
         token.value,
-        query.cursor,
+        parseCursor(query.cursor),
         { postings: [], warnings: [], nextCursor: query.cursor, pages: 0, details: 0 },
         query,
       );

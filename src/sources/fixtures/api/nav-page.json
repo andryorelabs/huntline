@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "title": "Stillingsfeeden fra arbeidsplassen.no",
+  "home_page_url": "https://arbeidsplassen.nav.no",
+  "feed_url": "/api/v1/feed/0fd1a817-e705-483e-87e1-fab5a946d2c7",
+  "description": "Feed med stillinger fra arbeidsplassen.no",
+  "next_url": null,
+  "id": "0fd1a817-e705-483e-87e1-fab5a946d2c7",
+  "next_id": null,
+  "items": [
+    {
+      "id": "f43a39cc-62a5-4e2d-9fd6-1fe8c62f92f1",
+      "url": "/api/v1/feedentry/f43a39cc-62a5-4e2d-9fd6-1fe8c62f92f1",
+      "title": "Backend developer",
+      "content_text": "Stillingsannonse",
+      "date_modified": "2026-09-14T12:44:29.536+02:00",
+      "_feed_entry": {
+        "uuid": "f43a39cc-62a5-4e2d-9fd6-1fe8c62f92f1",
+        "status": "ACTIVE",
+        "title": "Backend developer",
+        "businessName": "Example Tech AS",
+        "municipal": "OSLO",
+        "sistEndret": "2026-09-14T12:44:29.536+02:00"
+      }
+    },
+    {
+      "id": "89da7f0d-f02b-4859-9f0d-87caf9a906c7",
+      "url": "/api/v1/feedentry/89da7f0d-f02b-4859-9f0d-87caf9a906c7",
+      "title": "Sommerjobb i skogen",
+      "content_text": "Stillingsannonse",
+      "date_modified": "2023-06-14T12:31:14.940975+02:00",
+      "_feed_entry": {
+        "uuid": "89da7f0d-f02b-4859-9f0d-87caf9a906c7",
+        "status": "INACTIVE",
+        "title": "Sommerjobb i skogen",
+        "businessName": "Samfunnsutvikling, Åmot kommune",
+        "municipal": "ÅMOT",
+        "sistEndret": "2023-06-14T12:31:14.940975+02:00"
+      }
+    }
+  ]
+}

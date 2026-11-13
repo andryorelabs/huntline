@@ -58,6 +58,15 @@ describe("bundled catalog", () => {
     expect(boards.find((entry) => entry.id === "bundesagentur")?.workModes).toContain("onsite");
     expect(boards.find((entry) => entry.id === "trampos")?.access).toBe("manual");
     expect(boards.find((entry) => entry.id === "jobbank")?.access).toBe("manual");
+    expect(boards.find((entry) => entry.id === "nav")).toMatchObject({
+      access: "feed",
+      parser: "nav",
+      endpoint: "https://pam-stilling-feed.nav.no/api/v1/feed",
+      minIntervalMinutes: 60,
+      regions: ["EU", "NO"],
+    });
+    const nav = boards.find((entry) => entry.id === "nav");
+    expect(nav !== undefined && matchesProfile(nav, { regions: ["NO"], remote: "any" })).toBe(true);
   });
 });
 

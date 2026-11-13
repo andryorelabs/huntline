@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import { isObject } from "../core/narrow.ts";
-import type { HuntEvent, Posting, SourceAdapter } from "../core/types.ts";
+import type { HuntEvent, Posting, SourceAdapter, SourceResult } from "../core/types.ts";
 import { dedupKey, readLedger } from "../ledger/dedup.ts";
 import { readEvents } from "../ledger/events.ts";
 import { createTracker } from "../tracker/index.ts";
@@ -539,5 +539,84 @@ describe("skills", () => {
     const body = readFileSync(path.join(skillsRoot, "browser-source", "SKILL.md"), "utf8");
     for (const heading of ["## Wellfound (GraphQL)", "## LinkedIn", "## X"])
       expect(body).toContain(heading);
+  });
+});
+
+function cursorAdapter(queries: (string | undefined)[], results: SourceResult[]): SourceAdapter {
+  return {
+    name: "remotive",
+    fetch: (query) => {
+      queries.push(query.cursor);
+      const next = results.shift();
+      return Promise.resolve(next ?? { postings: [], errors: [], warnings: [] });
+    },
+  };
+}
+
+function cursorFile(): string {
+  return path.join(root, "board-cursors.json");
+}
+
+describe("board cursors", () => {
+  const START = Date.parse("2026-11-13T10:00:00Z");
+  const DAY = 24 * 60 * 60_000;
+
+  test("stores nextCursor and passes it to the next sweep", async () => {
+    writeProfile(["remotive"]);
+    const queries: (string | undefined)[] = [];
+    const adapter = cursorAdapter(queries, [
+      { postings: [], errors: [], warnings: [], nextCursor: "abc" },
+      { postings: [], errors: [], warnings: [], nextCursor: "def" },
+    ]);
+    await runSweep(makeContext(), { adapters: { remotive: adapter }, now: () => START });
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "abc" });
+    await runSweep(makeContext(), { adapters: { remotive: adapter }, now: () => START + DAY });
+    expect(queries).toEqual([undefined, "abc"]);
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "def" });
+  });
+
+  test("a failed fetch keeps the stored cursor", async () => {
+    writeProfile(["remotive"]);
+    writeFileSync(cursorFile(), JSON.stringify({ remotive: "abc" }));
+    const queries: (string | undefined)[] = [];
+    const adapter = cursorAdapter(queries, [
+      { postings: [], errors: ["remotive: boom"], warnings: [], nextCursor: "zzz" },
+    ]);
+    const result = await runSweep(makeContext(), {
+      adapters: { remotive: adapter },
+      now: () => START,
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.failed).toHaveLength(1);
+    expect(queries).toEqual(["abc"]);
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "abc" });
+  });
+
+  test("a corrupt cursor file is ignored", async () => {
+    writeProfile(["remotive"]);
+    writeFileSync(cursorFile(), "{not json");
+    const queries: (string | undefined)[] = [];
+    const adapter = cursorAdapter(queries, [
+      { postings: [], errors: [], warnings: [], nextCursor: "abc" },
+    ]);
+    const result = await runSweep(makeContext(), {
+      adapters: { remotive: adapter },
+      now: () => START,
+    });
+    expect(result.ok).toBe(true);
+    expect(queries).toEqual([undefined]);
+    expect(JSON.parse(readFileSync(cursorFile(), "utf8"))).toEqual({ remotive: "abc" });
+  });
+
+  test("boards that return no nextCursor write no cursor file", async () => {
+    writeProfile(["remotive:x", "jobicy:latam"]);
+    const queries: (string | undefined)[] = [];
+    const result = await runSweep(makeContext(), {
+      adapters: { remotive: cursorAdapter(queries, []) },
+      fetch: () => Promise.resolve(new Response("", { status: 500 })),
+      now: () => START,
+    });
+    expect(result.ok).toBe(true);
+    expect(() => readFileSync(cursorFile(), "utf8")).toThrow();
   });
 });

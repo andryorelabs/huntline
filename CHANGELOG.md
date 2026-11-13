@@ -7,6 +7,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Added
 
 - A catalog of free job boards (`catalog/boards.json`) with `feed`, `browser` and `manual` access, feed adapters for RSS, Atom, XML and JSON boards, and `jobship board add|list|remove` for custom boards ([ADR-0013](docs/adr/0013-jobship-ships-a-board-catalog.md)).
+- The `nav` feed adapter for NAV Arbeidsplassen (Norway), with a stored cursor in `board-cursors.json` so each sweep reads only entries published since the previous one. Postings arrive from the second sweep on.
 
 ### Changed
 

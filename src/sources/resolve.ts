@@ -11,6 +11,7 @@ import {
   type FeedOptions,
 } from "./feed.ts";
 import type { FetchFunction } from "./http.ts";
+import { createNavAdapter } from "./nav.ts";
 
 const API_BOARD_NAMES: readonly ApiBoardName[] = [
   "remotive",
@@ -122,6 +123,11 @@ function apiAdapter(
       (adapter) => adapter.name === parser,
     );
     if (optioned !== undefined) return optioned;
+  }
+  if (parser === "nav") {
+    return option === undefined
+      ? createNavAdapter(fetchFunction, endpoint)
+      : `${board.id}: this board does not support options`;
   }
   const found = registered.get(parser);
   if (found === undefined) return `${board.id}: no adapter for parser "${parser}"`;

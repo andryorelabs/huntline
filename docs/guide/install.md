@@ -112,6 +112,8 @@ Add a board the catalog lacks with `jobship board add <feed-url> --name <name> [
 
 Auto selection never includes ATS Sources. To sweep the companies you save with `jobship company add <careers-url>`, list the ATS names in `sources` together with the board ids you want, since a non-empty list turns auto selection off. An ATS Source with no saved companies is reported as misconfigured. An unknown name is reported as `unknown source`.
 
+The `nav` board (NAV Arbeidsplassen, Norway) reads a feed that is walked forward. Its first sweep only records where the feed stands and yields no Postings; Postings fill in from the second sweep on. The position is stored in `board-cursors.json` in the data dir, next to `board-runs.json`. A failed fetch keeps the old position, and deleting the file restarts the board from the latest page.
+
 Example: `jobship company add https://jobs.ashbyhq.com/acme` detects the ATS and stores `{ats: "ashby", slug: "acme"}`.
 
 ### Terms of service

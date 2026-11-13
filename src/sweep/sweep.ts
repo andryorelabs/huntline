@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
 import { loadProfile } from "../core/data-dir.ts";
-import { writeAtomic } from "../core/fs.ts";
+import { withLock, writeAtomic } from "../core/fs.ts";
 import { errorMessage, isObject } from "../core/narrow.ts";
 import type {
   DataDir,
@@ -46,6 +46,7 @@ type Fetched = {
   readonly errors: string[];
   readonly warnings: string[];
   readonly misconfigured: boolean;
+  readonly nextCursor?: string;
 };
 
 function fail<T>(code: string, message: string): Result<T> {
@@ -143,6 +144,7 @@ async function fetchSource(
   adapter: SourceAdapter | undefined,
   queries: readonly SourceQuery[],
   problem: string | undefined,
+  cursor: string | undefined,
 ): Promise<Fetched> {
   if (adapter === undefined) {
     return {
@@ -162,13 +164,18 @@ async function fetchSource(
       misconfigured: true,
     };
   }
-  const results = await Promise.all(queries.map((query) => safeFetch(adapter, query)));
+  const results = await Promise.all(
+    queries.map((query) => safeFetch(adapter, cursor === undefined ? query : { ...query, cursor })),
+  );
+  const errors = results.flatMap((result) => result.errors);
+  const nextCursor = results.find((result) => result.nextCursor !== undefined)?.nextCursor;
   return {
     source,
     postings: results.flatMap((result) => result.postings),
-    errors: results.flatMap((result) => result.errors),
+    errors,
     warnings: results.flatMap((result) => result.warnings),
     misconfigured: false,
+    ...(errors.length === 0 && nextCursor !== undefined ? { nextCursor } : {}),
   };
 }
 
@@ -263,6 +270,45 @@ function writeBoardRuns(dir: DataDir, runs: BoardRuns): void {
   writeAtomic(path.join(dir.path, BOARD_RUNS_FILE), `${JSON.stringify(runs, null, 2)}\n`);
 }
 
+const BOARD_CURSORS_FILE = "board-cursors.json";
+
+type BoardCursors = Readonly<Record<string, string>>;
+
+function readBoardCursors(dir: DataDir): BoardCursors {
+  try {
+    const parsed: unknown = JSON.parse(
+      readFileSync(path.join(dir.path, BOARD_CURSORS_FILE), "utf8"),
+    );
+    if (!isObject(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        (entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== "",
+      ),
+    );
+  } catch {
+    return {};
+  }
+}
+
+async function recordCursors(
+  dir: DataDir,
+  due: readonly ResolvedBoard[],
+  fetched: readonly Fetched[],
+): Promise<void> {
+  const updates = due.flatMap((board, index) => {
+    const nextCursor = fetched[index]?.nextCursor;
+    return nextCursor === undefined ? [] : [[intervalKey(board), nextCursor] as const];
+  });
+  if (updates.length === 0) return;
+  await withLock(dir.path, () => {
+    writeAtomic(
+      path.join(dir.path, BOARD_CURSORS_FILE),
+      `${JSON.stringify({ ...readBoardCursors(dir), ...Object.fromEntries(updates) }, null, 2)}\n`,
+    );
+    return Promise.resolve();
+  });
+}
+
 /** Minimum intervals belong to the catalog board, so every `id:option` of a board shares one. */
 function intervalKey(board: ResolvedBoard): string {
   return board.board?.id ?? board.id;
@@ -354,6 +400,7 @@ export async function runSweep(
   const now = (options.now ?? Date.now)();
   const runs = readBoardRuns(prepared.value.dir);
   const { due, skipped } = partitionByInterval(selected.value, runs, now);
+  const cursors = readBoardCursors(prepared.value.dir);
   const fetched = await Promise.all(
     due.map((board) =>
       fetchSource(
@@ -361,16 +408,19 @@ export async function runSweep(
         options.adapters?.[board.id] ?? board.adapter,
         queriesFor(board.id, companies.value, options.keywords),
         board.problem,
+        cursors[intervalKey(board)],
       ),
     ),
   );
   recordRuns(prepared.value.dir, runs, due, now);
+
   try {
     const collected = await ingestFetched(prepared.value, fetched, 0, {
       reports: [],
       events: [],
       leads: [],
     });
+    await recordCursors(prepared.value.dir, due, fetched);
     const tracker = await projectLeads(
       trackerFor(ctx, prepared.value, options.tracker),
       prepared.value.dir,

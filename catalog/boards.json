@@ -340,7 +340,7 @@
     "homepage": "https://www.arbeitsagentur.de/jobsuche/",
     "access": "feed",
     "regions": ["DE"],
-    "workModes": ["onsite", "hybrid", "remote"],
+    "workModes": ["onsite", "hybrid"],
     "jobTypes": ["general", "public-sector"],
     "parser": "bundesagentur",
     "endpoint": "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs",
@@ -388,13 +388,10 @@
     "id": "nav",
     "name": "NAV Arbeidsplassen (Norway)",
     "homepage": "https://arbeidsplassen.nav.no",
-    "access": "feed",
+    "access": "manual",
     "regions": ["EU", "NO"],
     "workModes": ["onsite", "hybrid", "remote"],
-    "jobTypes": ["general", "public-sector"],
-    "parser": "nav",
-    "endpoint": "https://pam-stilling-feed.nav.no/api/v1/feed",
-    "stability": "unofficial"
+    "jobTypes": ["general", "public-sector"]
   },
   {
     "id": "nhsjobs",

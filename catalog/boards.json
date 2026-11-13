@@ -228,12 +228,10 @@
     "id": "devitjobs-us",
     "name": "DevITjobs US",
     "homepage": "https://devitjobs.com",
-    "access": "feed",
+    "access": "manual",
     "regions": ["US", "global"],
     "workModes": ["remote", "hybrid", "onsite"],
-    "jobTypes": ["tech"],
-    "parser": "job-feed-xml",
-    "endpoint": "https://devitjobs.com/job_feed.xml"
+    "jobTypes": ["tech"]
   },
   {
     "id": "devitjobs-uk",

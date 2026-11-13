@@ -19,6 +19,7 @@ export const COMMANDS: Record<string, string> = {
   events: "src/ledger/command.ts",
   status: "src/ledger/command.ts",
   company: "src/sources/command.ts",
+  board: "src/sources/board-command.ts",
   cv: "src/cv/command.ts",
   apply: "src/apply/command.ts",
   needs: "src/apply/command.ts",
@@ -43,6 +44,7 @@ export const COMMAND_FLAGS: Record<string, readonly string[]> = {
   events: ["--json", "--key"],
   status: ["--set"],
   company: [],
+  board: ["--name", "--region", "--work-mode"],
   cv: ["--file", "--requirement", "--tag", "--template", "--variant"],
   apply: [
     "--detail",

@@ -1,0 +1,5 @@
+{"stellenangebote":[
+{"refnr":"10001-AAA-S","titel":"Softwareentwickler (m/w/d)","beruf":"Softwareentwickler","arbeitgeber":"Beispiel GmbH","arbeitsort":{"ort":"Berlin","region":"Berlin","land":"Deutschland"},"aktuelleVeroeffentlichungsdatum":"2026-11-10","homeofficemoeglich":true},
+{"refnr":"10002-BBB-S","titel":"Elektriker","arbeitgeber":"Handwerk AG","arbeitsort":{"ort":"Hamburg"},"aktuelleVeroeffentlichungsdatum":"2026-11-09","homeofficemoeglich":false},
+{"refnr":"10003-CCC-S","titel":"Buchhalter","arbeitgeber":"Zahlen KG","arbeitsort":{"ort":"Bonn"},"aktuelleVeroeffentlichungsdatum":"2026-11-08"}
+]}

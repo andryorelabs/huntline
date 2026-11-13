@@ -58,7 +58,11 @@ function writeDataDir(tracker: Record<string, unknown>): CommandContext {
     }),
   );
   writeCompleteOnboarding(dir);
-  return { dataDir: { path: dir }, env: { HOME: workDir }, cwd: workDir };
+  return {
+    dataDir: { path: dir },
+    env: { HOME: workDir, JOBSHIP_CATALOG_URL: "off" },
+    cwd: workDir,
+  };
 }
 
 function withEnv(ctx: CommandContext, env: Record<string, string>): CommandContext {
@@ -284,6 +288,19 @@ describe("doctor data checks", () => {
     rewriteProfile(ctx, { sources: ["linkedn"] });
     const result = await runDoctor(ctx);
     expect(result.ok ? "" : result.error.message).toContain("linkedn");
+  });
+
+  test("warns no-boards when the sources resolve to no feed board", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    rewriteProfile(ctx, { sources: ["linkedin"] });
+    const result = await runDoctor(ctx);
+    expect(warningsOf(result).map((warning) => warning.code)).toContain("no-boards");
+  });
+
+  test("does not warn no-boards when empty sources resolve feed boards", async () => {
+    const ctx = writeDataDir({ kind: "local" });
+    const result = await runDoctor(ctx);
+    expect(warningsOf(result).map((warning) => warning.code)).not.toContain("no-boards");
   });
 
   test("warns when an ATS Source has no saved company", async () => {

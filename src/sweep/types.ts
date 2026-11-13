@@ -1,10 +1,18 @@
 import type { SourceAdapter, TrackerAdapter } from "../core/types.ts";
+import type { FetchFunction } from "../sources/index.ts";
 
 export type SweepOptions = {
   readonly only?: readonly string[];
   readonly keywords?: readonly string[];
   readonly adapters?: Readonly<Record<string, SourceAdapter>>;
   readonly tracker?: TrackerAdapter;
+  readonly fetch?: FetchFunction;
+  readonly now?: () => number;
+};
+
+export type SkippedBoard = {
+  readonly source: string;
+  readonly reason: string;
 };
 
 export type SourceCounts = {
@@ -32,6 +40,7 @@ export type SweepReport = {
   readonly failed: readonly { readonly source: string; readonly errors: readonly string[] }[];
   readonly empty: readonly string[];
   readonly misconfigured: readonly string[];
+  readonly skipped: readonly SkippedBoard[];
   readonly totals: SourceCounts;
   readonly leads: readonly string[];
   readonly tracker: TrackerSummary;

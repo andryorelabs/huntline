@@ -13,3 +13,5 @@ export function createSources(fetchFunction: FetchFunction): Record<string, Sour
 export const sources: Record<string, SourceAdapter> = createSources((input, init) =>
   fetch(input, init),
 );
+
+export { resolveBoards, type ResolvedBoard } from "./resolve.ts";

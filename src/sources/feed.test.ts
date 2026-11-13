@@ -166,19 +166,23 @@ describe("createJobFeedXmlAdapter", () => {
 });
 
 describe("createNhsXmlAdapter", () => {
-  test("maps vacancies", async () => {
+  test("maps live-shaped vacancies with several locations and a post date", async () => {
     const result = await createNhsXmlAdapter(serving("nhs.xml"), {
       id: "nhs",
       endpoint: "https://www.jobs.nhs.example.test/api/v1/search_xml",
     }).fetch({});
-    expect(result.postings).toHaveLength(1);
+    expect(result.errors).toEqual([]);
+    expect(result.postings).toHaveLength(3);
     expect(result.postings[0]).toMatchObject({
-      id: "nhs:A0001-26-0001",
-      company: "Example NHS Foundation Trust",
-      title: "Staff Nurse",
-      location: "Leeds",
+      id: "nhs:85273",
+      source: "nhs",
+      company: "Honeypot Medical Centre",
+      title: "Salaried GP",
+      url: "https://beta.jobs.nhs.uk/candidate/jobadvert/A1952-21-0091",
+      location: "Stanmore, HA7 1JP; HARROW, HA3 9HT",
       contract: "Permanent",
-      postedAt: "2026-11-10T00:00:00.000Z",
+      postedAt: "2026-11-13T00:33:34.257Z",
     });
+    expect(result.postings[1]?.location).toBe("Rochdale, OL12 9DW");
   });
 });

@@ -55,10 +55,6 @@ export async function getJson(
   return parseJson(outcome, url);
 }
 
-export async function getText(fetchFunction: FetchFunction, url: string): Promise<TextOutcome> {
-  return requestText(fetchFunction, url, { headers: { accept: "text/plain" } });
-}
-
 /**
  * Read-only search helper for boards that expose search as a POST. It sends only the board's
  * search body and never user data.

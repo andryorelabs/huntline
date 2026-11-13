@@ -11,7 +11,6 @@ import { isObject } from "../core/narrow.ts";
 import {
   field,
   getJson,
-  getText,
   identifier,
   isoDate,
   number,
@@ -42,8 +41,7 @@ export type ApiBoardName =
   | "mycareersfuture"
   | "bundesagentur"
   | "eures"
-  | "cbop"
-  | "nav";
+  | "cbop";
 
 export type ApiEndpoints = Partial<Record<ApiBoardName, string>>;
 
@@ -59,12 +57,10 @@ const DEFAULT_ENDPOINTS: Record<ApiBoardName, string> = {
     "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs?angebotsart=1&size=100",
   eures: "https://europa.eu/eures/api/jv-searchengine/public/jv-search/search",
   cbop: "https://oferty.praca.gov.pl/portal-api/v3/oferta/wyszukiwanie?page=0&size=100&sort=dataDodaniaCbop,desc",
-  nav: "https://pam-stilling-feed.nav.no/api/v1/feed",
 };
 
 const HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item";
 const HN_ITEM_CAP = 30;
-const NAV_TOKEN_URL = "https://pam-stilling-feed.nav.no/api/publicToken";
 const BUNDESAGENTUR_CLIENT_ID = "jobboerse-jobsuche";
 const EURES_ATTRIBUTION = "source: European Labour Authority (EURES)";
 
@@ -368,24 +364,28 @@ const parseMyCareersFuture: ApiParse = (body) =>
   });
 
 const parseBundesagentur: ApiParse = (body) =>
-  mapRows(records(field(body, "stellenangebote")), "jobs", (row) => {
-    const reference = identifier(row["refnr"]);
-    const title = text(row["titel"]);
+  mapRows(records(field(body, "ergebnisliste")), "jobs", (row) => {
+    const reference = identifier(row["referenznummer"]);
+    const title = text(row["stellenangebotsTitel"]) ?? text(row["hauptberuf"]);
     if (reference === undefined || title === undefined) return undefined;
-    const place = row["arbeitsort"];
-    const homeOffice = row["homeofficemoeglich"];
+    const locations = row["stellenlokationen"];
+    const address = field(Array.isArray(locations) ? locations[0] : undefined, "adresse");
+    const location = [text(field(address, "ort")), text(field(address, "region"))]
+      .filter((part) => part !== undefined)
+      .join(", ");
     return withOptional(
       {
         id: `bundesagentur:${reference}`,
         source: "bundesagentur",
         url: `https://www.arbeitsagentur.de/jobsuche/jobdetail/${encodeURIComponent(reference)}`,
-        company: text(row["arbeitgeber"]) ?? "unknown",
+        company: text(row["firma"]) ?? "unknown",
         title,
       },
       {
-        location: text(field(place, "ort")),
-        workMode: booleanMode(homeOffice, "hybrid"),
-        postedAt: isoDate(row["aktuelleVeroeffentlichungsdatum"]),
+        location: location === "" ? undefined : location,
+        postedAt: isoDate(
+          row["datumErsteVeroeffentlichung"] ?? field(row["veroeffentlichungszeitraum"], "von"),
+        ),
       },
     );
   });
@@ -425,16 +425,16 @@ function euresBody(query: SourceQuery): Record<string, unknown> {
   };
 }
 
-const CBOP_LISTS = ["ofertyPracy", "oferty", "content"] as const;
+function polishDate(value: unknown): string | undefined {
+  const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(text(value) ?? "");
+  return match === null ? undefined : isoDate(`${match[3]}-${match[2]}-${match[1]}`);
+}
 
 const parseCbop: ApiParse = (body) => {
-  const container = field(body, "payload") ?? body;
-  const rows = CBOP_LISTS.map((key) => records(field(container, key))).find(
-    (list) => list !== undefined,
-  );
-  return mapRows(rows, "jobs", (row) => {
+  const page = field(field(body, "payload"), "ofertyPracyPage");
+  return mapRows(records(field(page, "content")), "jobs", (row) => {
     const id = identifier(row["id"]);
-    const title = text(row["stanowisko"]) ?? text(row["tytul"]);
+    const title = text(row["stanowisko"]);
     if (id === undefined || title === undefined) return undefined;
     return withOptional(
       {
@@ -446,34 +446,13 @@ const parseCbop: ApiParse = (body) => {
       },
       {
         location: text(row["miejscePracy"]),
-        description: described(row["opis"]),
-        postedAt: isoDate(row["dataDodania"]),
+        contract: text(row["rodzajUmowy"]),
+        description: described(row["zakresObowiazkow"]),
+        postedAt: polishDate(row["dataDodaniaCbop"]),
       },
     );
   });
 };
-
-const parseNav: ApiParse = (body) =>
-  mapRows(records(field(body, "items")), "ads", (row) => {
-    const entry = row["_feed_entry"];
-    const id = identifier(field(entry, "uuid")) ?? identifier(row["id"]);
-    const title = text(field(entry, "title")) ?? text(row["title"]);
-    if (id === undefined || title === undefined) return undefined;
-    return withOptional(
-      {
-        id: `nav:${id}`,
-        source: "nav",
-        url: `https://arbeidsplassen.nav.no/stillinger/stilling/${encodeURIComponent(id)}`,
-        company: text(field(entry, "businessName")) ?? "unknown",
-        title,
-      },
-      {
-        location: text(field(entry, "municipal")),
-        description: described(field(entry, "description")),
-        postedAt: isoDate(row["date_modified"]),
-      },
-    );
-  });
 
 function euresAdapter(endpoint: string, fetchFunction: FetchFunction): SourceAdapter {
   return {
@@ -490,20 +469,6 @@ function cbopAdapter(endpoint: string, fetchFunction: FetchFunction): SourceAdap
     name: "cbop",
     async fetch(query) {
       return conclude("cbop", await postJson(fetchFunction, endpoint, {}), parseCbop, query);
-    },
-  };
-}
-
-function navAdapter(endpoint: string, fetchFunction: FetchFunction): SourceAdapter {
-  return {
-    name: "nav",
-    async fetch(query) {
-      const token = await getText(fetchFunction, NAV_TOKEN_URL);
-      if (!token.ok) return failed(`nav: ${token.error}`);
-      const bearer = token.body.trim();
-      if (bearer === "") return failed("nav: empty public token");
-      const outcome = await getJson(fetchFunction, endpoint, { authorization: `Bearer ${bearer}` });
-      return conclude("nav", outcome, parseNav, query);
     },
   };
 }
@@ -526,6 +491,5 @@ export function createApiBoardAdapters(
     }),
     euresAdapter(at("eures"), fetchFunction),
     cbopAdapter(at("cbop"), fetchFunction),
-    navAdapter(at("nav"), fetchFunction),
   ];
 }

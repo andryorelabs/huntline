@@ -1,4 +1,4 @@
-{"payload":{"ofertyPracy":[
-{"id":"cbop-8001","stanowisko":"Programista","pracodawca":"Przyklad Sp. z o.o.","miejscePracy":"Warszawa","dataDodania":"2026-11-10","opis":"Pisanie kodu."},
-{"id":"cbop-8002","stanowisko":"Magazynier","pracodawca":"Skladpol","miejscePracy":"Lodz","dataDodania":"2026-11-09"}
-]}}
+{"status":200,"msg":"OK","payload":{"ofertyPracyPage":{"content":[
+{"dataDodaniaCbop":"13.11.2026","email":null,"id":"cbop-8001","miejscePracy":"Ojrzen, mazowieckie","osobaDoKontaktu":null,"pracodawca":"Przyklad Sp. z o.o.","rodzajUmowy":"Umowa o prace na czas okreslony","stanowisko":"osoba zajmujaca sie sprzedaza internetowa","telefon":null,"zakresObowiazkow":"Obsluga e-sklepu"},
+{"dataDodaniaCbop":"12.11.2026","email":null,"id":"cbop-8002","miejscePracy":"Strzala, mazowieckie","osobaDoKontaktu":null,"pracodawca":"Instalatorstwo Przyklad","rodzajUmowy":"Umowa o prace na okres probny","stanowisko":"Elektryk","telefon":null}
+],"totalElements":2}}}

@@ -4,6 +4,7 @@ import path from "node:path";
 import bundledCatalog from "../../catalog/boards.json" with { type: "json" };
 import { PRODUCT_NAME, settingValue } from "../core/env.ts";
 import { errorMessage } from "../core/narrow.ts";
+import { readCapped } from "./http.ts";
 import { writeAtomic } from "../core/fs.ts";
 import type { Profile, Result } from "../core/types.ts";
 
@@ -405,9 +406,14 @@ function cacheFilePath(env: Readonly<Record<string, string | undefined>>): strin
   return path.join(root, PRODUCT_NAME, CACHE_FILE);
 }
 
-function readFreshCache(file: string, now: number): Result<Parsed> | undefined {
+function cacheSourcePath(file: string): string {
+  return `${file}.url`;
+}
+
+function readFreshCache(file: string, url: string, now: number): Result<Parsed> | undefined {
   try {
     if (!existsSync(file) || now - statSync(file).mtimeMs >= CACHE_MAX_AGE_MS) return undefined;
+    if (readFileSync(cacheSourcePath(file), "utf8").trim() !== url) return undefined;
     return parseText(readFileSync(file, "utf8"), "remote");
   } catch {
     return undefined;
@@ -417,7 +423,9 @@ function readFreshCache(file: string, now: number): Result<Parsed> | undefined {
 async function defaultFetchText(url: string): Promise<string> {
   const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.text();
+  const content = await readCapped(response, url, MAX_CATALOG_BYTES);
+  if (!content.ok) throw new Error(content.error);
+  return new TextDecoder().decode(content.value);
 }
 
 async function fetchRemote(
@@ -435,6 +443,7 @@ async function fetchRemote(
   if (!parsed.ok) return parsed;
   try {
     writeAtomic(cacheFile, text);
+    writeAtomic(cacheSourcePath(cacheFile), url);
   } catch (error) {
     parsed.value.warnings.push(`could not write the catalog cache: ${errorMessage(error)}`);
   }
@@ -444,7 +453,8 @@ async function fetchRemote(
 /**
  * Loads the board catalog. The single entry point for the catalog.
  *
- * Tries a cache under 24 hours old at `<cache dir>/boards.json`, then the remote copy
+ * Tries a cache under 24 hours old at `<cache dir>/boards.json` that came from the current
+ * catalog URL (never with `off`), then the remote copy
  * (`JOBSHIP_CATALOG_URL`, default the `main` copy on GitHub, `off` disables the fetch),
  * then the copy bundled in the binary. The result names the origin used and carries a
  * warning for every skipped remote entry or failed fallback step. Only an invalid bundled
@@ -454,11 +464,11 @@ export async function loadCatalog(options: LoadCatalogOptions = {}): Promise<Res
   const env = options.env ?? process.env;
   const now = (options.now ?? Date.now)();
   const cacheFile = cacheFilePath(env);
-  const cached = readFreshCache(cacheFile, now);
+  const url = settingValue(env, "CATALOG_URL") ?? DEFAULT_CATALOG_URL;
+  const cached = url === "off" ? undefined : readFreshCache(cacheFile, url, now);
   if (cached?.ok === true) return { ok: true, value: { ...cached.value, origin: "cache" } };
 
   const warnings: string[] = [];
-  const url = settingValue(env, "CATALOG_URL") ?? DEFAULT_CATALOG_URL;
   if (url !== "off") {
     const remote = await fetchRemote(url, options.fetchText ?? defaultFetchText, cacheFile);
     if (remote.ok) return { ok: true, value: { ...remote.value, origin: "remote" } };

@@ -2,7 +2,7 @@ import { XMLParser } from "fast-xml-parser";
 import { errorMessage, isObject, isOneOf } from "../core/narrow.ts";
 import type { Posting, SourceAdapter, SourceQuery, SourceResult } from "../core/types.ts";
 import { matchesKeywords, withOptional } from "./adapter.ts";
-import { isoDate, stripHtml, text, type FetchFunction } from "./http.ts";
+import { isoDate, readCapped, stripHtml, text, type FetchFunction } from "./http.ts";
 
 export type FeedOptions = {
   readonly id: string;
@@ -34,27 +34,6 @@ const parser = new XMLParser({
   trimValues: true,
   removeNSPrefix: false,
 });
-
-async function readCapped(response: Response, url: string): Promise<Outcome<Uint8Array>> {
-  const tooLarge = { ok: false, error: `response from ${url} is too large` } as const;
-  const declared = Number(response.headers.get("content-length"));
-  if (Number.isFinite(declared) && declared > MAX_RESPONSE_BYTES) return tooLarge;
-  if (response.body === null) return { ok: true, value: new Uint8Array() };
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for await (const chunk of response.body as AsyncIterable<Uint8Array>) {
-    total += chunk.byteLength;
-    if (total > MAX_RESPONSE_BYTES) return tooLarge;
-    chunks.push(chunk);
-  }
-  const merged = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    merged.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return { ok: true, value: merged };
-}
 
 function declaredEncoding(content: Uint8Array): string | undefined {
   const head = new TextDecoder("latin1").decode(content.subarray(0, 200));
@@ -133,7 +112,7 @@ async function getXml(
   if (!response.ok) return { ok: false, error: `HTTP ${response.status} from ${url}` };
   let content: Outcome<Uint8Array>;
   try {
-    content = await readCapped(response, url);
+    content = await readCapped(response, url, MAX_RESPONSE_BYTES);
   } catch (error) {
     return { ok: false, error: `cannot read ${url}: ${errorMessage(error)}` };
   }
@@ -353,6 +332,7 @@ function mapJobFeedRow(row: Node, options: XmlFeedOptions): Posting | undefined 
     {
       location: stated !== undefined && location !== stated ? `${location}, ${stated}` : location,
       remote,
+      workMode: remote === true ? "remote" : undefined,
       contract: plain(pick(row, ["jobtype", "job_type", "type"])),
       description: plain(pick(row, ["description", "summary"])),
       postedAt: jobFeedDate(pick(row, ["date", "pubdate", "published", "posted"])),

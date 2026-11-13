@@ -6,11 +6,45 @@ export type JsonOutcome =
   | { readonly ok: true; readonly body: unknown }
   | { readonly ok: false; readonly error: string };
 
-const MAX_BODY_CHARS = 8_000_000;
+const MAX_BODY_BYTES = 8_000_000;
+
+export type BytesOutcome =
+  | { readonly ok: true; readonly value: Uint8Array }
+  | { readonly ok: false; readonly error: string };
 
 type TextOutcome =
   | { readonly ok: true; readonly body: string }
   | { readonly ok: false; readonly error: string };
+
+/**
+ * Reads a response body without ever holding more than `maxBytes`. It rejects on a declared
+ * content-length over the cap and stops consuming the stream as soon as the running total
+ * passes it.
+ */
+export async function readCapped(
+  response: Response,
+  url: string,
+  maxBytes: number,
+): Promise<BytesOutcome> {
+  const tooLarge = { ok: false, error: `response from ${url} is too large` } as const;
+  const declared = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > maxBytes) return tooLarge;
+  if (response.body === null) return { ok: true, value: new Uint8Array() };
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for await (const chunk of response.body as AsyncIterable<Uint8Array>) {
+    total += chunk.byteLength;
+    if (total > maxBytes) return tooLarge;
+    chunks.push(chunk);
+  }
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { ok: true, value: merged };
+}
 
 async function requestText(
   fetchFunction: FetchFunction,
@@ -25,14 +59,14 @@ async function requestText(
   }
   if (response.status === 429) return { ok: false, error: `HTTP 429 rate limited by ${url}` };
   if (!response.ok) return { ok: false, error: `HTTP ${response.status} from ${url}` };
-  let body: string;
+  let content: BytesOutcome;
   try {
-    body = await response.text();
+    content = await readCapped(response, url, MAX_BODY_BYTES);
   } catch (error) {
     return { ok: false, error: `unreadable response from ${url}: ${errorMessage(error)}` };
   }
-  if (body.length > MAX_BODY_CHARS) return { ok: false, error: `response too large from ${url}` };
-  return { ok: true, body };
+  if (!content.ok) return content;
+  return { ok: true, body: new TextDecoder().decode(content.value) };
 }
 
 function parseJson(outcome: TextOutcome, url: string): JsonOutcome {

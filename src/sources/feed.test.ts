@@ -127,6 +127,32 @@ describe("createFeedAdapter", () => {
     ).fetch({});
     expect(streamed.errors[0]).toContain("too large");
   });
+
+  test("stops consuming a streamed body once it passes the cap", async () => {
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        controller.enqueue(new Uint8Array(1024 * 1024).fill(32));
+      },
+    });
+    const result = await createFeedAdapter(() => Promise.resolve(new Response(endless)), RSS).fetch(
+      {},
+    );
+    expect(result.errors[0]).toContain("too large");
+    expect(pulled).toBeLessThan(20);
+  });
+});
+
+describe("entity expansion", () => {
+  test("a feed expanding one internal entity many times fails that board only", async () => {
+    const entity = "x".repeat(9_000);
+    const references = "&big;".repeat(200_000);
+    const xml = `<?xml version="1.0"?><!DOCTYPE rss [<!ENTITY big "${entity}">]><rss><channel><item><title>${references}</title><link>https://jobs.example.test/1</link></item></channel></rss>`;
+    const result = await createFeedAdapter(() => Promise.resolve(new Response(xml)), RSS).fetch({});
+    expect(result.postings).toEqual([]);
+    expect(result.errors).toHaveLength(1);
+  });
 });
 
 describe("createJobFeedXmlAdapter", () => {
@@ -145,6 +171,7 @@ describe("createJobFeedXmlAdapter", () => {
       url: "https://devitjobs.example.test/jobs/hooli-senior-java",
       contract: "Full-time",
       remote: true,
+      workMode: "remote",
       description: "Java & Spring.",
     });
     expect(result.postings[0]?.location).toContain("Berlin");

@@ -106,11 +106,46 @@ describe("loading order", () => {
     expect(existsSync(path.join(cacheDir, "boards.json"))).toBe(true);
   });
 
-  test("uses a fresh cache without fetching", async () => {
+  const SOURCE_URL = "https://example.com/a.json";
+
+  function seedCache(): void {
     writeFileSync(path.join(cacheDir, "boards.json"), remoteText);
-    const result = await loadCatalog({ env, fetchText: neverFetch });
+    writeFileSync(path.join(cacheDir, "boards.json.url"), SOURCE_URL);
+  }
+
+  test("uses a fresh cache from the same URL without fetching", async () => {
+    seedCache();
+    const result = await loadCatalog({
+      env: { ...env, JOBSHIP_CATALOG_URL: SOURCE_URL },
+      fetchText: neverFetch,
+    });
     if (!result.ok) throw new Error(result.error.message);
     expect(result.value.origin).toBe("cache");
+  });
+
+  test("off uses the bundled copy even with a fresh cache", async () => {
+    seedCache();
+    const result = await loadCatalog({
+      env: { ...env, JOBSHIP_CATALOG_URL: "off" },
+      fetchText: neverFetch,
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.origin).toBe("bundled");
+  });
+
+  test("a fresh cache from another URL is refetched", async () => {
+    seedCache();
+    const urls: string[] = [];
+    const result = await loadCatalog({
+      env: { ...env, JOBSHIP_CATALOG_URL: "https://example.com/b.json" },
+      fetchText: (url) => {
+        urls.push(url);
+        return Promise.resolve(remoteText);
+      },
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.value.origin).toBe("remote");
+    expect(urls).toEqual(["https://example.com/b.json"]);
   });
 
   test("ignores a cache older than 24 hours", async () => {

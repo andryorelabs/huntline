@@ -198,6 +198,30 @@ describe("api board adapters", () => {
     expect(JSON.stringify(result.postings)).not.toMatch(/osobaDoKontaktu|telefon|email/);
   });
 
+  test("arbeitnow filters on the remote flag when the endpoint asks for remote=true", async () => {
+    const result = await adapterFor(
+      "arbeitnow",
+      recordingFetch({ arbeitnow: fixture("arbeitnow.json") }),
+      "https://www.arbeitnow.com/api/job-board-api?page=1&remote=true",
+    ).fetch({});
+    expect(result.postings.map((posting) => posting.title)).toEqual(["Backend Developer"]);
+  });
+
+  test("a streamed JSON body over the cap fails before it is fully consumed", async () => {
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        controller.enqueue(new Uint8Array(1024 * 1024).fill(32));
+      },
+    });
+    const result = await adapterFor("jobicy", () => Promise.resolve(new Response(endless))).fetch(
+      {},
+    );
+    expect(result.errors[0]).toContain("too large");
+    expect(pulled).toBeLessThan(20);
+  });
+
   test("an oversized response fails that adapter only", async () => {
     const huge = `{"jobs":[],"pad":"${"x".repeat(8_100_000)}"}`;
     const result = await adapterFor("jobicy", recordingFetch({ jobicy: huge })).fetch({});

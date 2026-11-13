@@ -211,33 +211,50 @@ const parseJobicy: ApiParse = (body) =>
     );
   });
 
-const parseArbeitnow: ApiParse = (body) =>
-  mapRows(records(field(body, "data")), "jobs", (row) => {
-    const slug = identifier(row["slug"]);
-    const title = text(row["title"]);
-    const url = text(row["url"]);
-    if (slug === undefined || title === undefined || url === undefined) return undefined;
-    const jobTypes = row["job_types"];
-    const tags = row["tags"];
-    return withOptional(
-      {
-        id: `arbeitnow:${slug}`,
-        source: "arbeitnow",
-        url,
-        company: text(row["company_name"]) ?? "unknown",
-        title,
-      },
-      {
-        location: text(row["location"]),
-        remote: typeof row["remote"] === "boolean" ? row["remote"] : undefined,
-        workMode: booleanMode(row["remote"], "remote"),
-        contract: Array.isArray(jobTypes) ? text(jobTypes[0]) : undefined,
-        stack: Array.isArray(tags) ? tags.filter((tag) => typeof tag === "string") : undefined,
-        description: described(row["description"]),
-        postedAt: isoDate(row["created_at"]),
-      },
-    );
-  });
+function remoteOnly(endpoint: string): boolean {
+  try {
+    return new URL(endpoint).searchParams.get("remote") === "true";
+  } catch {
+    return false;
+  }
+}
+
+const parseArbeitnow = (endpoint: string): ApiParse => {
+  const onlyRemote = remoteOnly(endpoint);
+  return (body) => parseArbeitnowRows(body, onlyRemote);
+};
+
+const parseArbeitnowRows = (body: unknown, onlyRemote: boolean): Parsed | ParseFailure =>
+  mapRows(
+    records(field(body, "data"))?.filter((row) => !onlyRemote || row["remote"] === true),
+    "jobs",
+    (row) => {
+      const slug = identifier(row["slug"]);
+      const title = text(row["title"]);
+      const url = text(row["url"]);
+      if (slug === undefined || title === undefined || url === undefined) return undefined;
+      const jobTypes = row["job_types"];
+      const tags = row["tags"];
+      return withOptional(
+        {
+          id: `arbeitnow:${slug}`,
+          source: "arbeitnow",
+          url,
+          company: text(row["company_name"]) ?? "unknown",
+          title,
+        },
+        {
+          location: text(row["location"]),
+          remote: typeof row["remote"] === "boolean" ? row["remote"] : undefined,
+          workMode: booleanMode(row["remote"], "remote"),
+          contract: Array.isArray(jobTypes) ? text(jobTypes[0]) : undefined,
+          stack: Array.isArray(tags) ? tags.filter((tag) => typeof tag === "string") : undefined,
+          description: described(row["description"]),
+          postedAt: isoDate(row["created_at"]),
+        },
+      );
+    },
+  );
 
 const parseWorkingNomads: ApiParse = (body) =>
   mapRows(Array.isArray(body) ? records(body) : undefined, "jobs", (row) => {
@@ -481,7 +498,7 @@ export function createApiBoardAdapters(
   return [
     simpleAdapter("remotive", at("remotive"), fetchFunction, remotiveParse(at("remotive"))),
     simpleAdapter("jobicy", at("jobicy"), fetchFunction, parseJobicy),
-    simpleAdapter("arbeitnow", at("arbeitnow"), fetchFunction, parseArbeitnow),
+    simpleAdapter("arbeitnow", at("arbeitnow"), fetchFunction, parseArbeitnow(at("arbeitnow"))),
     simpleAdapter("workingnomads", at("workingnomads"), fetchFunction, parseWorkingNomads),
     hnJobs(at("hnjobs"), fetchFunction),
     simpleAdapter("jobtech", at("jobtech"), fetchFunction, parseJobTech),

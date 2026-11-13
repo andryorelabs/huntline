@@ -45,6 +45,18 @@ describe("createFeedAdapter", () => {
     expect(result.warnings).toHaveLength(1);
   });
 
+  test("accepts any media type as a fallback for boards that reject XML-only requests", async () => {
+    const accepted: string[] = [];
+    const fetchFunction: FetchFunction = (_input, init) => {
+      accepted.push(new Headers(init?.headers).get("accept") ?? "");
+      return Promise.resolve(new Response(bytes("rss.xml")));
+    };
+    await createFeedAdapter(fetchFunction, RSS).fetch({});
+    expect(accepted).toHaveLength(1);
+    expect(accepted[0]).toContain("application/rss+xml");
+    expect(accepted[0]).toContain("*/*;q=0.1");
+  });
+
   test("maps Atom entries preferring the alternate link", async () => {
     const result = await createFeedAdapter(serving("atom.xml"), {
       id: "tokyodev",

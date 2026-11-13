@@ -1,5 +1,5 @@
-{"stellenangebote":[
-{"refnr":"10001-AAA-S","titel":"Softwareentwickler (m/w/d)","beruf":"Softwareentwickler","arbeitgeber":"Beispiel GmbH","arbeitsort":{"ort":"Berlin","region":"Berlin","land":"Deutschland"},"aktuelleVeroeffentlichungsdatum":"2026-11-10","homeofficemoeglich":true},
-{"refnr":"10002-BBB-S","titel":"Elektriker","arbeitgeber":"Handwerk AG","arbeitsort":{"ort":"Hamburg"},"aktuelleVeroeffentlichungsdatum":"2026-11-09","homeofficemoeglich":false},
-{"refnr":"10003-CCC-S","titel":"Buchhalter","arbeitgeber":"Zahlen KG","arbeitsort":{"ort":"Bonn"},"aktuelleVeroeffentlichungsdatum":"2026-11-08"}
-]}
+{"ergebnisliste":[
+{"stellenangebotsart":"ARBEIT","stellenangebotsTitel":"Erzieherinnen und Erzieher","stellenlokationen":[{"adresse":{"plz":"29355","ort":"Beedenbostel","region":"NIEDERSACHSEN","land":"DEUTSCHLAND"}}],"veroeffentlichungszeitraum":{"von":"2026-11-13"},"datumErsteVeroeffentlichung":"2026-11-13","hauptberuf":"Erzieher/in - Jugend- und Heimerziehung","firma":"Beispiel Jugendhilfe GbR","referenznummer":"10001-1004008481-S"},
+{"stellenangebotsart":"ARBEIT","stellenangebotsTitel":"Maschinenfuehrer (m/w/d)","stellenlokationen":[{"adresse":{"plz":"86633","ort":"Neuburg an der Donau","region":"BAYERN","land":"DEUTSCHLAND"}}],"veroeffentlichungszeitraum":{"von":"2026-11-12"},"datumErsteVeroeffentlichung":"2026-11-12","hauptberuf":"Maschinenfuehrer","firma":"Beispiel Produktion AG","referenznummer":"10001-1004008482-S"},
+{"stellenangebotsart":"ARBEIT","stellenlokationen":[{"adresse":{"ort":"Bonn"}}],"veroeffentlichungszeitraum":{"von":"2026-11-11"},"hauptberuf":"Buchhalter/in","firma":"Zahlen KG","referenznummer":"10001-1004008483-S"}
+],"maxErgebnisse":3,"page":1,"size":3}

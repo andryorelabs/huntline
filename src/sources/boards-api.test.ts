@@ -47,7 +47,7 @@ const SIMPLE_CASES = [
 ] as const;
 
 describe("api board adapters", () => {
-  test("exposes the eleven catalog parser names", () => {
+  test("exposes the ten catalog parser names", () => {
     const names = createApiBoardAdapters(recordingFetch({})).map((adapter) => adapter.name);
     expect(names).toEqual([
       "remotive",
@@ -60,7 +60,6 @@ describe("api board adapters", () => {
       "bundesagentur",
       "eures",
       "cbop",
-      "nav",
     ]);
   });
 
@@ -110,7 +109,7 @@ describe("api board adapters", () => {
     expect(result.postings.map((posting) => posting.workMode)).toEqual(["remote", "onsite"]);
   });
 
-  test("bundesagentur sends the public client id and maps homeofficemoeglich", async () => {
+  test("bundesagentur sends the public client id and maps the live v6 shape", async () => {
     const calls: Call[] = [];
     const result = await adapterFor(
       "bundesagentur",
@@ -118,10 +117,18 @@ describe("api board adapters", () => {
     ).fetch({});
     expect(new Headers(calls[0]?.init?.headers).get("x-api-key")).toBe("jobboerse-jobsuche");
     expect(result.postings.map((posting) => posting.workMode)).toEqual([
-      "hybrid",
-      "onsite",
+      undefined,
+      undefined,
       undefined,
     ]);
+    expect(result.postings[0]).toMatchObject({
+      id: "bundesagentur:10001-1004008481-S",
+      url: "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1004008481-S",
+      company: "Beispiel Jugendhilfe GbR",
+      location: "Beedenbostel, NIEDERSACHSEN",
+      postedAt: "2026-11-13T00:00:00.000Z",
+    });
+    expect(result.postings[2]?.title).toBe("Buchhalter/in");
   });
 
   test("keywords filter client-side", async () => {
@@ -183,22 +190,12 @@ describe("api board adapters", () => {
     expect(calls[0]?.init?.method).toBe("POST");
     expect(calls[0]?.init?.body).toBe("{}");
     expect(result.postings).toHaveLength(2);
-  });
-
-  test("nav fetches the public token per run and sends it as a bearer", async () => {
-    const calls: Call[] = [];
-    const result = await adapterFor(
-      "nav",
-      recordingFetch({ publicToken: "token-abc\n", "api/v1/feed": fixture("nav.json") }, calls),
-    ).fetch({});
-    expect(calls[0]?.url).toContain("/api/publicToken");
-    expect(new Headers(calls[1]?.init?.headers).get("authorization")).toBe("Bearer token-abc");
-    expect(result.postings.map((posting) => posting.company)).toEqual(["Norsk AS", "Sykehus Nord"]);
-  });
-
-  test("nav reports a failed token fetch", async () => {
-    const result = await adapterFor("nav", recordingFetch({})).fetch({});
-    expect(result.errors[0]).toStartWith("nav:");
+    expect(result.postings[0]).toMatchObject({
+      postedAt: "2026-11-13T00:00:00.000Z",
+      contract: "Umowa o prace na czas okreslony",
+      location: "Ojrzen, mazowieckie",
+    });
+    expect(JSON.stringify(result.postings)).not.toMatch(/osobaDoKontaktu|telefon|email/);
   });
 
   test("an oversized response fails that adapter only", async () => {

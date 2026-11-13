@@ -44,6 +44,38 @@ export async function readCustomBoards(dir: string): Promise<Result<Board[]>> {
   return invalid(`${CUSTOM_BOARDS_FILE}: ${checked.error.message}`);
 }
 
+/** What an {@link updateCustomBoards} change returns: the new board list and a value for the caller. */
+export type CustomBoardsChange<T> = { readonly boards: readonly Board[]; readonly value: T };
+
+/**
+ * Reads `<dir>/boards.json`, applies `change` and writes the result, all under one data-dir
+ * lock, so two board commands running at once never drop each other's edit. A failed read or
+ * a failed `change` writes nothing.
+ */
+export async function updateCustomBoards<T>(
+  dir: string,
+  change: (boards: readonly Board[]) => Result<CustomBoardsChange<T>>,
+): Promise<Result<T>> {
+  try {
+    return await withLock<Result<T>>(dir, async () => {
+      const current = await readCustomBoards(dir);
+      if (!current.ok) return current;
+      const changed = change(current.value);
+      if (!changed.ok) return changed;
+      writeAtomic(
+        path.join(dir, CUSTOM_BOARDS_FILE),
+        `${JSON.stringify(changed.value.boards, null, 2)}\n`,
+      );
+      return { ok: true, value: changed.value.value };
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      error: { code: "custom-boards-write-failed", message: errorMessage(error) },
+    };
+  }
+}
+
 /** Replaces `<dir>/boards.json` with the given boards, atomically and under the data-dir lock. */
 export async function writeCustomBoards(
   dir: string,

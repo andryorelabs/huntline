@@ -94,7 +94,7 @@ The `inbox` and `outreach` skills use the Gmail connector for Claude Code (tools
 
 ## Sources
 
-`sweep` reads boards from the catalog that ships with jobship, plus the ATS companies you save. List them with `jobship board list`: each entry shows `access`, `regions`, `workModes`, `jobTypes` and whether it is `active` for your Profile.
+`sweep` reads boards from the catalog that ships with jobship, plus any custom boards you add. List them with `jobship board list`: each entry shows `access`, `regions`, `workModes`, `jobTypes` and whether it is `active` for your Profile.
 
 | Access    | Meaning                                                                                 |
 | --------- | --------------------------------------------------------------------------------------- |
@@ -110,7 +110,7 @@ The `inbox` and `outreach` skills use the Gmail connector for Claude Code (tools
 
 Add a board the catalog lacks with `jobship board add <feed-url> --name <name> [--region <region>]... [--work-mode remote|hybrid|onsite]...`. It must serve valid RSS or Atom with at least one item. `jobship board remove <id>` deletes a custom board. The catalog refreshes from GitHub at most once a day and falls back to the bundled copy; set `JOBSHIP_CATALOG_URL` to `off` to skip the fetch (see [configuration](../configuration.md)).
 
-An ATS Source needs companies saved with `jobship company add <careers-url>`; with none saved it is reported as misconfigured. An unknown name is reported as `unknown source`.
+Auto selection never includes ATS Sources. To sweep the companies you save with `jobship company add <careers-url>`, list the ATS names in `sources` together with the board ids you want, since a non-empty list turns auto selection off. An ATS Source with no saved companies is reported as misconfigured. An unknown name is reported as `unknown source`.
 
 Example: `jobship company add https://jobs.ashbyhq.com/acme` detects the ATS and stores `{ats: "ashby", slug: "acme"}`.
 

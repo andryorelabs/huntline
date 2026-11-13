@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { CommandContext } from "../core/commands.ts";
@@ -80,6 +80,18 @@ describe("board add", () => {
     expect(errorCode(result)).toBe("board-invalid");
   });
 
+  test("keeps both boards when two adds run at once", async () => {
+    await Promise.all([
+      run(["add", FEED_URL, "--name", "First"], context(), serving("rss.xml")),
+      run(["add", FEED_URL, "--name", "Second"], context(), serving("rss.xml")),
+    ]);
+    const ids = listedBoards(await run(["list"], context()))
+      .filter((entry) => entry.custom)
+      .map((entry) => entry.id)
+      .toSorted();
+    expect(ids).toEqual(["first", "second"]);
+  });
+
   test("rejects a duplicate id and a missing name", async () => {
     await run(["add", FEED_URL, "--name", "Dup"], context(), serving("rss.xml"));
     const again = await run(["add", FEED_URL, "--name", "Dup"], context(), serving("rss.xml"));
@@ -89,6 +101,31 @@ describe("board add", () => {
 });
 
 describe("board list", () => {
+  test("marks only the boards the Profile resolves as active", async () => {
+    writeFileSync(
+      path.join(root, "profile.yaml"),
+      [
+        "regions: [LATAM]",
+        "contractTypes: [full-time]",
+        "remote: remote-only",
+        "stack: { include: [], exclude: [] }",
+        "salaryFloor: null",
+        "excludedCompanies: []",
+        "outreachDailyCap: 5",
+        "sources: []",
+        "tracker: { kind: local, directory: tracker }",
+        "",
+      ].join("\n"),
+    );
+    await run(["add", FEED_URL, "--name", "Example Jobs"], context(), serving("rss.xml"));
+    const active = new Map(
+      listedBoards(await run(["list"], context())).map((entry) => [entry.id, entry.active]),
+    );
+    expect(active.get("example-jobs")).toBe(true);
+    expect(active.get("getonboard")).toBe(true);
+    expect(active.get("berlinstartupjobs")).toBe(false);
+  });
+
   test("includes catalog boards", async () => {
     const boards = listedBoards(await run(["list"], context()));
     expect(boards.some((entry) => entry.id === "wellfound" && entry.access === "browser")).toBe(

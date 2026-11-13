@@ -4,7 +4,7 @@ import { failure, success, type Envelope } from "../core/envelope.ts";
 import { errorMessage } from "../core/narrow.ts";
 import type { DataDir } from "../core/types.ts";
 import { loadCatalog, type Board, type Catalog } from "./catalog.ts";
-import { readCustomBoards, writeCustomBoards } from "./custom-boards.ts";
+import { readCustomBoards, updateCustomBoards } from "./custom-boards.ts";
 import { createFeedAdapter } from "./feed.ts";
 import type { FetchFunction } from "./http.ts";
 import { resolveBoards } from "./resolve.ts";
@@ -56,6 +56,10 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
+function duplicateIdMessage(id: string): string {
+  return `a board with id "${id}" already exists`;
+}
+
 type Loaded = { readonly catalog: Catalog; readonly custom: Board[] };
 
 async function loadBoards(
@@ -103,7 +107,7 @@ async function runAdd(
   if ("envelope" in current) return current.envelope;
   const { catalog, custom } = current.loaded;
   if ([...catalog.boards, ...custom].some((board) => board.id === id)) {
-    return failure("board-invalid", `a board with id "${id}" already exists`);
+    return failure("board-invalid", duplicateIdMessage(id));
   }
   const problem = await checkFeed(fetchFunction, id, url);
   if (problem !== null) return failure("board-invalid", `${url} is not a usable feed: ${problem}`);
@@ -118,8 +122,6 @@ async function runAdd(
     parser: "rss",
     endpoint: url,
   };
-  const saved = await readCustomBoards(ctx.dataDir.path);
-  if (!saved.ok) return failure(saved.error.code, saved.error.message);
   const checked = await loadCatalog({
     env: { JOBSHIP_CATALOG_URL: "off" },
     bundled: [candidate],
@@ -127,9 +129,13 @@ async function runAdd(
   if (!checked.ok) return failure("board-invalid", checked.error.message);
   const [board] = checked.value.boards;
   if (board === undefined) return failure("board-invalid", "the board could not be validated");
-  const written = await writeCustomBoards(ctx.dataDir.path, [...saved.value, board]);
+  const written = await updateCustomBoards<Board>(ctx.dataDir.path, (saved) =>
+    saved.some((entry) => entry.id === id)
+      ? { ok: false, error: { code: "board-invalid", message: duplicateIdMessage(id) } }
+      : { ok: true, value: { boards: [...saved, board], value: board } },
+  );
   if (!written.ok) return failure(written.error.code, written.error.message);
-  return success({ added: true, board });
+  return success({ added: true, board: written.value });
 }
 
 async function activeIds(
@@ -179,14 +185,16 @@ async function runRemove(argv: string[], ctx: CommandContext): Promise<Envelope<
   const [id] = argv;
   if (id === undefined || argv.length !== 1) return failure("usage", USAGE);
   if (ctx.dataDir === null) return dataDirMissing();
-  const custom = await readCustomBoards(ctx.dataDir.path);
-  if (!custom.ok) return failure(custom.error.code, custom.error.message);
-  if (!custom.value.some((board) => board.id === id)) {
-    return failure("not-found", `no custom board "${id}"; catalog boards cannot be removed`);
-  }
-  const written = await writeCustomBoards(
-    ctx.dataDir.path,
-    custom.value.filter((board) => board.id !== id),
+  const written = await updateCustomBoards<string>(ctx.dataDir.path, (saved) =>
+    saved.some((board) => board.id === id)
+      ? { ok: true, value: { boards: saved.filter((board) => board.id !== id), value: id } }
+      : {
+          ok: false,
+          error: {
+            code: "not-found",
+            message: `no custom board "${id}"; catalog boards cannot be removed`,
+          },
+        },
   );
   if (!written.ok) return failure(written.error.code, written.error.message);
   return success({ removed: id });

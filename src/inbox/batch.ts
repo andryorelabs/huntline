@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { approvalHash, IdempotencyMap } from "../core/approval.ts";
+import { approvalHash, batchKey, IdempotencyMap, lookupBatchHash } from "../core/approval.ts";
 import type { CommandContext } from "../core/commands.ts";
 import { loadProfile } from "../core/data-dir.ts";
 import { withLock, writeAtomic } from "../core/fs.ts";
@@ -90,7 +90,10 @@ export async function proposeBatch(
     const hash = approvalHash(content);
     const batchPath = path.join(dir.path, BATCH_DIRECTORY, `batch-${hash.slice(0, 16)}.json`);
     writeAtomic(batchPath, content);
-    new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)).record(batchPath, hash);
+    new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)).record(
+      batchKey(dir.path, batchPath),
+      hash,
+    );
     return { ok: true, value: { batchPath, hash, items } };
   } catch (error) {
     return fail("inbox-propose-failed", errorMessage(error));
@@ -236,7 +239,11 @@ export async function applyBatch(
   try {
     if (!existsSync(resolved)) return fail("batch-not-found", `no batch file at ${resolved}`);
     const content = readFileSync(resolved, "utf8");
-    const expected = new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)).lookup(resolved);
+    const expected = lookupBatchHash(
+      new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)),
+      dir.path,
+      resolved,
+    );
     if (expected === null)
       return fail("batch-unknown", `${resolved} was not proposed by this data dir`);
     if (approvalHash(content) !== expected) {

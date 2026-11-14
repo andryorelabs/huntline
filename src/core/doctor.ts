@@ -7,7 +7,6 @@ import { runGuardSelfTest, SELF_TEST_HOOKS } from "../guard/self-test.ts";
 import { checkLinearConnection } from "../tracker/check.ts";
 import { DEFAULT_LINEAR_MAPPING, type FetchLike, type LinearMapping } from "../tracker/linear.ts";
 import type { CommandContext } from "./commands.ts";
-import { createAtsAdapters } from "../sources/ats.ts";
 import { readCompanies } from "../sources/companies.ts";
 import { resolveBoards, sources as registeredSources } from "../sources/index.ts";
 import type { ResolvedBoard } from "../sources/index.ts";
@@ -111,22 +110,6 @@ function noBoardsWarning(resolved: readonly ResolvedBoard[]): DoctorWarning[] {
         "set regions and remote in profile.yaml, list board ids under sources, or run jobship board add",
     },
   ];
-}
-
-function atsWithoutCompanies(dir: DataDir, profile: Profile): DoctorWarning[] {
-  const companies = readCompanies(dir);
-  if (!companies.ok) return [];
-  const atsNames = new Set(
-    createAtsAdapters((input, init) => fetch(input, init)).map((adapter) => adapter.name),
-  );
-  return profile.sources
-    .filter((name) => atsNames.has(name))
-    .filter((name) => !companies.value.some((company) => company.ats === name))
-    .map((name) => ({
-      code: "ats-without-companies",
-      message: `${name} is configured but no company is saved for it`,
-      recoveryAction: `run jobship company add for ${name}`,
-    }));
 }
 
 function pluginsFilePath(env: CommandContext["env"]): string {
@@ -290,7 +273,6 @@ export async function runDoctor(
         recoveryAction: "remove the field from profile.yaml",
       })),
       ...noBoardsWarning(resolved.value),
-      ...atsWithoutCompanies(ctx.dataDir, profile.value),
       ...(plugin.warning === null ? [] : [plugin.warning]),
     ],
     dataDir: ctx.dataDir.path,

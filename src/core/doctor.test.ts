@@ -303,17 +303,13 @@ describe("doctor data checks", () => {
     expect(warningsOf(result).map((warning) => warning.code)).not.toContain("no-boards");
   });
 
-  test("warns when an ATS Source has no saved company", async () => {
+  test("does not warn when an ATS Source has no saved company", async () => {
     const ctx = writeDataDir({ kind: "local" });
     rewriteProfile(ctx, { sources: ["greenhouse", "remoteok"] });
     const result = await runDoctor(ctx);
-    expect(warningsOf(result).map((warning) => warning.code)).toContain("ats-without-companies");
-    writeFileSync(
-      dataFile(ctx, "companies.json"),
-      JSON.stringify({ companies: [{ ats: "greenhouse", slug: "acme" }] }),
+    expect(warningsOf(result).map((warning) => warning.code)).not.toContain(
+      "ats-without-companies",
     );
-    const after = await runDoctor(ctx);
-    expect(warningsOf(after).map((warning) => warning.code)).not.toContain("ats-without-companies");
   });
 });
 

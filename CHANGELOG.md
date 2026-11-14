@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+
+- `jobship doctor` no longer warns when an ATS Source has no saved company; those Sources sweep nothing until `jobship company add` saves one.
+
 ## [0.5.2] - 2026-11-14
 
 ### Fixed

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { writeAtomic } from "./fs.ts";
 import { errorMessage, isObject } from "./narrow.ts";
 
@@ -48,4 +49,25 @@ export class IdempotencyMap {
     entries[key] = value;
     writeAtomic(this.#filePath, `${JSON.stringify(entries, null, 2)}\n`);
   }
+}
+
+/**
+ * Key an Approval batch by its path relative to the data dir, with `/` separators, so a moved or cloned data dir keeps its batches.
+ */
+export function batchKey(dataDirPath: string, batchPath: string): string {
+  const absolute = path.resolve(dataDirPath, batchPath);
+  return path.relative(path.resolve(dataDirPath), absolute).split(path.sep).join("/");
+}
+
+/**
+ * Look up a batch hash by its relative key, falling back to the legacy absolute path key.
+ */
+export function lookupBatchHash(
+  map: IdempotencyMap,
+  dataDirPath: string,
+  batchPath: string,
+): string | null {
+  return (
+    map.lookup(batchKey(dataDirPath, batchPath)) ?? map.lookup(path.resolve(dataDirPath, batchPath))
+  );
 }

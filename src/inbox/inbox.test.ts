@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { isObject } from "../core/narrow.ts";
@@ -177,6 +177,24 @@ describe("propose and apply", () => {
       path.relative(elsewhere.cwd, proposed.value.batchPath),
     );
     expect(applied.ok).toBe(true);
+  });
+
+  test("applies a batch from a copied data dir", async () => {
+    await seedLead("acme|dev", "Acme Inc.");
+    const proposed = await proposeBatch(context(), [email()]);
+    if (!proposed.ok) throw new Error(proposed.error.message);
+    const relative = path.relative(dir.path, proposed.value.batchPath);
+    const copy = mkdtempSync(path.join(os.tmpdir(), "jobship-inbox-copy-"));
+    try {
+      cpSync(dir.path, copy, { recursive: true });
+      const moved = { dataDir: { path: copy }, env: {}, cwd: copy };
+      expect(await applyBatch(moved, path.join(copy, relative))).toEqual({
+        ok: true,
+        value: { applied: 1 },
+      });
+    } finally {
+      rmSync(copy, { recursive: true, force: true });
+    }
   });
 
   test("edited batch is refused with batch-changed", async () => {

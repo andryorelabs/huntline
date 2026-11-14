@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-14
+
+### Fixed
+
+- `jobship doctor` no longer warns when an ATS Source has no saved company; those Sources sweep nothing until `jobship company add` saves one.
+
 ## [0.5.2] - 2026-11-14
 
 ### Fixed
@@ -103,7 +109,8 @@ First tagged release.
 
 - `cv lint` is Spanish-safe, and doctor validates CV data.
 
-[Unreleased]: https://github.com/andryorelabs/jobship/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/andryorelabs/jobship/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/andryorelabs/jobship/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/andryorelabs/jobship/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/andryorelabs/jobship/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/andryorelabs/jobship/compare/v0.4.0...v0.5.0

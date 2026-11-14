@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+
+- Approval batches are keyed by their path relative to the data dir, so a moved or cloned data dir still applies its derived batches; maps with absolute keys keep working.
+
 ## [0.5.1] - 2026-11-13
 
 ### Fixed

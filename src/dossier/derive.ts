@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { Document, isMap, isSeq, parseDocument, type YAMLSeq } from "yaml";
 import { listAnswers, type StoredAnswer } from "../apply/answers.ts";
-import { approvalHash, IdempotencyMap } from "../core/approval.ts";
+import { approvalHash, batchKey, IdempotencyMap, lookupBatchHash } from "../core/approval.ts";
 import type { CommandContext } from "../core/commands.ts";
 import { withLock, writeAtomic } from "../core/fs.ts";
 import { errorMessage, isObject, isOneOf } from "../core/narrow.ts";
@@ -230,7 +230,10 @@ function deriveSync(ctx: CommandContext, proposal: DossierProposal): Result<Deri
     const hash = approvalHash(content);
     const batchPath = path.join(dir.path, BATCH_DIRECTORY, `batch-${hash.slice(0, 16)}.json`);
     writeAtomic(batchPath, content);
-    new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)).record(batchPath, hash);
+    new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)).record(
+      batchKey(dir.path, batchPath),
+      hash,
+    );
     return { ok: true, value: { batchPath, hash, items } };
   } catch (error) {
     return fail("dossier-derive-failed", errorMessage(error));
@@ -465,7 +468,11 @@ export async function applyDossierBatch(
   try {
     if (!existsSync(resolved)) return fail("batch-not-found", `no batch file at ${resolved}`);
     const content = readFileSync(resolved, "utf8");
-    const expected = new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)).lookup(resolved);
+    const expected = lookupBatchHash(
+      new IdempotencyMap(path.join(dir.path, BATCH_HASHES_FILE)),
+      dir.path,
+      resolved,
+    );
     if (expected === null)
       return fail("batch-changed", `${resolved} was not derived by this data dir`);
     if (approvalHash(content) !== expected) {

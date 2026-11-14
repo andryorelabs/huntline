@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { approvalHash, IdempotencyMap } from "./approval.ts";
+import { approvalHash, batchKey, IdempotencyMap, lookupBatchHash } from "./approval.ts";
 import { COMMANDS, resolveCommand } from "./commands.ts";
 import { loadProfile, resolveDataDir } from "./data-dir.ts";
 import { exitCodeFor, failure, success } from "./envelope.ts";
@@ -250,6 +250,28 @@ describe("approval", () => {
     map.record("lead-1", "issue-9");
     expect(map.lookup("lead-1")).toBe("issue-9");
     expect(() => map.record("lead-1", "issue-10")).toThrow("refusing");
+  });
+
+  test("batchKey is data-dir-relative with slashes and cwd independent", () => {
+    const root = path.join(workDir, "data");
+    const absolute = path.join(root, "dossier", "batches", "batch-1.json");
+    expect(batchKey(root, absolute)).toBe("dossier/batches/batch-1.json");
+    expect(batchKey(root, "dossier/batches/batch-1.json")).toBe("dossier/batches/batch-1.json");
+  });
+
+  test("lookupBatchHash prefers the relative key and falls back to the legacy absolute key", () => {
+    const root = path.join(workDir, "data");
+    const absolute = path.join(root, "dossier", "batches", "batch-1.json");
+    const legacy = new IdempotencyMap(path.join(workDir, "legacy.json"));
+    legacy.record(absolute, "old");
+    expect(lookupBatchHash(legacy, root, absolute)).toBe("old");
+    const both = new IdempotencyMap(path.join(workDir, "both.json"));
+    both.record(absolute, "old");
+    both.record("dossier/batches/batch-1.json", "new");
+    expect(lookupBatchHash(both, root, absolute)).toBe("new");
+    expect(
+      lookupBatchHash(new IdempotencyMap(path.join(workDir, "none.json")), root, absolute),
+    ).toBeNull();
   });
 
   test("IdempotencyMap surfaces an unreadable file", () => {

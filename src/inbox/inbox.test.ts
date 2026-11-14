@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isObject } from "../core/narrow.ts";
 import { exitCodeFor } from "../core/envelope.ts";
 import type { CommandContext } from "../core/commands.ts";
 import type { Posting } from "../core/types.ts";
@@ -25,6 +26,12 @@ const PROFILE = {
   sources: [],
   tracker: { kind: "local" },
 };
+
+function readMap(mapPath: string): Record<string, string> {
+  const parsed: unknown = JSON.parse(readFileSync(mapPath, "utf8"));
+  if (!isObject(parsed)) throw new Error("map is not an object");
+  return Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, String(value)]));
+}
 
 beforeEach(() => {
   dir = { path: mkdtempSync(path.join(os.tmpdir(), "jobship-inbox-")) };
@@ -155,6 +162,23 @@ describe("matching", () => {
 });
 
 describe("propose and apply", () => {
+  test("records a relative key, honours a legacy key and resolves from another cwd", async () => {
+    await seedLead("acme|dev", "Acme Inc.");
+    const proposed = await proposeBatch(context(), [email()]);
+    if (!proposed.ok) throw new Error(proposed.error.message);
+    const relative = path.relative(dir.path, proposed.value.batchPath).split(path.sep).join("/");
+    const mapPath = path.join(dir.path, "inbox-batches.json");
+    const recorded = readMap(mapPath);
+    expect(Object.keys(recorded)).toEqual([relative]);
+    writeFileSync(mapPath, JSON.stringify({ [proposed.value.batchPath]: proposed.value.hash }));
+    const elsewhere = { dataDir: dir, env: {}, cwd: path.dirname(dir.path) };
+    const applied = await applyBatch(
+      elsewhere,
+      path.relative(elsewhere.cwd, proposed.value.batchPath),
+    );
+    expect(applied.ok).toBe(true);
+  });
+
   test("edited batch is refused with batch-changed", async () => {
     await seedLead("acme|dev", "Acme Inc.");
     const proposed = await proposeBatch(context(), [email()]);

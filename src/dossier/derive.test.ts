@@ -15,6 +15,12 @@ function context(): CommandContext {
   return { dataDir: { path: dataDir }, env: {}, cwd: dataDir };
 }
 
+function readMap(mapPath: string): Record<string, string> {
+  const parsed: unknown = JSON.parse(readFileSync(mapPath, "utf8"));
+  if (!isObject(parsed)) throw new Error("map is not an object");
+  return Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, String(value)]));
+}
+
 beforeEach(() => {
   dataDir = mkdtempSync(path.join(os.tmpdir(), "jobship-derive-unit-"));
   cpSync(path.join(REPO_ROOT, "fixtures/dossier/complete/dossier"), path.join(dataDir, "dossier"), {
@@ -51,6 +57,49 @@ describe("deriveBatch", () => {
     expect(derived.value.items).toEqual([]);
     const applied = await applyDossierBatch(context(), derived.value.batchPath);
     expect(applied).toEqual({ ok: true, value: { applied: 0 } });
+  });
+
+  test("records a relative key, applies from a copied data dir and from another cwd", async () => {
+    const proposal = parseProposal({});
+    if (!proposal.ok) throw new Error("proposal should parse");
+    const derived = await deriveBatch(context(), proposal.value);
+    if (!derived.ok) throw new Error(derived.error.message);
+    const relative = path.relative(dataDir, derived.value.batchPath).split(path.sep).join("/");
+    const mapPath = path.join(dataDir, "dossier-batches.json");
+    const recorded = readMap(mapPath);
+    expect(Object.keys(recorded)).toEqual([relative]);
+
+    const copy = mkdtempSync(path.join(os.tmpdir(), "jobship-derive-copy-"));
+    try {
+      cpSync(dataDir, copy, { recursive: true });
+      const moved = { dataDir: { path: copy }, env: {}, cwd: copy };
+      expect(await applyDossierBatch(moved, path.join(copy, relative))).toEqual({
+        ok: true,
+        value: { applied: 0 },
+      });
+      const elsewhere = { dataDir: { path: dataDir }, env: {}, cwd: os.tmpdir() };
+      expect(await applyDossierBatch(elsewhere, derived.value.batchPath)).toEqual({
+        ok: true,
+        value: { applied: 0 },
+      });
+    } finally {
+      rmSync(copy, { recursive: true, force: true });
+    }
+  });
+
+  test("a legacy absolute key still applies and an edited batch is batch-changed", async () => {
+    const proposal = parseProposal({});
+    if (!proposal.ok) throw new Error("proposal should parse");
+    const derived = await deriveBatch(context(), proposal.value);
+    if (!derived.ok) throw new Error(derived.error.message);
+    const mapPath = path.join(dataDir, "dossier-batches.json");
+    const [hash] = Object.values(readMap(mapPath));
+    writeFileSync(mapPath, JSON.stringify({ [derived.value.batchPath]: hash }));
+    expect((await applyDossierBatch(context(), derived.value.batchPath)).ok).toBe(true);
+    writeFileSync(derived.value.batchPath, `${readFileSync(derived.value.batchPath, "utf8")} `);
+    const edited = await applyDossierBatch(context(), derived.value.batchPath);
+    expect(edited.ok).toBe(false);
+    if (!edited.ok) expect(edited.error.code).toBe("batch-changed");
   });
 
   test("a data directory is required", async () => {
